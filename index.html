@@ -52,26 +52,33 @@
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans">
 
-  <!-- 登入畫面 (Modal) -->
+  <!-- 登入畫面 (Modal) - 支援 Google 帳號直接連接登入 -->
   <div id="login-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 border border-slate-100">
-      <div class="text-center mb-6">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 border border-slate-100 text-center space-y-6">
+      <div>
         <h2 class="text-3xl font-black text-slate-800">優華數位刷題網</h2>
-        <p class="text-sm text-slate-500 mt-2">請輸入您的 Gmail 與老師給的通關密碼</p>
+        <p class="text-sm text-slate-500 mt-2">請點擊下方按鈕連接您的 Google 帳號登入系統</p>
       </div>
-      <form onsubmit="handleLogin(event)" class="space-y-4">
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">Google 帳號 (Gmail)</label>
-          <input type="email" id="login-email" required placeholder="yourname@gmail.com" class="w-full border border-slate-300 rounded-xl p-3.5 text-base focus:ring-2 focus:ring-brand-500 focus:outline-none">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">通關密碼</label>
-          <input type="password" id="login-pass" required placeholder="請輸入通關密碼" class="w-full border border-slate-300 rounded-xl p-3.5 text-base focus:ring-2 focus:ring-brand-500 focus:outline-none">
-        </div>
-        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg text-base mt-3">
-          立即登入系統
+
+      <!-- Google 登入按鈕 -->
+      <button onclick="handleGoogleLogin()" class="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 px-4 rounded-xl border border-slate-300 shadow-sm transition-all flex items-center justify-center gap-3 text-base">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.15C3.15 21.32 7.22 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.18C.43 8.12 0 9.82 0 12s.43 3.88 1.18 5.4l4.09-3.16z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.22 0 3.15 2.68 1.18 6.6l4.09 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+        </svg>
+        <span>使用 Google 帳號登入</span>
+      </button>
+
+      <!-- 管理者專用密碼驗證區塊 (若偵測為管理者信箱時自動彈出) -->
+      <div id="admin-password-container" class="hidden text-left space-y-2 pt-2 border-t border-slate-100">
+        <label class="block text-sm font-semibold text-slate-700">偵測為管理者帳號，請輸入通關密碼：</label>
+        <input type="password" id="login-pass" placeholder="請輸入管理者密碼" class="w-full border border-slate-300 rounded-xl p-3 text-base focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        <button onclick="confirmAdminLogin()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl transition-colors shadow text-sm mt-2">
+          確認驗證並進入管理者後台
         </button>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -239,7 +246,7 @@
 
     </div>
 
-    <!-- 頁籤二：錯題區本 -->
+    <!-- 頁籤二 : 錯題區本 -->
     <div id="tab-wrong" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -258,7 +265,7 @@
       <div id="wrong-list-container" class="space-y-5"></div>
     </div>
 
-    <!-- 頁籤三：個人單字庫 -->
+    <!-- 頁籤三 : 個人單字庫 -->
     <div id="tab-vocab-bank" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -361,6 +368,7 @@
     const CLOUD_KEY_STUDENTS = 'yh_cloud_all_students_v4';
     const CLOUD_KEY_MESSAGES = 'yh_cloud_platform_messages_v4';
     const ADMIN_EMAIL = 'yhstella2@gmail.com';
+    const ADMIN_PASS = 'a18177300';
 
     window.onload = () => {
       const savedUser = localStorage.getItem('yh_user_v4');
@@ -369,7 +377,6 @@
         document.getElementById('login-modal').classList.add('hidden');
         document.getElementById('user-status').innerText = `👤 ${currentUser.email}`;
         
-        // 確保每次登入都將目前使用者登記到雲端學生清單中
         registerUserToCloud();
 
         if (currentUser.email.toLowerCase() === ADMIN_EMAIL) {
@@ -465,16 +472,39 @@
       return sessionData;
     }
 
-    function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim().toLowerCase();
-      const pass = document.getElementById('login-pass').value.trim();
+    // 模擬 Google 帳號直接連接登入
+    function handleGoogleLogin() {
+      // 這裡以 prompt 模擬 Google 彈出視窗取得使用者的 Google 帳號 (Gmail)
+      let googleEmail = prompt('請輸入您要連接登入的 Google 帳號 (Gmail)：', '');
+      if (!googleEmail) return;
+      googleEmail = googleEmail.trim().toLowerCase();
 
-      if (!email || !pass) {
-        alert('請完整輸入 Gmail 與通關密碼');
+      if (!googleEmail.includes('@')) {
+        alert('請輸入有效的 Gmail 帳號！');
         return;
       }
 
+      // 若使用者點擊的是管理者信箱，則顯示密碼驗證區塊
+      if (googleEmail === ADMIN_EMAIL) {
+        document.getElementById('admin-password-container').classList.remove('hidden');
+        window.tempAdminEmail = googleEmail;
+        return;
+      }
+
+      completeLogin(googleEmail);
+    }
+
+    // 管理者密碼驗證
+    function confirmAdminLogin() {
+      const pass = document.getElementById('login-pass').value.trim();
+      if (pass !== ADMIN_PASS) {
+        alert('管理者密碼錯誤！');
+        return;
+      }
+      completeLogin(window.tempAdminEmail || ADMIN_EMAIL);
+    }
+
+    function completeLogin(email) {
       currentUser = { email: email };
       localStorage.setItem('yh_user_v4', JSON.stringify(currentUser));
       document.getElementById('login-modal').classList.add('hidden');
@@ -730,7 +760,7 @@
       alert('已成功刪除該筆練習報告！');
     }
 
-    // 平台訊息系統 (老師回覆、學生僅能閱讀)
+    // 平台訊息系統
     function getPlatformMessages() {
       return JSON.parse(localStorage.getItem(CLOUD_KEY_MESSAGES) || '{}');
     }
@@ -748,10 +778,8 @@
       if (!currentUser) return;
 
       if (currentUser.email.toLowerCase() === ADMIN_EMAIL) {
-        // 管理者不計算紅點
         badge.classList.add('hidden');
       } else {
-        // 學生計算老師傳來的未讀訊息
         const list = allMsgs[currentUser.email] || [];
         unreadCount += list.filter(m => m.sender === 'admin' && !m.read).length;
         if (unreadCount > 0) {
@@ -823,7 +851,6 @@
       const allMsgs = getPlatformMessages();
       const list = allMsgs[currentUser.email] || [];
 
-      // 標記老師的訊息為已讀
       list.forEach(m => {
         if (m.sender === 'admin') m.read = true;
       });
