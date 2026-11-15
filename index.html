@@ -98,10 +98,10 @@
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3">
         <div class="text-4xl">📊</div>
         <h2 class="text-xl font-bold text-slate-800">管理者雲端成績總覽</h2>
-        <p class="text-sm text-slate-500">學生的所有刷題紀錄已經自動同步至您的 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
+        <p class="text-sm text-slate-500">學生的所有刷題紀錄已自動連結至您的新 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
         <div class="pt-2">
-          <a href="https://docs.google.com/spreadsheets/d/11rFyQ1FLFflBAUzBoJGI2p8EChYSJWuje16DkZZdSWc/edit" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
-            📂 直接打開 Google 試算表檢視全部成績與錯題
+          <a href="https://docs.google.com/spreadsheets/d/1F8GXowdJoawXT90i2UbneU4f7kv37bF7kNnXPWfg96M/edit?gid=0#gid=0" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
+            📂 直接打開新的 Google 成績試算表
           </a>
         </div>
       </div>
@@ -208,7 +208,7 @@
         <div id="quiz-score-summary" class="text-lg font-bold text-brand-700 bg-brand-50 p-4 rounded-2xl border border-brand-200 inline-block">
           <!-- 成績統計顯示 -->
         </div>
-        <p class="text-sm text-slate-500">成績與錯題已自動同步上傳至雲端試算表。</p>
+        <p class="text-sm text-slate-500">成績與錯題已自動同步上傳至您的雲端成績表格。</p>
         <div>
           <button onclick="switchTab('wrong-notebook')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl shadow">前往錯題本再次練習 📚</button>
         </div>
@@ -285,11 +285,12 @@
   </div>
 
   <script>
+    // 題庫試算表 ID維持不變
     const SPREADSHEET_ID = '11rFyQ1FLFflBAUzBoJGI2p8EChYSJWuje16DkZZdSWc';
     const GOOGLE_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
     
-    // Google Apps Script 雲端 API 網址
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyooGEw0pF_GdX2Dfn5qIJkJ9qSe9xDEdF9StMX0zDu3vefI3dfcU6sgtei-IGmatUEag/exec';
+    // 成績專用 Google Apps Script 雲端 API 網址 (已更新為您的新成績表格網址)
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyHoIWQ6tfuX97hfkEq1drToJmv5q0L9Hke9eztxuF8GTKGaY0-lvsn4u6oL4jIpRhxcQ/exec';
 
     let currentUser = null;
     let rawQuestions = [];
@@ -305,7 +306,7 @@
     const STUDENT_PASS = '1155665';
 
     window.onload = () => {
-      const savedUser = localStorage.getItem('yh_user_v11');
+      const savedUser = localStorage.getItem('yh_user_v12');
       if (savedUser) {
         currentUser = JSON.parse(savedUser);
         document.getElementById('login-modal').classList.add('hidden');
@@ -331,7 +332,6 @@
 
     function loadUserData() {
       if (!currentUser) return;
-      // 從本機暫存載入個人錯題與單字庫
       const localData = JSON.parse(localStorage.getItem('yh_student_' + currentUser.email) || '{}');
       wrongQuestions = localData.wrongs || [];
       vocabBank = localData.vocab || [];
@@ -378,7 +378,7 @@
       saveUserDataToLocal();
       renderCalendar();
 
-      // 非同步發送紀錄至 Google Apps Script 雲端試算表
+      // 發送成績至您的新 Google 試算表
       fetch(GAS_API_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -421,7 +421,7 @@
       }
 
       currentUser = { email: email };
-      localStorage.setItem('yh_user_v11', JSON.stringify(currentUser));
+      localStorage.setItem('yh_user_v12', JSON.stringify(currentUser));
       document.getElementById('login-modal').classList.add('hidden');
       document.getElementById('user-status').innerText = `👤 ${email}`;
 
@@ -435,7 +435,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('yh_user_v11');
+      localStorage.removeItem('yh_user_v12');
       location.reload();
     }
 
