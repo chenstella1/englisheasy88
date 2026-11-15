@@ -96,6 +96,14 @@
     <!-- 管理者介面 (Admin Dashboard) -->
     <div id="tab-admin" class="hidden space-y-6">
       
+      <!-- 後台重新整理按鈕 -->
+      <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <span class="text-sm font-bold text-slate-700">🛡️ 管理者控制台</span>
+        <button onclick="loadAdminDashboard()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow">
+          🔄 重新整理所有學生最新紀錄
+        </button>
+      </div>
+
       <!-- 學生名單總覽與刪除區塊 -->
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200">
         <h2 class="text-xl font-bold text-slate-800 mb-2">👥 平台所有學生名單管理</h2>
@@ -107,8 +115,8 @@
 
       <!-- 依日期分類的練習紀錄 -->
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200">
-        <h2 class="text-xl font-bold text-slate-800 mb-2">🛡️ 管理者後台：依日期分類的學生練習紀錄 (最新在最上面)</h2>
-        <p class="text-sm text-slate-500 mb-6">可檢視各日期各學生的練習狀況、錯題明細，並可隨時刪除已看過的報告。</p>
+        <h2 class="text-xl font-bold text-slate-800 mb-2">🛡️ 依日期分類的學生練習紀錄 (最新在最上面)</h2>
+        <p class="text-sm text-slate-500 mb-6">可檢視各日期各學生的練習狀況、總題數、答對答錯、錯題明細。</p>
         
         <div id="admin-records-container" class="space-y-6">
           <!-- 動態載入依日期分組的紀錄 -->
@@ -306,14 +314,14 @@
     let activeSelectedWord = '';
     let activeWordDefinition = '';
 
-    // 跨平台雲端共享儲存架構 (yh_cloud_all_students_v5)
-    const CLOUD_KEY_STUDENTS = 'yh_cloud_all_students_v5';
+    // 使用統一且唯一的雲端儲存 Key
+    const CLOUD_KEY_STUDENTS = 'yh_cloud_all_students_v10';
     const ADMIN_EMAIL = 'yhstella2@gmail.com';
     const ADMIN_PASS = 'a18177300';
-    const STUDENT_PASS = '1155665'; // 學生共用通關密碼已更新為 1155665
+    const STUDENT_PASS = '1155665';
 
     window.onload = () => {
-      const savedUser = localStorage.getItem('yh_user_v5');
+      const savedUser = localStorage.getItem('yh_user_v10');
       if (savedUser) {
         currentUser = JSON.parse(savedUser);
         document.getElementById('login-modal').classList.add('hidden');
@@ -341,7 +349,12 @@
     }
 
     function getAllCloudStudents() {
-      return JSON.parse(localStorage.getItem(CLOUD_KEY_STUDENTS) || '{}');
+      try {
+        const data = localStorage.getItem(CLOUD_KEY_STUDENTS);
+        return data ? JSON.parse(data) : {};
+      } catch (e) {
+        return {};
+      }
     }
 
     function saveAllCloudStudents(data) {
@@ -377,14 +390,15 @@
 
     function saveUserDataToCloud() {
       if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
-      const allStudents = getAllCloudStudents();
+      let allStudents = getAllCloudStudents();
       
-      allStudents[currentUser.email] = {
-        email: currentUser.email,
-        logs: userLogs,
-        wrongs: wrongQuestions,
-        vocab: vocabBank
-      };
+      if (!allStudents[currentUser.email]) {
+        allStudents[currentUser.email] = { email: currentUser.email };
+      }
+
+      allStudents[currentUser.email].logs = userLogs;
+      allStudents[currentUser.email].wrongs = wrongQuestions;
+      allStudents[currentUser.email].vocab = vocabBank;
 
       saveAllCloudStudents(allStudents);
       updateWrongBadge();
@@ -398,7 +412,7 @@
       const mStr = String(now.getMonth() + 1).padStart(2, '0');
       const dStr = String(now.getDate()).padStart(2, '0');
       const dateKey = `${mStr}/${dStr}`;
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
       const sessionData = {
         id: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
@@ -413,7 +427,7 @@
       };
 
       userLogs.push(sessionData);
-      saveUserDataToCloud();
+      saveUserDataToCloud(); // 立即寫入儲存
       renderCalendar();
       return sessionData;
     }
@@ -428,14 +442,12 @@
         return;
       }
 
-      // 管理者登入驗證
       if (email === ADMIN_EMAIL) {
         if (pass !== ADMIN_PASS) {
           alert('管理者通關密碼錯誤！');
           return;
         }
       } else {
-        // 學生通關密碼驗證
         if (pass !== STUDENT_PASS && pass !== ADMIN_PASS) {
           alert('通關密碼錯誤，請洽老師索取正確通關密碼！');
           return;
@@ -443,7 +455,7 @@
       }
 
       currentUser = { email: email };
-      localStorage.setItem('yh_user_v5', JSON.stringify(currentUser));
+      localStorage.setItem('yh_user_v10', JSON.stringify(currentUser));
       document.getElementById('login-modal').classList.add('hidden');
       document.getElementById('user-status').innerText = `👤 ${email}`;
 
@@ -459,7 +471,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('yh_user_v5');
+      localStorage.removeItem('yh_user_v10');
       location.reload();
     }
 
@@ -512,7 +524,7 @@
       renderCalendar();
     }
 
-    // 管理者後台：包含學生名單管理與依日期分類的練習成果紀錄
+    // 管理者後台：即時讀取所有學生的最新資料
     function loadAdminDashboard() {
       loadAdminStudentsList();
       loadAdminRecordsContainer();
@@ -529,7 +541,7 @@
       }
 
       container.innerHTML = studentEmails.map(email => {
-        const st = allStudents[email];
+        const st = allStudents[email] || {};
         const totalLogs = (st.logs || []).length;
         const totalWrongs = (st.wrongs || []).length;
         return `
@@ -572,7 +584,7 @@
 
       let allSessions = [];
       studentEmails.forEach(email => {
-        const st = allStudents[email];
+        const st = allStudents[email] || {};
         const logs = st.logs || [];
         logs.forEach(l => {
           const timeStr = l.timestamp || l.date || '未知時間';
@@ -589,7 +601,7 @@
             correct: l.correct,
             wrong: l.wrong,
             range: l.range,
-            wrongItems: l.wrongItems || st.wrongs || []
+            wrongItems: l.wrongItems || []
           });
         });
       });
@@ -634,7 +646,7 @@
                 <div class="text-brand-700 font-bold">正確答案：(${w.answer}) | 解析：${w.analysis}</div>
               </div>
             `;
-          }).join('') : '<div class="text-xs text-slate-400 italic">無錯題紀錄</div>';
+          }).join('') : '<div class="text-xs text-slate-400 italic">此次測驗無錯題紀錄</div>';
 
           return `
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
