@@ -187,7 +187,7 @@
 
           <!-- 題數 -->
           <div class="md:col-span-12 pt-4 border-t border-slate-100 flex items-center gap-4">
-            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">出題數量（題組或單題數）：</label>
+            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">目標題數（單題算1題，題組算1個單位）：</label>
             <input type="number" id="question-count" value="10" min="1" max="100" class="w-32 border-slate-200 rounded-xl text-base p-2.5 border font-medium">
           </div>
 
@@ -536,7 +536,6 @@
             return;
           }
 
-          // 支援一般選擇題（有題幹）以及克漏字題組子題（D 欄題幹為空，但有選項 A）
           if (questionText || opts.optionA) {
             const subNum = id.includes('-') ? id.split('-')[1] : '';
             const displayTitle = questionText || (subNum ? `請選出文章中第 (${subNum}) 格最適合的答案：` : '請選出最適合的答案：');
@@ -679,29 +678,56 @@
       });
     }
 
-    // 題組打包抽題函式：確保同篇文章底下的子題 (如 804-1 ~ 804-10) 綁定在一起不拆散
-    function buildGroupedQuizSelection(filteredList, targetCount) {
-      const groupsMap = new Map();
-      const groupOrder = [];
+    // 核心抽題邏輯：單題算1題，題組（閱讀/克漏字整篇文章與所有子題）算1個單位
+    function buildGroupedQuizSelection(filteredList, targetUnits) {
+      let singleQuestions = [];
+      let articleGroupsMap = new Map();
+      let articleGroupKeys = [];
 
       filteredList.forEach(q => {
-        const groupKey = q.id.includes('-') ? 'article_' + q.id.split('-')[0] : 'single_' + q.id + '_' + Math.random();
-        if (!groupsMap.has(groupKey)) {
-          groupsMap.set(groupKey, []);
-          groupOrder.push(groupKey);
+        if (q.id && q.id.includes('-')) {
+          const baseId = q.id.split('-')[0];
+          if (!articleGroupsMap.has(baseId)) {
+            articleGroupsMap.set(baseId, []);
+            articleGroupKeys.push(baseId);
+          }
+          articleGroupsMap.get(baseId).push(q);
+        } else {
+          singleQuestions.push(q);
         }
-        groupsMap.get(groupKey).push(q);
       });
 
-      // 將題組順序隨機打亂，但題組內部的子題維持原本 1, 2, 3... 順序
-      const shuffledKeys = [...groupOrder].sort(() => 0.5 - Math.random());
-      const selectedUnits = shuffledKeys.slice(0, targetCount);
-
-      let result = [];
-      selectedUnits.forEach(k => {
-        result.push(...groupsMap.get(k));
+      // 確保題組內部的子題按照編號依序排序（1, 2, 3...）
+      articleGroupsMap.forEach((subList, baseId) => {
+        subList.sort((a, b) => {
+          const numA = parseInt(a.id.split('-')[1]) || 0;
+          const numB = parseInt(b.id.split('-')[1]) || 0;
+          return numA - numB;
+        });
       });
-      return result;
+
+      const shuffledSingles = [...singleQuestions].sort(() => 0.5 - Math.random());
+      const shuffledArticles = [...articleGroupKeys].sort(() => 0.5 - Math.random());
+
+      let finalSelected = [];
+      let currentUnits = 0;
+
+      // 1. 先隨機抽取題組（一個題組算 1 個單位）
+      for (let baseId of shuffledArticles) {
+        if (currentUnits >= targetUnits) break;
+        const subList = articleGroupsMap.get(baseId);
+        finalSelected.push(...subList);
+        currentUnits++; // 整個題組算 1 個單位
+      }
+
+      // 2. 若單位還不夠，從單題中補齊（單題 1 題算 1 個單位）
+      for (let q of shuffledSingles) {
+        if (currentUnits >= targetUnits) break;
+        finalSelected.push(q);
+        currentUnits++;
+      }
+
+      return finalSelected;
     }
 
     function processTextWithLookup(text) {
@@ -794,7 +820,7 @@
         actionBox.classList.add('hidden');
         finishBox.classList.add('hidden');
         renderOnlineQuiz(container, quizQuestions);
-        showStatus(`已挑選 ${quizQuestions.length} 題，請點擊選項作答。`, 'success');
+        showStatus(`已載入測驗題目，總計 ${quizQuestions.length} 小題（含題組），請開始作答。`, 'success');
       } else {
         finishBox.classList.add('hidden');
         actionBox.classList.remove('hidden');
@@ -805,7 +831,7 @@
         const selectedCategories = Array.from(document.querySelectorAll('.category-cb:checked')).map(cb => cb.value).join(', ');
         recordQuizSession(quizQuestions.length, 0, 0, `${gradeName} / [${selectedCategories}] (列印試卷)`);
 
-        showStatus(`已產出 ${quizQuestions.length} 題的空白試卷與解答解析，可直接列印或匯出 PDF/Word。`, 'success');
+        showStatus(`已產出隨堂測驗卷與解答解析，可直接列印或匯出 PDF/Word。`, 'success');
       }
     }
 
