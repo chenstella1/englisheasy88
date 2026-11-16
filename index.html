@@ -48,6 +48,10 @@
     .lookup-word:hover {
       background-color: #dcfce7;
     }
+    /* 閱讀文章段落與換行保留樣式 */
+    .article-content {
+      white-space: pre-line;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans">
@@ -181,7 +185,7 @@
             </div>
           </div>
 
-          <!-- 題數 (獨立一行或置於下方) -->
+          <!-- 題數 -->
           <div class="md:col-span-12 pt-4 border-t border-slate-100 flex items-center gap-4">
             <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">出題數量：</label>
             <input type="number" id="question-count" value="10" min="1" max="100" class="w-32 border-slate-200 rounded-xl text-base p-2.5 border font-medium">
@@ -525,6 +529,7 @@
           const explanation = cols[13] || '';
           const subject = cols[14] || ''; // O 欄科目
 
+          // 判斷是否為閱讀文章主體 (ID 沒有連字號，且沒有答案與選項)
           if (!answer && !opts.optionA && id && !id.includes('-')) {
             readingArticles[id] = questionText;
             readingArticles['article_' + id] = explanation; 
@@ -799,8 +804,8 @@
             articleHtml = `
               <div class="bg-slate-50 p-6 rounded-2xl border border-brand-200 mb-4 space-y-3">
                 <div class="text-xs font-bold text-brand-700 uppercase tracking-wider">📖 閱讀測驗文章 (ID: ${baseId})</div>
-                <div class="text-slate-800 leading-[2]">${processTextWithLookup(readingArticles[baseId])}</div>
-                ${readingArticles['article_' + baseId] ? `<div class="text-xs text-slate-500 pt-2 border-t border-slate-200"><strong>【中文翻譯/說明】：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
+                <div class="text-slate-800 leading-[2] article-content">${processTextWithLookup(readingArticles[baseId])}</div>
+                ${readingArticles['article_' + baseId] ? `<div class="text-xs text-slate-500 pt-2 border-t border-slate-200 article-content"><strong>【中文翻譯/說明】：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
               </div>
             `;
           }
@@ -929,8 +934,8 @@
             html += `
               <div class="bg-slate-50 p-5 rounded-2xl border border-slate-300 my-4 space-y-2">
                 <div class="font-bold text-slate-800">【閱讀測驗文章 (ID: ${baseId})】</div>
-                <div class="text-slate-900">${readingArticles[baseId]}</div>
-                ${readingArticles['article_' + baseId] ? `<div class="text-sm text-slate-600 pt-2 border-t border-slate-200"><strong>中文翻譯：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
+                <div class="text-slate-900 article-content">${readingArticles[baseId]}</div>
+                ${readingArticles['article_' + baseId] ? `<div class="text-sm text-slate-600 pt-2 border-t border-slate-200 article-content"><strong>中文翻譯：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
               </div>
             `;
           }
