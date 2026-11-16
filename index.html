@@ -98,10 +98,10 @@
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3">
         <div class="text-4xl">📊</div>
         <h2 class="text-xl font-bold text-slate-800">管理者雲端成績總覽</h2>
-        <p class="text-sm text-slate-500">學生的所有刷題紀錄已自動連結至您的新 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
+        <p class="text-sm text-slate-500">學生的所有刷題紀錄已自動連結至您的 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
         <div class="pt-2">
           <a href="https://docs.google.com/spreadsheets/d/1F8GXowdJoawXT90i2UbneU4f7kv37bF7kNnXPWfg96M/edit?gid=0#gid=0" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
-            📂 直接打開新的 Google 成績試算表
+            📂 直接打開 Google 成績試算表
           </a>
         </div>
       </div>
@@ -151,18 +151,26 @@
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
           
-          <!-- 年級單選區 -->
+          <!-- 1. 科目選擇區 (若 O 欄無資料會自動隱藏) -->
+          <div id="subject-filter-container" class="md:col-span-12 border-b border-slate-100 pb-4 hidden">
+            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider mb-2.5">1. 選擇科目</label>
+            <div id="subject-radioes" class="flex flex-wrap gap-2 text-sm">
+              <!-- 動態生成科目選項 -->
+            </div>
+          </div>
+
+          <!-- 2. 年級單選區 -->
           <div class="md:col-span-6 border-r border-slate-100 pr-0 md:pr-4">
-            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider mb-2.5">1. 選擇年級</label>
+            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider mb-2.5"><span id="grade-label-num">1</span>. 選擇年級</label>
             <div id="grade-radioes" class="grid grid-cols-2 gap-2.5 text-sm">
               <span class="text-slate-400 text-xs">正在載入年級選項...</span>
             </div>
           </div>
 
-          <!-- 學習類別複選區 -->
-          <div class="md:col-span-4 border-r border-slate-100 pr-0 md:pr-4">
+          <!-- 3. 學習類別複選區 (可複選多個) -->
+          <div class="md:col-span-6 pr-0">
             <div class="flex items-center justify-between mb-2.5">
-              <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">2. 學習類別 (可複選多個)</label>
+              <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider"><span id="unit-label-num">2</span>. 學習類別 (可複選多個)</label>
               <div class="space-x-1">
                 <button type="button" onclick="toggleAllCategories(true)" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium transition-colors">全選</button>
                 <button type="button" onclick="toggleAllCategories(false)" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium transition-colors">清除</button>
@@ -173,12 +181,10 @@
             </div>
           </div>
 
-          <!-- 題數 -->
-          <div class="md:col-span-2 space-y-4">
-            <div>
-              <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider mb-1.5">3. 題數</label>
-              <input type="number" id="question-count" value="10" min="1" max="100" class="w-full border-slate-200 rounded-xl text-base p-3 border font-medium">
-            </div>
+          <!-- 題數 (獨立一行或置於下方) -->
+          <div class="md:col-span-12 pt-4 border-t border-slate-100 flex items-center gap-4">
+            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">出題數量：</label>
+            <input type="number" id="question-count" value="10" min="1" max="100" class="w-32 border-slate-200 rounded-xl text-base p-2.5 border font-medium">
           </div>
 
         </div>
@@ -223,7 +229,7 @@
 
     </div>
 
-    <!-- 頁籤二 : 錯題區本 -->
+    <!-- 頁籤二：錯題區本 -->
     <div id="tab-wrong" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -242,7 +248,7 @@
       <div id="wrong-list-container" class="space-y-5"></div>
     </div>
 
-    <!-- 頁籤三 : 個人單字庫 -->
+    <!-- 頁籤三：個人單字庫 -->
     <div id="tab-vocab-bank" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -294,6 +300,7 @@
 
     let currentUser = null;
     let rawQuestions = [];
+    let readingArticles = {}; 
     let wrongQuestions = [];
     let vocabBank = [];
     let userLogs = [];
@@ -378,7 +385,6 @@
       saveUserDataToLocal();
       renderCalendar();
 
-      // 發送成績與錯題至雲端試算表
       fetch(GAS_API_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -497,13 +503,17 @@
         const data = JSON.parse(jsonText);
         
         const rows = data.table.rows || [];
-        rawQuestions = rows.map((r, idx) => {
+        rawQuestions = [];
+        readingArticles = {};
+
+        rows.forEach((r, idx) => {
           const c = r.c || [];
           const cols = c.map(cell => cell ? String(cell.v || '').trim() : '');
           
+          const id = cols[0] || String(idx + 1);
           const grade = cols[1] || '';
-          const category = cols[2] || '';
-          const title = cols[3] || '';
+          const unit = cols[2] || '';
+          const questionText = cols[3] || '';
           
           const optKeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
           let opts = {};
@@ -512,43 +522,96 @@
           }
 
           const answer = cols[12] ? cols[12].toUpperCase() : '';
-          const analysis = cols[13] || '暫無詳細解析';
+          const explanation = cols[13] || '';
+          const subject = cols[14] || ''; // O 欄科目
 
-          return {
-            id: idx + 1,
-            grade,
-            category,
-            title,
-            ...opts,
-            answer,
-            analysis
-          };
-        }).filter(q => q.title);
+          if (!answer && !opts.optionA && id && !id.includes('-')) {
+            readingArticles[id] = questionText;
+            readingArticles['article_' + id] = explanation; 
+            return;
+          }
 
-        renderGradeRadios();
-        showStatus(`成功載入 ${rawQuestions.length} 筆試題！`, 'success');
+          if (questionText) {
+            rawQuestions.push({
+              id: id,
+              grade: grade,
+              category: unit,
+              title: questionText,
+              ...opts,
+              answer: answer,
+              analysis: explanation || '暫無詳細解析',
+              subject: subject
+            });
+          }
+        });
+
+        renderSubjectAndGrades();
+        showStatus(`成功載入 ${rawQuestions.length} 筆試題與閱讀文章！`, 'success');
       } catch (err) {
         showStatus('題庫讀取失敗，請確認 Google Sheet 是否已開啟公開檢視權限。', 'error');
       }
     }
 
+    function renderSubjectAndGrades() {
+      const subjects = [...new Set(rawQuestions.map(q => q.subject).filter(Boolean))];
+      const subjectContainer = document.getElementById('subject-filter-container');
+      const subjectRadioes = document.getElementById('subject-radioes');
+
+      if (subjects.length > 0) {
+        subjectContainer.classList.remove('hidden');
+        document.getElementById('grade-label-num').innerText = '2';
+        document.getElementById('unit-label-num').innerText = '3';
+
+        subjectRadioes.innerHTML = `
+          <label class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
+            <input type="radio" name="subject-radio" value="" checked onchange="onSubjectChange()" class="text-brand-600 w-4 h-4"> 
+            <span>全部科目</span>
+          </label>
+        ` + subjects.map(sub => `
+          <label class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
+            <input type="radio" name="subject-radio" value="${sub}" onchange="onSubjectChange()" class="text-brand-600 w-4 h-4"> 
+            <span>${sub}</span>
+          </label>
+        `).join('');
+      } else {
+        subjectContainer.classList.add('hidden');
+        document.getElementById('grade-label-num').innerText = '1';
+        document.getElementById('unit-label-num').innerText = '2';
+      }
+
+      renderGradeRadios();
+    }
+
+    function onSubjectChange() {
+      renderGradeRadios();
+    }
+
+    function getSelectedSubject() {
+      const selectedSubInput = document.querySelector('input[name="subject-radio"]:checked');
+      return selectedSubInput ? selectedSubInput.value : '';
+    }
+
     function renderGradeRadios() {
-      const grades = [...new Set(rawQuestions.map(q => q.grade).filter(Boolean))];
+      const currentSubject = getSelectedSubject();
+      const filteredBySub = currentSubject ? rawQuestions.filter(q => q.subject === currentSubject) : rawQuestions;
+      
+      const grades = [...new Set(filteredBySub.map(q => q.grade).filter(Boolean))];
       const gradeContainer = document.getElementById('grade-radioes');
       
       if (grades.length === 0) {
-        gradeContainer.innerHTML = '<span class="text-slate-400 text-xs">B 欄無資料</span>';
+        gradeContainer.innerHTML = '<span class="text-slate-400 text-xs">無符合的年級資料</span>';
+        document.getElementById('category-checkboxes').innerHTML = '<span class="text-slate-400 text-xs">無學習類別</span>';
         return;
       }
 
       gradeContainer.innerHTML = grades.map((g, idx) => {
-        const count = rawQuestions.filter(q => q.grade === g).length;
+        const count = filteredBySub.filter(q => q.grade === g).length;
         const checked = idx === 0 ? 'checked' : '';
         return `
           <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
             <input type="radio" name="grade-radio" value="${g}" ${checked} onchange="onGradeChange()" class="text-brand-600 w-4 h-4"> 
             <span>${g}</span> 
-            <span class="text-xs text-slate-400 ml-auto">(題數共: ${count}題)</span>
+            <span class="text-xs text-slate-400 ml-auto">(${count}題)</span>
           </label>
         `;
       }).join('');
@@ -557,17 +620,19 @@
     }
 
     function onGradeChange() {
+      const currentSubject = getSelectedSubject();
       const selectedGradeInput = document.querySelector('input[name="grade-radio"]:checked');
       if (!selectedGradeInput) return;
 
       const selectedGrade = selectedGradeInput.value;
-      const gradeQuestions = rawQuestions.filter(q => q.grade === selectedGrade);
+      const filteredBySub = currentSubject ? rawQuestions.filter(q => q.subject === currentSubject) : rawQuestions;
+      const gradeQuestions = filteredBySub.filter(q => q.grade === selectedGrade);
       
       const categories = [...new Set(gradeQuestions.map(q => q.category).filter(Boolean))];
       const categoryContainer = document.getElementById('category-checkboxes');
 
       if (categories.length === 0) {
-        categoryContainer.innerHTML = '<span class="text-slate-400 text-xs">此年級無學習類別資料</span>';
+        categoryContainer.innerHTML = '<span class="text-slate-400 text-xs">此條件無學習類別</span>';
         return;
       }
 
@@ -577,7 +642,7 @@
           <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
             <input type="checkbox" value="${cat}" class="category-cb text-brand-600 rounded w-4 h-4" checked> 
             <span>${cat}</span> 
-            <span class="text-xs text-slate-400 ml-auto">(題數共: ${count}題)</span>
+            <span class="text-xs text-slate-400 ml-auto">(${count}題)</span>
           </label>
         `;
       }).join('');
@@ -591,11 +656,13 @@
     }
 
     function getFilteredQuestions() {
+      const currentSubject = getSelectedSubject();
       const selectedGradeInput = document.querySelector('input[name="grade-radio"]:checked');
       const selectedGrade = selectedGradeInput ? selectedGradeInput.value : '';
       const selectedCategories = Array.from(document.querySelectorAll('.category-cb:checked')).map(cb => cb.value);
 
       return rawQuestions.filter(q => {
+        if (currentSubject && q.subject !== currentSubject) return false;
         if (q.grade !== selectedGrade) return false;
         if (selectedCategories.length > 0 && !selectedCategories.includes(q.category)) return false;
         return true;
@@ -721,13 +788,30 @@
         })()
       };
 
+      let renderedArticles = new Set();
+
       questions.forEach((q, idx) => {
+        let articleHtml = '';
+        if (q.id && q.id.includes('-')) {
+          const baseId = q.id.split('-')[0];
+          if (readingArticles[baseId] && !renderedArticles.has(baseId)) {
+            renderedArticles.add(baseId);
+            articleHtml = `
+              <div class="bg-slate-50 p-6 rounded-2xl border border-brand-200 mb-4 space-y-3">
+                <div class="text-xs font-bold text-brand-700 uppercase tracking-wider">📖 閱讀測驗文章 (ID: ${baseId})</div>
+                <div class="text-slate-800 leading-[2]">${processTextWithLookup(readingArticles[baseId])}</div>
+                ${readingArticles['article_' + baseId] ? `<div class="text-xs text-slate-500 pt-2 border-t border-slate-200"><strong>【中文翻譯/說明】：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
+              </div>
+            `;
+          }
+        }
+
         let optsHtml = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(opt => {
           const val = q[`option${opt}`];
           if (!val || val.trim() === '') return '';
           return `
-            <button onclick="checkAnswer(${q.id}, '${opt}', '${q.answer}', '${q.grade}', '${q.category}')" 
-              class="opt-btn-${q.id} w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all font-medium flex items-center justify-between">
+            <button onclick="checkAnswer('${q.id}', '${opt}', '${q.answer}')" 
+              class="opt-btn-${q.id.replace(/[^a-zA-Z0-9]/g, '_')} w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all font-medium flex items-center justify-between">
               <span><strong class="text-slate-400 mr-2">${opt}.</strong> ${processTextWithLookup(val)}</span>
             </button>
           `;
@@ -736,8 +820,9 @@
         const card = document.createElement('div');
         card.className = "bg-white p-6 rounded-3xl shadow-sm border border-slate-200 card-box leading-[2] text-[18px]";
         card.innerHTML = `
+          ${articleHtml}
           <div class="flex items-center gap-2 mb-3">
-            <span class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">(          ) ${idx + 1}.</span>
+            <span class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">(          ) ${idx + 1}. [ID: ${q.id}]</span>
           </div>
           <div class="text-slate-900 font-bold mb-4 text-[18px]">${processTextWithLookup(q.title)}</div>
           
@@ -745,16 +830,17 @@
             ${optsHtml}
           </div>
 
-          <div id="feedback-${q.id}" class="hidden p-4 rounded-2xl text-[18px] border space-y-1.5"></div>
+          <div id="feedback-${q.id.replace(/[^a-zA-Z0-9]/g, '_')}" class="hidden p-4 rounded-2xl text-[18px] border space-y-1.5"></div>
         `;
         container.appendChild(card);
       });
     }
 
-    function checkAnswer(qId, selectedOpt, correctOpt, grade, category) {
+    function checkAnswer(qId, selectedOpt, correctOpt) {
       const q = rawQuestions.find(item => item.id === qId);
-      const feedbackEl = document.getElementById(`feedback-${qId}`);
-      const buttons = document.querySelectorAll(`.opt-btn-${qId}`);
+      const safeId = qId.replace(/[^a-zA-Z0-9]/g, '_');
+      const feedbackEl = document.getElementById(`feedback-${safeId}`);
+      const buttons = document.querySelectorAll(`.opt-btn-${safeId}`);
 
       buttons.forEach(btn => btn.disabled = true);
       const isCorrect = selectedOpt === correctOpt;
@@ -775,7 +861,6 @@
           <div class="text-[18px] text-red-950 mt-1"><strong>【解析】</strong> ${processTextWithLookup(q.analysis)}</div>
         `;
         
-        // 記錄學生的錯誤選項
         const wrongRecord = {
           ...q,
           userAnswer: selectedOpt
@@ -834,7 +919,23 @@
           <div class="space-y-6">
       `;
 
+      let printedArticles = new Set();
+
       questions.forEach((q, idx) => {
+        if (q.id && q.id.includes('-')) {
+          const baseId = q.id.split('-')[0];
+          if (readingArticles[baseId] && !printedArticles.has(baseId)) {
+            printedArticles.add(baseId);
+            html += `
+              <div class="bg-slate-50 p-5 rounded-2xl border border-slate-300 my-4 space-y-2">
+                <div class="font-bold text-slate-800">【閱讀測驗文章 (ID: ${baseId})】</div>
+                <div class="text-slate-900">${readingArticles[baseId]}</div>
+                ${readingArticles['article_' + baseId] ? `<div class="text-sm text-slate-600 pt-2 border-t border-slate-200"><strong>中文翻譯：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
+              </div>
+            `;
+          }
+        }
+
         let optsHtml = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(opt => {
           const val = q[`option${opt}`];
           if (!val || val.trim() === '') return '';
@@ -843,7 +944,7 @@
 
         html += `
           <div class="space-y-2">
-            <div class="font-bold text-slate-900 text-[18px]">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. ${q.title}</div>
+            <div class="font-bold text-slate-900 text-[18px]">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. [${q.id}] ${q.title}</div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4 text-[18px] text-slate-700">
               ${optsHtml}
             </div>
@@ -865,7 +966,7 @@
       questions.forEach((q, idx) => {
         html += `
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-[18px] space-y-1">
-            <div class="font-bold text-slate-900">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. ${q.title}</div>
+            <div class="font-bold text-slate-900">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. [${q.id}] ${q.title}</div>
             <div class="text-brand-700 font-bold">正確答案：(${q.answer})</div>
             <div class="text-slate-600"><strong>【解析】</strong> ${q.analysis}</div>
           </div>
@@ -930,9 +1031,9 @@
           <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 card-box space-y-3 leading-[2] text-[18px]">
             <div class="flex justify-between items-center">
               <span class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-bold">錯題 #${idx + 1} (${q.grade} / ${q.category})</span>
-              <button onclick="removeWrongItem(${q.id})" class="text-slate-400 hover:text-red-600 text-xs font-bold no-print">❌ 移除此題</button>
+              <button onclick="removeWrongItem('${q.id}')" class="text-slate-400 hover:text-red-600 text-xs font-bold no-print">❌ 移除此題</button>
             </div>
-            <div class="text-slate-900 font-bold text-[18px]">${processTextWithLookup(q.title)}</div>
+            <div class="text-slate-900 font-bold text-[18px]">[ID: ${q.id}] ${processTextWithLookup(q.title)}</div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-2 text-[18px] text-slate-700">
               ${optsHtml}
             </div>
