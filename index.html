@@ -148,6 +148,7 @@
           <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
             <div class="text-xs text-amber-700 font-semibold uppercase">目前等級與星等</div>
             <div id="diary-level-badge" class="text-xl font-black text-amber-800 mt-1">⭐ Lv.0 (0★)</div>
+            <div class="text-[11px] text-amber-600 mt-1 font-medium">每累積答對 20 題就升 1 等星並解鎖一款專屬寶物（12 隻不同萌貓與貓用品）</div>
           </div>
         </div>
 
@@ -161,7 +162,7 @@
             </div>
             <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
               <input type="checkbox" id="sys-check-2" disabled class="w-5 h-5 text-brand-600 rounded accent-brand-600">
-              <span id="sys-text-2" class="font-medium text-slate-500">本月答對累積達 15 題以上解鎖寶物 (進行中)</span>
+              <span id="sys-text-2" class="font-medium text-slate-500">本月答對累積達 20 題以上解鎖寶物 (進行中)</span>
             </div>
           </div>
         </div>
@@ -277,7 +278,7 @@
 
     </div>
 
-    <!-- 頁籤二：錯題區本 -->
+    <!-- 頁籤二 : 錯題區本 -->
     <div id="tab-wrong" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -296,7 +297,7 @@
       <div id="wrong-list-container" class="space-y-5"></div>
     </div>
 
-    <!-- 頁籤三：個人單字庫 -->
+    <!-- 頁籤三 : 個人單字庫 -->
     <div id="tab-vocab-bank" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -423,7 +424,7 @@
       updateVocabBadge();
     }
 
-    // [練功日記] 統計本月不重複練功總題數與答對題數，並計算等級與解鎖寶物
+    // [練功日記] 統計本月不重複練功總題數與答對題數，並計算等級與解鎖寶物（每 20 題 1 星）
     function renderDiaryStats() {
       const now = new Date();
       const currentMonth = now.getMonth() + 1; // 1-12
@@ -441,11 +442,9 @@
           if ((log.timestamp || '').includes(todayStr)) {
             hasPracticedToday = true;
           }
-          // 假設單次測驗涵蓋的題目 ID
           if (log.attemptedItems) {
             log.attemptedItems.forEach(id => attemptedIds.add(id));
           } else {
-            // 兼容舊資料，以 total 計算
             for(let i=0; i<log.total; i++) attemptedIds.add(log.timestamp + '_' + i);
           }
 
@@ -457,7 +456,6 @@
         }
       });
 
-      // 備用總數加總
       let monthTotal = attemptedIds.size > 0 ? attemptedIds.size : userLogs.reduce((acc, log) => {
         const parts = (log.timestamp || '').split(' ')[0].split('/');
         return (parts.length === 2 && parseInt(parts[0]) === currentMonth) ? acc + (log.total || 0) : acc;
@@ -471,8 +469,8 @@
       document.getElementById('diary-total-unique').innerText = `${monthTotal} 題`;
       document.getElementById('diary-correct-unique').innerText = `${monthCorrect} 題`;
 
-      // 等級與星等計算：每 15 題答對 1 星等
-      const stars = Math.floor(monthCorrect / 15);
+      // 等級與星等計算：每累積答對 20 題升 1 等星
+      const stars = Math.floor(monthCorrect / 20);
       const level = Math.floor(stars / 4) + 1;
       const starInLevel = stars % 4;
       document.getElementById('diary-level-badge').innerText = `⭐ Lv.${level} (${starInLevel}★)`;
@@ -492,14 +490,14 @@
 
       const c2 = document.getElementById('sys-check-2');
       const t2 = document.getElementById('sys-text-2');
-      if (monthCorrect >= 15) {
+      if (monthCorrect >= 20) {
         c2.checked = true;
         t2.className = "font-medium text-brand-700";
         t2.innerText = `本月答對累積已達 ${monthCorrect} 題，已成功解鎖寶物！🎉`;
       } else {
         c2.checked = false;
         t2.className = "font-medium text-slate-500";
-        t2.innerText = `本月答對累積 ${monthCorrect} 題 / 目標 15 題解鎖第一樣寶物`;
+        t2.innerText = `本月答對累積 ${monthCorrect} 題 / 目標 20 題解鎖第一樣寶物`;
       }
 
       // 渲染本月寶物與年度寶物區
@@ -526,12 +524,12 @@
         `;
       });
 
-      // 年度寶物殿堂（每滿 60 題解鎖一個年度獎盃/大獎貓）
-      const yearTrophyCount = Math.floor(totalCorrect / 60);
+      // 年度寶物殿堂（每滿 80 題解鎖一個年度獎盃/大獎貓）
+      const yearTrophyCount = Math.floor(totalCorrect / 80);
       document.getElementById('year-treasure-count').innerText = `年度總收藏: ${yearTrophyCount} 個大獎`;
       
       if (yearTrophyCount === 0) {
-        yearGrid.innerHTML = `<div class="col-span-full text-xs text-slate-400 text-center py-2">累積答對滿 60 題即可解鎖年度榮譽大獎！</div>`;
+        yearGrid.innerHTML = `<div class="col-span-full text-xs text-slate-400 text-center py-2">累積答對滿 80 題即可解鎖年度榮譽大獎！</div>`;
       } else {
         for(let i=0; i<Math.min(yearTrophyCount, 6); i++) {
           yearGrid.innerHTML += `
