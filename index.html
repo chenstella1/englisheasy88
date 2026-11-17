@@ -555,10 +555,29 @@
         });
 
         renderSubjectAndGrades();
-        showStatus(`成功載入 ${rawQuestions.length} 筆試題與閱讀文章！`, 'success');
+        const totalUnits = countQuestionUnits(rawQuestions);
+        showStatus(`成功載入 ${totalUnits} 題（含題組）試題！`, 'success');
       } catch (err) {
         showStatus('題庫讀取失敗，請確認 Google Sheet 是否已開啟公開檢視權限。', 'error');
       }
+    }
+
+    // 計算邏輯題數：單題算 1 題，同一個母編號的題組（如 804-1 ~ 804-11）算 1 題
+    function countQuestionUnits(questionList) {
+      const seenGroups = new Set();
+      let count = 0;
+      questionList.forEach(q => {
+        if (q.id && q.id.includes('-')) {
+          const baseId = q.id.split('-')[0];
+          if (!seenGroups.has(baseId)) {
+            seenGroups.add(baseId);
+            count++;
+          }
+        } else {
+          count++;
+        }
+      });
+      return count;
     }
 
     function renderSubjectAndGrades() {
@@ -614,7 +633,7 @@
       }
 
       gradeContainer.innerHTML = grades.map((g, idx) => {
-        const count = filteredBySub.filter(q => q.grade === g).length;
+        const count = countQuestionUnits(filteredBySub.filter(q => q.grade === g));
         const checked = idx === 0 ? 'checked' : '';
         return `
           <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
@@ -646,7 +665,7 @@
       }
 
       categoryContainer.innerHTML = categories.map(cat => {
-        const count = gradeQuestions.filter(q => q.category === cat).length;
+        const count = countQuestionUnits(gradeQuestions.filter(q => q.category === cat));
         return `
           <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
             <input type="checkbox" value="${cat}" class="category-cb text-brand-600 rounded w-4 h-4" checked> 
@@ -717,7 +736,7 @@
         if (currentUnits >= targetUnits) break;
         const subList = articleGroupsMap.get(baseId);
         finalSelected.push(...subList);
-        currentUnits++; // 整個題組算 1 個單位
+        currentUnits++;
       }
 
       // 2. 若單位還不夠，從單題中補齊（單題 1 題算 1 個單位）
@@ -820,7 +839,7 @@
         actionBox.classList.add('hidden');
         finishBox.classList.add('hidden');
         renderOnlineQuiz(container, quizQuestions);
-        showStatus(`已載入測驗題目，總計 ${quizQuestions.length} 小題（含題組），請開始作答。`, 'success');
+        showStatus(`已載入測驗題目，總計 ${quizQuestions.length} 小題，請開始作答。`, 'success');
       } else {
         finishBox.classList.add('hidden');
         actionBox.classList.remove('hidden');
@@ -859,7 +878,7 @@
             renderedArticles.add(baseId);
             articleHtml = `
               <div class="bg-slate-50 p-6 rounded-2xl border border-brand-200 mb-4 space-y-3">
-                <div class="text-xs font-bold text-brand-700 uppercase tracking-wider">📖 閱讀 / 克漏字文章 (ID: ${baseId})</div>
+                <div class="text-xs font-bold text-brand-700 uppercase tracking-wider">📖 閱讀 / 克漏字文章</div>
                 <div class="text-slate-800 leading-[2] article-content">${processTextWithLookup(readingArticles[baseId])}</div>
                 ${readingArticles['article_' + baseId] ? `<div class="text-xs text-slate-500 pt-2 border-t border-slate-200 article-content"><strong>【中文翻譯/說明】：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
               </div>
@@ -883,7 +902,7 @@
         card.innerHTML = `
           ${articleHtml}
           <div class="flex items-center gap-2 mb-3">
-            <span class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">(          ) ${idx + 1}. [ID: ${q.id}]</span>
+            <span class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">(          ) ${idx + 1}.</span>
           </div>
           <div class="text-slate-900 font-bold mb-4 text-[18px]">${processTextWithLookup(q.title)}</div>
           
@@ -989,7 +1008,7 @@
             printedArticles.add(baseId);
             html += `
               <div class="bg-slate-50 p-5 rounded-2xl border border-slate-300 my-4 space-y-2">
-                <div class="font-bold text-slate-800">【閱讀 / 克漏字文章 (ID: ${baseId})】</div>
+                <div class="font-bold text-slate-800">【閱讀 / 克漏字文章】</div>
                 <div class="text-slate-900 article-content">${readingArticles[baseId]}</div>
                 ${readingArticles['article_' + baseId] ? `<div class="text-sm text-slate-600 pt-2 border-t border-slate-200 article-content"><strong>中文翻譯：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
               </div>
@@ -1005,7 +1024,7 @@
 
         html += `
           <div class="space-y-2">
-            <div class="font-bold text-slate-900 text-[18px]">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. [${q.id}] ${q.isClozeBlank ? '' : q.title}</div>
+            <div class="font-bold text-slate-900 text-[18px]">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. ${q.isClozeBlank ? '' : q.title}</div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4 text-[18px] text-slate-700">
               ${optsHtml}
             </div>
@@ -1027,7 +1046,7 @@
       questions.forEach((q, idx) => {
         html += `
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-[18px] space-y-1">
-            <div class="font-bold text-slate-900">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. [${q.id}] ${q.title}</div>
+            <div class="font-bold text-slate-900">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. ${q.title}</div>
             <div class="text-brand-700 font-bold">正確答案：(${q.answer})</div>
             <div class="text-slate-600"><strong>【解析】</strong> ${q.analysis}</div>
           </div>
@@ -1094,7 +1113,7 @@
               <span class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-bold">錯題 #${idx + 1} (${q.grade} / ${q.category})</span>
               <button onclick="removeWrongItem('${q.id}')" class="text-slate-400 hover:text-red-600 text-xs font-bold no-print">❌ 移除此題</button>
             </div>
-            <div class="text-slate-900 font-bold text-[18px]">[ID: ${q.id}] ${processTextWithLookup(q.title)}</div>
+            <div class="text-slate-900 font-bold text-[18px]">${processTextWithLookup(q.title)}</div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-2 text-[18px] text-slate-700">
               ${optsHtml}
             </div>
