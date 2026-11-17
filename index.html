@@ -401,7 +401,8 @@
       document.getElementById('nav-home-btn').innerText = '管理者後台';
     }
 
-    function loadUserData() {
+    // 登入或重整時，先載入本機快取，再從 Google 試算表同步雲端最新紀錄
+    async function loadUserData() {
       if (!currentUser) return;
       const localData = JSON.parse(localStorage.getItem('yh_student_' + currentUser.email) || '{}');
       wrongQuestions = localData.wrongs || [];
@@ -410,9 +411,43 @@
 
       updateWrongBadge();
       updateVocabBadge();
+
+      // 向雲端抓取該帳號的跨裝置歷史紀錄
+      try {
+        showStatus('正在從雲端同步您的歷史練習紀錄...', 'info');
+        const res = await fetch(`${GAS_API_URL}?email=${encodeURIComponent(currentUser.email)}`);
+        const cloudData = await res.json();
+
+        if (cloudData) {
+          if (cloudData.logs && cloudData.logs.length > 0) {
+            userLogs = cloudData.logs;
+          }
+          if (cloudData.wrongs) {
+            wrongQuestions = cloudData.wrongs;
+          }
+          if (cloudData.vocab) {
+            vocabBank = cloudData.vocab;
+          }
+
+          // 將最新雲端資料存回本機快取
+          localStorage.setItem('yh_student_' + currentUser.email, JSON.stringify({
+            logs: userLogs,
+            wrongs: wrongQuestions,
+            vocab: vocabBank
+          }));
+
+          updateWrongBadge();
+          updateVocabBadge();
+          renderDiaryStats();
+          showStatus('雲端練習紀錄同步完成！', 'success');
+        }
+      } catch (err) {
+        console.log('雲端讀取失敗，暫時使用本機紀錄:', err);
+      }
     }
 
-    function saveUserDataToLocal() {
+    // 每次新增/刪除單字或移除錯題時，除了存本機，也同步到雲端
+    function saveUserDataToLocal(syncToCloud = true) {
       if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
       const data = {
         logs: userLogs,
@@ -422,6 +457,23 @@
       localStorage.setItem('yh_student_' + currentUser.email, JSON.stringify(data));
       updateWrongBadge();
       updateVocabBadge();
+
+      if (syncToCloud) {
+        const now = new Date();
+        const ts = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+        fetch(GAS_API_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'syncState',
+            email: currentUser.email,
+            timestamp: ts,
+            wrongItems: wrongQuestions,
+            vocabBank: vocabBank
+          })
+        }).catch(err => console.log('Sync state error:', err));
+      }
     }
 
     // [練功日記] 統計本月不重複練功總題數與答對題數（累積計算，每 50 題解鎖 1 件寶物）
@@ -442,13 +494,13 @@
           if ((log.timestamp || '').includes(todayStr)) {
             hasPracticedToday = true;
           }
-          if (log.attemptedItems) {
+          if (log.attemptedItems && log.attemptedItems.length > 0) {
             log.attemptedItems.forEach(id => attemptedIds.add(id));
           } else {
             for(let i=0; i<log.total; i++) attemptedIds.add(log.timestamp + '_' + i);
           }
 
-          if (log.correctItems) {
+          if (log.correctItems && log.correctItems.length > 0) {
             log.correctItems.forEach(id => correctIds.add(id));
           } else {
             for(let i=0; i<log.correct; i++) correctIds.add(log.timestamp + '_' + i);
@@ -575,7 +627,8 @@
       };
 
       userLogs.push(sessionData);
-      saveUserDataToLocal();
+      // 交卷時不需重複觸發 syncState，因為下方 recordQuiz 已會同步完整狀態
+      saveUserDataToLocal(false);
       renderDiaryStats();
 
       fetch(GAS_API_URL, {
@@ -590,7 +643,8 @@
           correct: correctCount,
           wrong: wrongCount,
           range: rangeText,
-          wrongItems: sessionWrongItems
+          wrongItems: wrongQuestions,
+          vocabBank: vocabBank
         })
       }).catch(err => console.log('Cloud sync error:', err));
 
@@ -942,7 +996,7 @@
       let vocabEntry = `${activeSelectedWord}：${activeWordDefinition}`;
       if (!vocabBank.includes(vocabEntry)) {
         vocabBank.push(vocabEntry);
-        saveUserDataToLocal();
+        saveUserDataToLocal(true);
         alert(`已成功將 "${activeSelectedWord}" 加入單字庫！`);
       } else {
         alert(`"${activeSelectedWord}" 已經在你的單字庫中囉！`);
@@ -1113,7 +1167,8 @@
     function addWrongQuestion(q) {
       if (!wrongQuestions.some(item => item.id === q.id && item.title === q.title)) {
         wrongQuestions.push(q);
-        saveUserDataToLocal();
+        // 交卷時會統一送出 recordQuiz，這裡先不重複呼叫 syncState
+        saveUserDataToLocal(false);
       }
     }
 
@@ -1284,14 +1339,14 @@
 
     function removeWrongItem(qId) {
       wrongQuestions = wrongQuestions.filter(q => q.id !== qId);
-      saveUserDataToLocal();
+      saveUserDataToLocal(true);
       renderWrongNotebook();
     }
 
     function clearWrongQuestions() {
       if (confirm('確定要清空所有錯題嗎？')) {
         wrongQuestions = [];
-        saveUserDataToLocal();
+        saveUserDataToLocal(true);
         renderWrongNotebook();
       }
     }
@@ -1324,7 +1379,7 @@
 
     function removeVocabWord(item) {
       vocabBank = vocabBank.filter(w => w !== item);
-      saveUserDataToLocal();
+      saveUserDataToLocal(true);
       renderVocabBank();
     }
 
