@@ -278,7 +278,7 @@
 
     </div>
 
-    <!-- 頁籤二：錯題區本 -->
+    <!-- 頁籤二 : 錯題區本 -->
     <div id="tab-wrong" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -297,7 +297,7 @@
       <div id="wrong-list-container" class="space-y-5"></div>
     </div>
 
-    <!-- 頁籤三：個人單字庫 -->
+    <!-- 頁籤三 : 個人單字庫 -->
     <div id="tab-vocab-bank" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -401,7 +401,7 @@
       document.getElementById('nav-home-btn').innerText = '管理者後台';
     }
 
-    // 登入或重整時，先載入本機快取，再從 Google 試算表同步雲端最新紀錄
+    // 登入或重整時，先載入本機快取，再從 Google 試算表抓取雲端最新紀錄
     async function loadUserData() {
       if (!currentUser) return;
       const localData = JSON.parse(localStorage.getItem('yh_student_' + currentUser.email) || '{}');
@@ -412,7 +412,7 @@
       updateWrongBadge();
       updateVocabBadge();
 
-      // 向雲端抓取該帳號的跨裝置歷史紀錄
+      // 向雲端 GET 抓取該帳號的跨裝置歷史紀錄
       try {
         showStatus('正在從雲端同步您的歷史練習紀錄...', 'info');
         const res = await fetch(`${GAS_API_URL}?email=${encodeURIComponent(currentUser.email)}`);
@@ -446,7 +446,7 @@
       }
     }
 
-    // 每次新增/刪除單字或移除錯題時，除了存本機，也同步到雲端
+    // 每次新增/刪除單字或移除錯題時，同步更新狀態
     function saveUserDataToLocal(syncToCloud = true) {
       if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
       const data = {
@@ -476,10 +476,10 @@
       }
     }
 
-    // [練功日記] 統計本月不重複練功總題數與答對題數（累積計算，每 50 題解鎖 1 件寶物）
+    // [練功日記] 統計本月不重複練功總題數與答對題數
     function renderDiaryStats() {
       const now = new Date();
-      const currentMonth = now.getMonth() + 1; // 1-12
+      const currentMonth = now.getMonth() + 1;
       const currentYear = now.getFullYear();
       document.getElementById('diary-month-badge').innerText = `本月 (${currentMonth} 月)`;
 
@@ -521,11 +521,9 @@
       document.getElementById('diary-total-unique').innerText = `${monthTotal} 題`;
       document.getElementById('diary-correct-unique').innerText = `${monthCorrect} 題`;
 
-      // 寶物解鎖計算：每累積答對 50 題解鎖 1 件寶物（累積計算）
       const unlockedTreasuresCount = Math.floor(monthCorrect / 50);
       document.getElementById('diary-level-badge').innerText = `🎁 累積 ${monthCorrect} 題`;
 
-      // 自動 Checklist 狀態更新 (已達成改為粉紅色與打勾貓咪 🐱✅)
       const box1 = document.getElementById('sys-box-1');
       const icon1 = document.getElementById('sys-icon-1');
       const t1 = document.getElementById('sys-text-1');
@@ -585,7 +583,6 @@
         `;
       });
 
-      // 年度寶物殿堂（每滿 250 題解鎖一個年度榮譽殿堂）
       const yearTrophyCount = Math.floor(totalCorrect / 250);
       document.getElementById('year-treasure-count').innerText = `年度總收藏: ${yearTrophyCount} 個大獎`;
       
@@ -630,6 +627,7 @@
       saveUserDataToLocal(false);
       renderDiaryStats();
 
+      // 發送 POST 請求將測驗紀錄與最新錯題/單字庫快照上傳至雲端試算表
       fetch(GAS_API_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -720,7 +718,7 @@
 
           const answer = cols[12] ? cols[12].toUpperCase() : '';
           const explanation = cols[13] || '';
-          const subject = cols[14] || ''; // O 欄科目
+          const subject = cols[14] || '';
 
           if (!answer && !opts.optionA && id && !id.includes('-')) {
             readingArticles[id] = questionText;
@@ -1037,7 +1035,7 @@
         const selectedCategories = Array.from(document.querySelectorAll('.category-cb:checked')).map(cb => cb.value).join(', ');
         
         const attemptedIds = quizQuestions.map(q => q.id);
-        const correctIds = quizQuestions.map(q => q.id); // 列印模式直接計入練功
+        const correctIds = quizQuestions.map(q => q.id);
         recordQuizSession(quizQuestions.length, quizQuestions.length, 0, `${gradeName} / [${selectedCategories}] (列印試卷)`, [], attemptedIds, correctIds);
 
         showStatus(`已產出隨堂測驗卷與解答解析，可直接列印或匯出 PDF/Word。`, 'success');
