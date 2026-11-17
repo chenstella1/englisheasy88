@@ -627,7 +627,6 @@
       };
 
       userLogs.push(sessionData);
-      // 交卷時不需重複觸發 syncState，因為下方 recordQuiz 已會同步完整狀態
       saveUserDataToLocal(false);
       renderDiaryStats();
 
@@ -1167,7 +1166,6 @@
     function addWrongQuestion(q) {
       if (!wrongQuestions.some(item => item.id === q.id && item.title === q.title)) {
         wrongQuestions.push(q);
-        // 交卷時會統一送出 recordQuiz，這裡先不重複呼叫 syncState
         saveUserDataToLocal(false);
       }
     }
