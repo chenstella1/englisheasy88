@@ -152,16 +152,16 @@
           </div>
         </div>
 
-        <!-- 系統自動化記錄 Checklist -->
+        <!-- 系統自動化記錄 Checklist (已達成項目改為粉紅色) -->
         <div class="pt-2">
           <div class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">📋 今日練功自動紀錄 (系統判定)：</div>
           <div class="space-y-2 text-sm">
-            <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-              <input type="checkbox" id="sys-check-1" disabled class="w-5 h-5 text-brand-600 rounded accent-brand-600">
+            <div id="sys-box-1" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors">
+              <input type="checkbox" id="sys-check-1" disabled class="w-5 h-5 text-pink-600 rounded accent-pink-600">
               <span id="sys-text-1" class="font-medium text-slate-500">完成至少 1 次線上刷題或練習 (未完成)</span>
             </div>
-            <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-              <input type="checkbox" id="sys-check-2" disabled class="w-5 h-5 text-brand-600 rounded accent-brand-600">
+            <div id="sys-box-2" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors">
+              <input type="checkbox" id="sys-check-2" disabled class="w-5 h-5 text-pink-600 rounded accent-pink-600">
               <span id="sys-text-2" class="font-medium text-slate-500">本月答對累積達 20 題以上解鎖寶物 (進行中)</span>
             </div>
           </div>
@@ -278,7 +278,7 @@
 
     </div>
 
-    <!-- 頁籤二 : 錯題區本 -->
+    <!-- 頁籤二：錯題區本 -->
     <div id="tab-wrong" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -297,7 +297,7 @@
       <div id="wrong-list-container" class="space-y-5"></div>
     </div>
 
-    <!-- 頁籤三 : 個人單字庫 -->
+    <!-- 頁籤三：個人單字庫 -->
     <div id="tab-vocab-bank" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
@@ -424,7 +424,7 @@
       updateVocabBadge();
     }
 
-    // [練功日記] 統計本月不重複練功總題數與答對題數，並計算等級與解鎖寶物（每 20 題 1 星）
+    // [練功日記] 統計本月不重複練功總題數與答對題數，並更新自動 Checklist 與粉紅色已達成樣式
     function renderDiaryStats() {
       const now = new Date();
       const currentMonth = now.getMonth() + 1; // 1-12
@@ -469,38 +469,42 @@
       document.getElementById('diary-total-unique').innerText = `${monthTotal} 題`;
       document.getElementById('diary-correct-unique').innerText = `${monthCorrect} 題`;
 
-      // 等級與星等計算：每累積答對 20 題升 1 等星
       const stars = Math.floor(monthCorrect / 20);
       const level = Math.floor(stars / 4) + 1;
       const starInLevel = stars % 4;
       document.getElementById('diary-level-badge').innerText = `⭐ Lv.${level} (${starInLevel}★)`;
 
-      // 自動 Checklist 狀態更新
+      // 自動 Checklist 狀態更新 (已達成改為粉紅色背景與文字)
       const c1 = document.getElementById('sys-check-1');
       const t1 = document.getElementById('sys-text-1');
+      const box1 = document.getElementById('sys-box-1');
       if (hasPracticedToday || userLogs.length > 0) {
         c1.checked = true;
-        t1.className = "font-medium text-brand-700";
+        box1.className = "flex items-center gap-3 p-3 rounded-xl bg-pink-50 border border-pink-200 transition-colors";
+        t1.className = "font-medium text-pink-700";
         t1.innerText = "完成至少 1 次線上刷題或練習 (已達成 ✅)";
       } else {
         c1.checked = false;
+        box1.className = "flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors";
         t1.className = "font-medium text-slate-500";
         t1.innerText = "完成至少 1 次線上刷題或練習 (未完成)";
       }
 
       const c2 = document.getElementById('sys-check-2');
       const t2 = document.getElementById('sys-text-2');
+      const box2 = document.getElementById('sys-box-2');
       if (monthCorrect >= 20) {
         c2.checked = true;
-        t2.className = "font-medium text-brand-700";
+        box2.className = "flex items-center gap-3 p-3 rounded-xl bg-pink-50 border border-pink-200 transition-colors";
+        t2.className = "font-medium text-pink-700";
         t2.innerText = `本月答對累積已達 ${monthCorrect} 題，已成功解鎖寶物！🎉`;
       } else {
         c2.checked = false;
+        box2.className = "flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors";
         t2.className = "font-medium text-slate-500";
         t2.innerText = `本月答對累積 ${monthCorrect} 題 / 目標 20 題解鎖第一樣寶物`;
       }
 
-      // 渲染本月寶物與年度寶物區
       renderTreasures(stars, currentYear, monthCorrect);
     }
 
@@ -524,7 +528,6 @@
         `;
       });
 
-      // 年度寶物殿堂（每滿 80 題解鎖一個年度獎盃/大獎貓）
       const yearTrophyCount = Math.floor(totalCorrect / 80);
       document.getElementById('year-treasure-count').innerText = `年度總收藏: ${yearTrophyCount} 個大獎`;
       
