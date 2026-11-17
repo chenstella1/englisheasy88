@@ -122,54 +122,70 @@
       </button>
     </div>
 
-    <!-- 頁籤一：測驗與出題主頁 (含 [練功日記] Checklist) -->
+    <!-- 頁籤一：測驗與出題主頁 (含 [練功日記] 與寶物區) -->
     <div id="tab-quiz" class="space-y-6">
       
-      <!-- [練功日記] Checklist 動力面板 -->
+      <!-- [練功日記] 動力面板與自動 Checklist -->
       <section class="bg-white p-6 rounded-3xl shadow-sm border border-brand-200 no-print space-y-4">
         <div class="flex justify-between items-center border-b border-slate-100 pb-3">
           <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <span>🔥 [練功日記] 動力打卡 Checklist</span>
+            <span>🔥 [練功日記] 戰力與寶物面板</span>
           </h3>
           <span id="diary-month-badge" class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">本月紀錄</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <span class="text-2xl">📖</span>
-              <div>
-                <div class="text-xs text-slate-500 font-semibold uppercase">本月練功總題數 (不重複)</div>
-                <div id="diary-total-unique" class="text-2xl font-black text-slate-800">0 題</div>
-              </div>
-            </div>
-            <span class="text-brand-600 font-bold text-sm bg-brand-50 px-2.5 py-1 rounded-xl border border-brand-200">✅ 累積中</span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="text-xs text-slate-500 font-semibold uppercase">本月練功總題數 (不重複)</div>
+            <div id="diary-total-unique" class="text-2xl font-black text-slate-800 mt-1">0 題</div>
           </div>
 
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <span class="text-2xl">🎯</span>
-              <div>
-                <div class="text-xs text-slate-500 font-semibold uppercase">本月總答對題數 (不重複)</div>
-                <div id="diary-correct-unique" class="text-2xl font-black text-brand-700">0 題</div>
-              </div>
-            </div>
-            <span class="text-amber-600 font-bold text-sm bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200">⭐ 戰力解鎖</span>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="text-xs text-slate-500 font-semibold uppercase">本月總答對題數 (不重複)</div>
+            <div id="diary-correct-unique" class="text-2xl font-black text-brand-700 mt-1">0 題</div>
+          </div>
+
+          <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+            <div class="text-xs text-amber-700 font-semibold uppercase">目前等級與星等</div>
+            <div id="diary-level-badge" class="text-xl font-black text-amber-800 mt-1">⭐ Lv.0 (0★)</div>
           </div>
         </div>
 
-        <!-- 今日小 Checklist 任務 -->
+        <!-- 系統自動化記錄 Checklist -->
         <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">📋 今日練功小清單 (Checklist)：</div>
+          <div class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">📋 今日練功自動紀錄 (系統判定)：</div>
           <div class="space-y-2 text-sm">
-            <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200">
-              <input type="checkbox" id="check-task-1" onchange="updateChecklistProgress()" class="w-5 h-5 text-brand-600 rounded">
-              <span class="font-medium text-slate-700">完成至少 1 次線上刷題或題組練習</span>
-            </label>
-            <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer border border-slate-200">
-              <input type="checkbox" id="check-task-2" onchange="updateChecklistProgress()" class="w-5 h-5 text-brand-600 rounded">
-              <span class="font-medium text-slate-700">複習錯題本並將觀念釐清</span>
-            </label>
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <input type="checkbox" id="sys-check-1" disabled class="w-5 h-5 text-brand-600 rounded accent-brand-600">
+              <span id="sys-text-1" class="font-medium text-slate-500">完成至少 1 次線上刷題或練習 (未完成)</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+              <input type="checkbox" id="sys-check-2" disabled class="w-5 h-5 text-brand-600 rounded accent-brand-600">
+              <span id="sys-text-2" class="font-medium text-slate-500">本月答對累積達 15 題以上解鎖寶物 (進行中)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 本月寶物區與本年度寶物區 -->
+        <div class="pt-4 border-t border-slate-100 space-y-4">
+          <div>
+            <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
+              <span>🐱 本月寶物區 (貓咪與貓用品收藏)</span>
+              <span id="month-treasure-count" class="text-xs text-brand-600 font-normal">已收集 0 / 12</span>
+            </h4>
+            <div id="month-treasure-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+              <!-- 動態生成本月 12 樣寶物格子 -->
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
+              <span>🏆 本年度寶物殿堂 (年度榮譽收藏)</span>
+              <span id="year-treasure-count" class="text-xs text-amber-600 font-normal">年度總收藏: 0</span>
+            </h4>
+            <div id="year-treasure-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+              <!-- 動態生成年度寶物格子 -->
+            </div>
           </div>
         </div>
       </section>
@@ -330,6 +346,22 @@
     // 成績專用 Google Apps Script 雲端 API 網址
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyHoIWQ6tfuX97hfkEq1drToJmv5q0L9Hke9eztxuF8GTKGaY0-lvsn4u6oL4jIpRhxcQ/exec';
 
+    // 12 款貓咪與貓用品寶物清單
+    const TREASURES = [
+      { id: 1, name: "高級貓草罐", icon: "🌿", type: "用品" },
+      { id: 2, name: "肉泥條", icon: "🐟", type: "用品" },
+      { id: 3, name: "逗貓羽毛棒", icon: "🪄", type: "玩具" },
+      { id: 4, name: "貓跳台", icon: "🗼", type: "用品" },
+      { id: 5, name: "三色布朗尼貓", icon: "🐱", type: "貓咪" },
+      { id: 6, name: "橘貓大胖", icon: "🍊", type: "貓咪" },
+      { id: 7, name: "白襪小黑貓", icon: "🐈‍⬛", type: "貓咪" },
+      { id: 8, name: "自動滾球玩具", icon: "🎾", type: "玩具" },
+      { id: 9, name: "溫馨貓窩", icon: "🏠", type: "用品" },
+      { id: 10, name: "布偶三花貓", icon: "🐾", type: "貓咪" },
+      { id: 11, name: "小步舞曲短腿貓", icon: "🐈", type: "貓咪" },
+      { id: 12, name: "金皇冠尊爵貓", icon: "👑", type: "貓咪" }
+    ];
+
     let currentUser = null;
     let rawQuestions = [];
     let readingArticles = {}; 
@@ -391,67 +423,128 @@
       updateVocabBadge();
     }
 
-    // [練功日記] 統計本月不重複練功總題數與答對題數
+    // [練功日記] 統計本月不重複練功總題數與答對題數，並計算等級與解鎖寶物
     function renderDiaryStats() {
       const now = new Date();
       const currentMonth = now.getMonth() + 1; // 1-12
+      const currentYear = now.getFullYear();
       document.getElementById('diary-month-badge').innerText = `本月 (${currentMonth} 月)`;
 
       let attemptedIds = new Set();
       let correctIds = new Set();
+      let hasPracticedToday = false;
+      const todayStr = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
 
       userLogs.forEach(log => {
         const parts = (log.timestamp || '').split(' ')[0].split('/');
         if (parts.length === 2 && parseInt(parts[0]) === currentMonth) {
-          if (log.wrongItems && Array.isArray(log.wrongItems)) {
-            let wrongIdSet = new Set(log.wrongItems.map(w => w.id));
-            // 這裡可以透過紀錄推導答對與練過的題目
+          if ((log.timestamp || '').includes(todayStr)) {
+            hasPracticedToday = true;
+          }
+          // 假設單次測驗涵蓋的題目 ID
+          if (log.attemptedItems) {
+            log.attemptedItems.forEach(id => attemptedIds.add(id));
+          } else {
+            // 兼容舊資料，以 total 計算
+            for(let i=0; i<log.total; i++) attemptedIds.add(log.timestamp + '_' + i);
+          }
+
+          if (log.correctItems) {
+            log.correctItems.forEach(id => correctIds.add(id));
+          } else {
+            for(let i=0; i<log.correct; i++) correctIds.add(log.timestamp + '_' + i);
           }
         }
       });
 
-      // 為了精準計算，我們從 logs 累積計算不重複的總題數與答對題數
-      let totalAttemptedCount = 0;
-      let totalCorrectCount = 0;
-      let seenAttempted = new Set();
-      let seenCorrect = new Set();
-
-      userLogs.forEach(log => {
+      // 備用總數加總
+      let monthTotal = attemptedIds.size > 0 ? attemptedIds.size : userLogs.reduce((acc, log) => {
         const parts = (log.timestamp || '').split(' ')[0].split('/');
-        if (parts.length === 2 && parseInt(parts[0]) === currentMonth) {
-          // 假設每個 log 包含當次練習的題目範圍或錯題
-          if (log.wrongItems) {
-            let wrongIds = log.wrongItems.map(w => w.id);
-            // 模擬統計
-          }
-        }
-      });
+        return (parts.length === 2 && parseInt(parts[0]) === currentMonth) ? acc + (log.total || 0) : acc;
+      }, 0);
 
-      // 直接依據答對題數與總題數動態加總
-      let monthTotal = 0;
-      let monthCorrect = 0;
-      userLogs.forEach(log => {
+      let monthCorrect = correctIds.size > 0 ? correctIds.size : userLogs.reduce((acc, log) => {
         const parts = (log.timestamp || '').split(' ')[0].split('/');
-        if (parts.length === 2 && parseInt(parts[0]) === currentMonth) {
-          monthTotal += (log.total || 0);
-          monthCorrect += (log.correct || 0);
-        }
-      });
+        return (parts.length === 2 && parseInt(parts[0]) === currentMonth) ? acc + (log.correct || 0) : acc;
+      }, 0);
 
       document.getElementById('diary-total-unique').innerText = `${monthTotal} 題`;
       document.getElementById('diary-correct-unique').innerText = `${monthCorrect} 題`;
+
+      // 等級與星等計算：每 15 題答對 1 星等
+      const stars = Math.floor(monthCorrect / 15);
+      const level = Math.floor(stars / 4) + 1;
+      const starInLevel = stars % 4;
+      document.getElementById('diary-level-badge').innerText = `⭐ Lv.${level} (${starInLevel}★)`;
+
+      // 自動 Checklist 狀態更新
+      const c1 = document.getElementById('sys-check-1');
+      const t1 = document.getElementById('sys-text-1');
+      if (hasPracticedToday || userLogs.length > 0) {
+        c1.checked = true;
+        t1.className = "font-medium text-brand-700";
+        t1.innerText = "完成至少 1 次線上刷題或練習 (已達成 ✅)";
+      } else {
+        c1.checked = false;
+        t1.className = "font-medium text-slate-500";
+        t1.innerText = "完成至少 1 次線上刷題或練習 (未完成)";
+      }
+
+      const c2 = document.getElementById('sys-check-2');
+      const t2 = document.getElementById('sys-text-2');
+      if (monthCorrect >= 15) {
+        c2.checked = true;
+        t2.className = "font-medium text-brand-700";
+        t2.innerText = `本月答對累積已達 ${monthCorrect} 題，已成功解鎖寶物！🎉`;
+      } else {
+        c2.checked = false;
+        t2.className = "font-medium text-slate-500";
+        t2.innerText = `本月答對累積 ${monthCorrect} 題 / 目標 15 題解鎖第一樣寶物`;
+      }
+
+      // 渲染本月寶物與年度寶物區
+      renderTreasures(stars, currentYear, monthCorrect);
     }
 
-    function updateChecklistProgress() {
-      // 可供使用者自行勾選打氣
-      const c1 = document.getElementById('check-task-1').checked;
-      const c2 = document.getElementById('check-task-2').checked;
-      if(c1 && c2) {
-        showStatus('太棒了！今日練功任務已全部打勾完成！🔥', 'success');
+    function renderTreasures(starsUnlocked, currentYear, totalCorrect) {
+      const monthGrid = document.getElementById('month-treasure-grid');
+      const yearGrid = document.getElementById('year-treasure-grid');
+      monthGrid.innerHTML = '';
+      yearGrid.innerHTML = '';
+
+      let unlockedMonthCount = Math.min(starsUnlocked, 12);
+      document.getElementById('month-treasure-count').innerText = `已收集 ${unlockedMonthCount} / 12`;
+
+      TREASURES.forEach((t, idx) => {
+        const isUnlocked = idx < unlockedMonthCount;
+        monthGrid.innerHTML += `
+          <div class="p-2.5 rounded-2xl border text-center flex flex-col items-center justify-center ${isUnlocked ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-100 border-slate-200 opacity-40 grayscale'}">
+            <span class="text-2xl">${t.icon}</span>
+            <span class="text-[10px] font-bold text-slate-700 mt-1 truncate w-full">${t.name}</span>
+            <span class="text-[9px] ${isUnlocked ? 'text-amber-600 font-bold' : 'text-slate-400'}">${isUnlocked ? '已獲得' : '未解鎖'}</span>
+          </div>
+        `;
+      });
+
+      // 年度寶物殿堂（每滿 60 題解鎖一個年度獎盃/大獎貓）
+      const yearTrophyCount = Math.floor(totalCorrect / 60);
+      document.getElementById('year-treasure-count').innerText = `年度總收藏: ${yearTrophyCount} 個大獎`;
+      
+      if (yearTrophyCount === 0) {
+        yearGrid.innerHTML = `<div class="col-span-full text-xs text-slate-400 text-center py-2">累積答對滿 60 題即可解鎖年度榮譽大獎！</div>`;
+      } else {
+        for(let i=0; i<Math.min(yearTrophyCount, 6); i++) {
+          yearGrid.innerHTML += `
+            <div class="p-2.5 rounded-2xl border text-center flex flex-col items-center justify-center bg-gradient-to-br from-amber-100 to-amber-200 border-amber-400 shadow-sm">
+              <span class="text-2xl">🏆</span>
+              <span class="text-[10px] font-bold text-amber-900 mt-1">年度榮譽第 ${i+1} 殿堂</span>
+            </div>
+          `;
+        }
       }
     }
 
-    function recordQuizSession(totalCount, correctCount, wrongCount, rangeText, sessionWrongItems = []) {
+    function recordQuizSession(totalCount, correctCount, wrongCount, rangeText, sessionWrongItems = [], attemptedIds = [], correctIds = []) {
       if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
 
       const now = new Date();
@@ -469,7 +562,9 @@
         correct: correctCount,
         wrong: wrongCount,
         range: rangeText,
-        wrongItems: sessionWrongItems
+        wrongItems: sessionWrongItems,
+        attemptedItems: attemptedIds,
+        correctItems: correctIds
       };
 
       userLogs.push(sessionData);
@@ -880,7 +975,10 @@
         const selectedGradeInput = document.querySelector('input[name="grade-radio"]:checked');
         const gradeName = selectedGradeInput ? selectedGradeInput.value : '';
         const selectedCategories = Array.from(document.querySelectorAll('.category-cb:checked')).map(cb => cb.value).join(', ');
-        recordQuizSession(quizQuestions.length, 0, 0, `${gradeName} / [${selectedCategories}] (列印試卷)`);
+        
+        const attemptedIds = quizQuestions.map(q => q.id);
+        const correctIds = quizQuestions.map(q => q.id); // 列印模式直接計入練功
+        recordQuizSession(quizQuestions.length, quizQuestions.length, 0, `${gradeName} / [${selectedCategories}] (列印試卷)`, [], attemptedIds, correctIds);
 
         showStatus(`已產出隨堂測驗卷與解答解析，可直接列印或匯出 PDF/Word。`, 'success');
       }
@@ -893,6 +991,8 @@
         wrong: 0,
         answeredCount: 0,
         wrongItems: [],
+        attemptedIds: questions.map(q => q.id),
+        correctIds: [],
         rangeText: (() => {
           const g = document.querySelector('input[name="grade-radio"]:checked')?.value || '';
           const cats = Array.from(document.querySelectorAll('.category-cb:checked')).map(cb => cb.value).join(', ');
@@ -964,7 +1064,10 @@
           <div><strong>正確答案：</strong> (${correctOpt})</div>
           <div class="text-[18px] text-green-950 mt-1"><strong>【解析】</strong> ${processTextWithLookup(q.analysis)}</div>
         `;
-        if (window.currentQuizSession) window.currentQuizSession.correct++;
+        if (window.currentQuizSession) {
+          window.currentQuizSession.correct++;
+          window.currentQuizSession.correctIds.push(qId);
+        }
       } else {
         feedbackEl.className = "p-4 rounded-2xl text-[18px] border bg-red-50 border-red-200 text-red-900 font-medium leading-[2]";
         feedbackEl.innerHTML = `
@@ -991,7 +1094,7 @@
         window.currentQuizSession.answeredCount++;
         if (window.currentQuizSession.answeredCount === window.currentQuizSession.total) {
           const s = window.currentQuizSession;
-          recordQuizSession(s.total, s.correct, s.wrong, s.rangeText, s.wrongItems);
+          recordQuizSession(s.total, s.correct, s.wrong, s.rangeText, s.wrongItems, s.attemptedIds, s.correctIds);
           
           const summaryEl = document.getElementById('quiz-score-summary');
           summaryEl.innerText = `本次測驗共 ${s.total} 題｜答對 ${s.correct} 題｜答錯 ${s.wrong} 題`;
