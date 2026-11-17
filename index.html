@@ -141,14 +141,14 @@
           </div>
 
           <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-            <div class="text-xs text-slate-500 font-semibold uppercase">本月總答對題數 (不重複)</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase">本月總答對題數 (不重複累積)</div>
             <div id="diary-correct-unique" class="text-2xl font-black text-brand-700 mt-1">0 題</div>
           </div>
 
           <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
-            <div class="text-xs text-amber-700 font-semibold uppercase">目前等級與星等</div>
-            <div id="diary-level-badge" class="text-xl font-black text-amber-800 mt-1">⭐ Lv.0 (0★)</div>
-            <div class="text-[11px] text-amber-600 mt-1 font-medium">每累積答對 20 題就升 1 等星並解鎖一款專屬寶物（12 隻不同萌貓與貓用品）</div>
+            <div class="text-xs text-amber-700 font-semibold uppercase">目前寶物解鎖進度</div>
+            <div id="diary-level-badge" class="text-xl font-black text-amber-800 mt-1">🎁 累積 0 題</div>
+            <div class="text-[11px] text-amber-600 mt-1 font-medium">累積答對滿 50 題解鎖第一樣寶物，第二個 50 題解鎖第二樣寶物（累進解鎖 12 款貓咪與貓用品）</div>
           </div>
         </div>
 
@@ -162,7 +162,7 @@
             </div>
             <div id="sys-box-2" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors">
               <div id="sys-icon-2" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm">🐱</div>
-              <span id="sys-text-2" class="font-medium text-slate-500">本月答對累積達 20 題以上解鎖寶物 (進行中)</span>
+              <span id="sys-text-2" class="font-medium text-slate-500">本月累積答對達 50 題解鎖第一樣寶物 (進行中)</span>
             </div>
           </div>
         </div>
@@ -171,7 +171,7 @@
         <div class="pt-4 border-t border-slate-100 space-y-4">
           <div>
             <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
-              <span>🐱 本月寶物區 (貓咪與貓用品收藏)</span>
+              <span>🐱 本月寶物區 (累積每 50 題解鎖 1 款，共 12 款)</span>
               <span id="month-treasure-count" class="text-xs text-brand-600 font-normal">已收集 0 / 12</span>
             </h4>
             <div id="month-treasure-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2">
@@ -424,7 +424,7 @@
       updateVocabBadge();
     }
 
-    // [練功日記] 統計本月不重複練功總題數與答對題數，並更新自動 Checklist 與粉紅色打勾貓咪圖示
+    // [練功日記] 統計本月不重複練功總題數與答對題數（累積計算，每 50 題解鎖 1 件寶物）
     function renderDiaryStats() {
       const now = new Date();
       const currentMonth = now.getMonth() + 1; // 1-12
@@ -469,10 +469,9 @@
       document.getElementById('diary-total-unique').innerText = `${monthTotal} 題`;
       document.getElementById('diary-correct-unique').innerText = `${monthCorrect} 題`;
 
-      const stars = Math.floor(monthCorrect / 20);
-      const level = Math.floor(stars / 4) + 1;
-      const starInLevel = stars % 4;
-      document.getElementById('diary-level-badge').innerText = `⭐ Lv.${level} (${starInLevel}★)`;
+      // 寶物解鎖計算：每累積答對 50 題解鎖 1 件寶物（累積計算）
+      const unlockedTreasuresCount = Math.floor(monthCorrect / 50);
+      document.getElementById('diary-level-badge').innerText = `🎁 累積 ${monthCorrect} 題`;
 
       // 自動 Checklist 狀態更新 (已達成改為粉紅色與打勾貓咪 🐱✅)
       const box1 = document.getElementById('sys-box-1');
@@ -495,34 +494,36 @@
       const box2 = document.getElementById('sys-box-2');
       const icon2 = document.getElementById('sys-icon-2');
       const t2 = document.getElementById('sys-text-2');
-      if (monthCorrect >= 20) {
+      
+      const nextTarget = (Math.floor(monthCorrect / 50) + 1) * 50;
+      if (monthCorrect >= 50) {
         box2.className = "flex items-center gap-3 p-3 rounded-xl bg-pink-50 border border-pink-200 transition-colors";
         icon2.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-pink-200 text-pink-700 font-bold text-sm shadow-sm";
         icon2.innerText = "🐱✅";
         t2.className = "font-medium text-pink-700";
-        t2.innerText = `本月答對累積已達 ${monthCorrect} 題，已成功解鎖寶物！🎉`;
+        t2.innerText = `本月累積答對已達 ${monthCorrect} 題，已解鎖 ${unlockedTreasuresCount} 件寶物！(距離下一件還需 ${nextTarget - monthCorrect} 題)`;
       } else {
         box2.className = "flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors";
         icon2.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm";
         icon2.innerText = "🐱";
         t2.className = "font-medium text-slate-500";
-        t2.innerText = `本月答對累積 ${monthCorrect} 題 / 目標 20 題解鎖第一樣寶物`;
+        t2.innerText = `本月累積答對 ${monthCorrect} 題 / 目標 50 題解鎖第一樣寶物 (還差 ${50 - monthCorrect} 題)`;
       }
 
-      renderTreasures(stars, currentYear, monthCorrect);
+      renderTreasures(unlockedTreasuresCount, currentYear, monthCorrect);
     }
 
-    function renderTreasures(starsUnlocked, currentYear, totalCorrect) {
+    function renderTreasures(unlockedCount, currentYear, totalCorrect) {
       const monthGrid = document.getElementById('month-treasure-grid');
       const yearGrid = document.getElementById('year-treasure-grid');
       monthGrid.innerHTML = '';
       yearGrid.innerHTML = '';
 
-      let unlockedMonthCount = Math.min(starsUnlocked, 12);
-      document.getElementById('month-treasure-count').innerText = `已收集 ${unlockedMonthCount} / 12`;
+      let maxUnlocked = Math.min(unlockedCount, 12);
+      document.getElementById('month-treasure-count').innerText = `已收集 ${maxUnlocked} / 12`;
 
       TREASURES.forEach((t, idx) => {
-        const isUnlocked = idx < unlockedMonthCount;
+        const isUnlocked = idx < maxUnlocked;
         monthGrid.innerHTML += `
           <div class="p-2.5 rounded-2xl border text-center flex flex-col items-center justify-center ${isUnlocked ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-100 border-slate-200 opacity-40 grayscale'}">
             <span class="text-2xl">${t.icon}</span>
@@ -532,11 +533,12 @@
         `;
       });
 
-      const yearTrophyCount = Math.floor(totalCorrect / 80);
+      // 年度寶物殿堂（每滿 250 題解鎖一個年度榮譽殿堂）
+      const yearTrophyCount = Math.floor(totalCorrect / 250);
       document.getElementById('year-treasure-count').innerText = `年度總收藏: ${yearTrophyCount} 個大獎`;
       
       if (yearTrophyCount === 0) {
-        yearGrid.innerHTML = `<div class="col-span-full text-xs text-slate-400 text-center py-2">累積答對滿 80 題即可解鎖年度榮譽大獎！</div>`;
+        yearGrid.innerHTML = `<div class="col-span-full text-xs text-slate-400 text-center py-2">年度累積答對滿 250 題即可解鎖年度榮譽殿堂大獎！</div>`;
       } else {
         for(let i=0; i<Math.min(yearTrophyCount, 6); i++) {
           yearGrid.innerHTML += `
