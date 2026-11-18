@@ -134,7 +134,7 @@
       <button onclick="switchTab('wrong-notebook')" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-4 px-6 rounded-2xl shadow-md transition-all flex items-center justify-between text-lg">
         <div class="flex items-center gap-3">
           <span class="text-2xl">📚</span>
-          <span>查看我的專屬錯題本與複習講義 (支援再次練習)</span>
+          <span>查看我的專屬錯題本與複習講義 (含完整選項與再次練習)</span>
         </div>
         <span id="wrong-count-badge" class="bg-red-600 text-white text-sm px-3 py-1 rounded-full shadow hidden">0 題</span>
       </button>
@@ -239,14 +239,14 @@
           </div>
 
           <div class="md:col-span-12 pt-4 border-t border-slate-100 flex items-center gap-4">
-            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">目標題數（單題算1題，題組算1個單位）：</label>
+            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">目標題數：</label>
             <input type="number" id="question-count" value="10" min="1" max="100" class="w-32 border-slate-200 rounded-xl text-base p-2.5 border font-medium">
           </div>
         </div>
 
         <div class="mt-6 pt-5 border-t border-slate-100 flex flex-wrap gap-4">
           <button onclick="startQuiz('online')" class="bg-brand-600 hover:bg-brand-700 text-white text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
-            🚀 線上練習 (亂數出題 + 即時解析)
+            🚀 線上練習 (答題即時顯示對錯與解析)
           </button>
           <button onclick="startQuiz('print')" class="bg-slate-800 hover:bg-slate-900 text-white text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
             🖨️ 生成可列印試卷及答案解析 (列印/Word/JPG)
@@ -263,7 +263,7 @@
       <!-- 線上測驗完成結算提示區 -->
       <div id="quiz-finish-actions" class="hidden bg-white p-8 rounded-3xl shadow-sm border border-slate-200 text-center space-y-4 no-print">
         <div class="text-4xl">🎉</div>
-        <h3 class="text-2xl font-bold text-slate-800">本次測驗已全部完成！</h3>
+        <h3 class="text-2xl font-bold text-slate-800">本次練習已全部完成！</h3>
         <div id="quiz-score-summary" class="text-lg font-bold text-brand-700 bg-brand-50 p-4 rounded-2xl border border-brand-200 inline-block"></div>
         <p class="text-sm text-slate-500">成績與錯題已自動同步上傳至您的雲端成績表格。</p>
         <div>
@@ -284,13 +284,15 @@
     <div id="tab-wrong" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
-          <h2 class="text-xl font-bold text-slate-800">專屬錯題複習區</h2>
-          <p class="text-sm text-slate-500 mt-1">自動收集答錯的題目，隨時複習，支援「再次練習測驗」與匯出 JPG。</p>
+          <h2 class="text-xl font-bold text-slate-800">專屬錯題複習講義</h2>
+          <p class="text-sm text-slate-500 mt-1">自動收集答錯的題目（含完整選項與解析），支援再次練習、下載 Word 與 JPG。</p>
         </div>
         <div class="flex flex-wrap gap-2.5">
           <button onclick="startWrongPractice()" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow">▶️ 針對錯題再次練習</button>
           <button onclick="switchTab('quiz')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-bold px-4 py-2.5 rounded-xl">返回主頁測驗</button>
-          <button onclick="exportToJPG('wrong-list-container', '英文錯題本')" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl">匯出錯題本 JPG</button>
+          <button onclick="exportToWord('wrong-list-container', '英文錯題本講義')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow">📄 下載 Word 錯題本</button>
+          <button onclick="exportToJPG('wrong-list-container', '英文錯題本講義')" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow">📷 匯出錯題本 JPG</button>
+          <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow">🖨️ 列印錯題本</button>
           <button onclick="clearWrongQuestions()" class="bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold px-4 py-2.5 rounded-xl border border-red-200">清空</button>
         </div>
       </div>
@@ -356,7 +358,6 @@
 
     let currentUser = null;
     let rawQuestions = [];
-    let readingArticles = {}; 
     let wrongQuestions = [];
     let vocabBank = [];
     let userLogs = [];
@@ -368,7 +369,7 @@
     const STUDENT_PASS = '1155665';
 
     window.onload = () => {
-      const savedUser = localStorage.getItem('yh_user_v15');
+      const savedUser = localStorage.getItem('yh_user_v16');
       if (savedUser) {
         try {
           currentUser = JSON.parse(savedUser);
@@ -385,7 +386,7 @@
             }
           }
         } catch (e) {
-          localStorage.removeItem('yh_user_v15');
+          localStorage.removeItem('yh_user_v16');
         }
       }
     };
@@ -424,7 +425,7 @@
 
           if (cloudData.wrongs && cloudData.wrongs.length > 0) {
             const wrongMap = new Map();
-            [...cloudData.wrongs, ...wrongQuestions].forEach(w => wrongMap.set(w.id || w.question, w));
+            [...cloudData.wrongs, ...wrongQuestions].forEach(w => wrongMap.set(w.id || w.questionText, w));
             wrongQuestions = Array.from(wrongMap.values());
           }
           if (cloudData.vocab && cloudData.vocab.length > 0) {
@@ -713,11 +714,11 @@
       }
     }
 
-    // 穩定的原生 HTML Blob 匯出 Word (.doc / .docx 格式相容)
+    // 匯出 Word (.doc 格式)
     function exportToWord(elementId, fileNamePrefix) {
       const element = document.getElementById(elementId);
       if (!element || element.innerHTML.trim() === '') {
-        alert('目前沒有試卷內容可以下載！');
+        alert('目前沒有內容可以下載！');
         return;
       }
 
@@ -760,7 +761,7 @@
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        showStatus('Word 試卷已成功下載！', 'success');
+        showStatus('Word 檔案已成功下載！', 'success');
       } catch (err) {
         console.error('Word 匯出失敗:', err);
         alert('Word 檔案產生失敗，請稍後再試。');
@@ -830,7 +831,7 @@
       }
 
       currentUser = { email: email };
-      localStorage.setItem('yh_user_v15', JSON.stringify(currentUser));
+      localStorage.setItem('yh_user_v16', JSON.stringify(currentUser));
       document.getElementById('login-modal').classList.add('hidden');
       document.getElementById('user-status').innerText = `👤 ${email}`;
 
@@ -844,7 +845,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('yh_user_v15');
+      localStorage.removeItem('yh_user_v16');
       location.reload();
     }
 
@@ -858,7 +859,6 @@
         
         const rows = data.table.rows || [];
         rawQuestions = [];
-        readingArticles = {};
 
         rows.forEach((r, idx) => {
           const c = r.c || [];
@@ -974,24 +974,25 @@
       if (mode === 'print') {
         renderPrintView(selected, selectedGrade, selectedUnits.join(', '));
       } else {
-        renderOnlineQuiz(selected, selectedGrade, selectedUnits.join(', '));
+        renderInteractiveQuiz(selected, selectedGrade, selectedUnits.join(', '));
       }
     }
 
-    function renderOnlineQuiz(questions, grade, rangeText) {
+    // 線上練習：答題即時顯示對錯與解析
+    function renderInteractiveQuiz(questions, grade, rangeText) {
       document.getElementById('print-actions').classList.add('hidden');
       document.getElementById('quiz-finish-actions').classList.add('hidden');
 
       const container = document.getElementById('quiz-container');
-      let html = `<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-4 flex justify-between items-center"><div class="font-bold text-slate-800">🎯 正在進行線上測驗：${grade} (${rangeText})</div><div class="text-sm text-brand-600 font-bold">共 ${questions.length} 題</div></div>`;
+      let html = `<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-4 flex justify-between items-center"><div class="font-bold text-slate-800">🎯 正在進行線上練習：${grade} (${rangeText})</div><div class="text-sm text-brand-600 font-bold">共 ${questions.length} 題</div></div>`;
 
       questions.forEach((q, idx) => {
         let optsHtml = '';
         ['A', 'B', 'C', 'D'].forEach(k => {
           if (q.opts[k]) {
             optsHtml += `
-              <label class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
-                <input type="radio" name="q_${idx}" value="${k}" class="mt-1.5 text-brand-600 focus:ring-brand-500">
+              <label class="option-label-${idx} flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                <input type="radio" name="interactive_q_${idx}" value="${k}" onclick="handleOptionSelect(${idx}, '${k}', '${q.answer.trim().toUpperCase()}', ${JSON.stringify(q).replace(/"/g, '&quot;')}, '${rangeText}')" class="mt-1.5 text-brand-600 focus:ring-brand-500">
                 <span class="text-slate-800 font-medium">${k}. ${q.opts[k]}</span>
               </label>
             `;
@@ -999,7 +1000,7 @@
         });
 
         html += `
-          <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-4 quiz-card" data-qid="${q.id}" data-ans="${q.answer}">
+          <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-4 quiz-card-interactive" id="card_${idx}" data-answered="false">
             <div class="text-xs font-bold text-brand-600 uppercase tracking-wider">第 ${idx + 1} 題</div>
             <div class="text-lg font-bold text-slate-900">${q.questionText}</div>
             <div class="space-y-2 pt-2">${optsHtml}</div>
@@ -1008,67 +1009,84 @@
         `;
       });
 
-      html += `
-        <div class="text-center pt-4 pb-8">
-          <button onclick="submitOnlineQuiz(${JSON.stringify(rangeText).replace(/"/g, '&quot;')})" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-8 py-4 rounded-2xl shadow-lg text-lg transition-transform hover:scale-105">
-            交卷看成績並上傳紀錄 🚀
-          </button>
-        </div>
-      `;
-
       container.innerHTML = html;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function submitOnlineQuiz(rangeText) {
-      const cards = document.querySelectorAll('.quiz-card');
-      let correctCount = 0;
-      let sessionWrongItems = [];
-      let attemptedIds = [];
-      let correctIds = [];
+    let interactiveSession = {
+      total: 0,
+      correct: 0,
+      wrong: 0,
+      answeredCount: 0,
+      rangeText: '',
+      attemptedIds: new Set(),
+      correctIds: new Set(),
+      sessionWrongItems: []
+    };
 
-      cards.forEach((card, idx) => {
-        const qid = card.getAttribute('data-qid');
-        const correctAns = card.getAttribute('data-ans').trim().toUpperCase();
-        const selected = card.querySelector(`input[name="q_${idx}"]:checked`);
-        const feedback = document.getElementById(`feedback_${idx}`);
+    function handleOptionSelect(idx, selectedKey, correctAns, questionObj, rangeText) {
+      const card = document.getElementById(`card_${idx}`);
+      if (card.getAttribute('data-answered') === 'true') return; // 已經答過不能重複點
+      card.setAttribute('data-answered', 'true');
 
-        attemptedIds.push(qid || `q_${idx}`);
+      if (!interactiveSession.answeredCount) {
+        interactiveSession = {
+          total: document.querySelectorAll('.quiz-card-interactive').length,
+          correct: 0,
+          wrong: 0,
+          answeredCount: 0,
+          rangeText: rangeText,
+          attemptedIds: new Set(),
+          correctIds: new Set(),
+          sessionWrongItems: []
+        };
+      }
 
-        if (!selected) {
-          feedback.innerHTML = `❌ 未作答 (正確答案: ${correctAns})`;
-          feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-amber-50 text-amber-800 border border-amber-200";
-          feedback.classList.remove('hidden');
-          sessionWrongItems.push({ id: qid, question: card.querySelector('.text-lg').innerText, answer: correctAns });
-        } else if (selected.value.trim().toUpperCase() === correctAns) {
-          correctCount++;
-          correctIds.push(qid || `q_${idx}`);
-          feedback.innerHTML = `✅ 答對了！`;
-          feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-emerald-50 text-emerald-800 border border-emerald-200";
-          feedback.classList.remove('hidden');
-        } else {
-          feedback.innerHTML = `❌ 答錯了 (正確答案: ${correctAns})`;
-          feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-red-50 text-red-800 border border-red-200";
-          feedback.classList.remove('hidden');
-          sessionWrongItems.push({ id: qid, question: card.querySelector('.text-lg').innerText, answer: correctAns });
+      interactiveSession.answeredCount++;
+      interactiveSession.attemptedIds.add(questionObj.id || `q_${idx}`);
+
+      const feedback = document.getElementById(`feedback_${idx}`);
+      const radios = document.querySelectorAll(`input[name="interactive_q_${idx}"]`);
+      radios.forEach(r => r.disabled = true); // 鎖定選項
+
+      if (selectedKey === correctAns) {
+        interactiveSession.correct++;
+        interactiveSession.correctIds.add(questionObj.id || `q_${idx}`);
+        feedback.innerHTML = `✅ 答對了！<br><span class="font-normal text-xs mt-1 block">{{解析}} ${questionObj.explanation || '無提供解析'}</span>`;
+        feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-emerald-50 text-emerald-800 border border-emerald-200";
+      } else {
+        interactiveSession.wrong++;
+        feedback.innerHTML = `❌ 答錯了！正確答案是 [ ${correctAns} ]<br><span class="font-normal text-xs mt-1 block">{{解析}} ${questionObj.explanation || '無提供解析'}</span>`;
+        feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-red-50 text-red-800 border border-red-200";
+
+        // 收集至錯題本
+        if (!wrongQuestions.some(w => w.id === questionObj.id || w.questionText === questionObj.questionText)) {
+          wrongQuestions.push(questionObj);
         }
-      });
+      }
+      feedback.classList.remove('hidden');
 
-      sessionWrongItems.forEach(w => {
-        if (!wrongQuestions.some(existing => existing.id === w.id || existing.question === w.question)) {
-          wrongQuestions.push(w);
-        }
-      });
+      // 當全部題目都答完時，自動結算並上傳
+      if (interactiveSession.answeredCount === interactiveSession.total) {
+        recordQuizSession(
+          interactiveSession.total,
+          interactiveSession.correct,
+          interactiveSession.wrong,
+          interactiveSession.rangeText,
+          interactiveSession.sessionWrongItems,
+          Array.from(interactiveSession.attemptedIds),
+          Array.from(interactiveSession.correctIds)
+        );
 
-      const totalCount = cards.length;
-      const wrongCount = totalCount - correctCount;
+        saveUserDataToLocal(true);
 
-      recordQuizSession(totalCount, correctCount, wrongCount, rangeText, sessionWrongItems, attemptedIds, correctIds);
-
-      const finishActions = document.getElementById('quiz-finish-actions');
-      document.getElementById('quiz-score-summary').innerText = `總題數：${totalCount} 題 ｜ 答對：${correctCount} 題 ｜ 答錯：${wrongCount} 題`;
-      finishActions.classList.remove('hidden');
-      finishActions.scrollIntoView({ behavior: 'smooth' });
+        const finishActions = document.getElementById('quiz-finish-actions');
+        document.getElementById('quiz-score-summary').innerText = `總題數：${interactiveSession.total} 題 ｜ 答對：${interactiveSession.correct} 題 ｜ 答錯：${interactiveSession.wrong} 題`;
+        finishActions.classList.remove('hidden');
+        setTimeout(() => {
+          finishActions.scrollIntoView({ behavior: 'smooth' });
+        }, 200);
+      }
     }
 
     function renderPrintView(questions, grade, rangeText) {
@@ -1122,6 +1140,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // 渲染錯題本（包含完整題目、選項與解答解析）
     function renderWrongNotebook() {
       const container = document.getElementById('wrong-list-container');
       if (wrongQuestions.length === 0) {
@@ -1129,16 +1148,39 @@
         return;
       }
 
-      let html = '';
+      let html = `
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 space-y-6">
+          <div class="text-center border-b pb-4">
+            <h1 class="text-2xl font-black text-slate-800">優華數位學習 — 個人專屬錯題複習講義</h1>
+            <p class="text-sm text-slate-500 mt-1">收錄所有答錯的題目與完整選項解析 ｜ 日期：${new Date().toLocaleDateString()}</p>
+          </div>
+          <div class="space-y-6">
+      `;
+
       wrongQuestions.forEach((w, idx) => {
+        let optsHtml = '';
+        ['A', 'B', 'C', 'D'].forEach(k => {
+          if (w.opts && w.opts[k]) {
+            optsHtml += `<div class="text-slate-800 py-0.5">(${k}) ${w.opts[k]}</div>`;
+          }
+        });
+
         html += `
-          <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-2">
-            <div class="text-xs font-bold text-red-600 uppercase">錯題 #${idx + 1}</div>
-            <div class="text-base font-bold text-slate-800">${w.question}</div>
-            <div class="text-sm text-brand-700 font-semibold">正確答案：${w.answer}</div>
+          <div class="space-y-3 card-box p-5 rounded-2xl border border-slate-200 bg-slate-50/50">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-red-600 uppercase">錯題 #${idx + 1} (${w.grade || '綜合'} - ${w.unit || '複習'})</span>
+            </div>
+            <div class="text-base font-bold text-slate-900">${w.questionText}</div>
+            <div class="pl-4 space-y-1">${optsHtml}</div>
+            <div class="p-3 bg-white rounded-xl border border-slate-200 mt-2 text-sm">
+              <span class="font-bold text-brand-700">正確答案：[ ${w.answer} ]</span>
+              <div class="text-slate-600 mt-1">{{解析}} ${w.explanation || '無提供解析'}</div>
+            </div>
           </div>
         `;
       });
+
+      html += `</div></div>`;
       container.innerHTML = html;
     }
 
@@ -1186,14 +1228,7 @@
         return;
       }
       switchTab('quiz');
-      let selected = wrongQuestions.map((w, idx) => ({
-        id: w.id || `wrong_${idx}`,
-        questionText: w.question,
-        opts: { A: '(請參照原題或再次複習)', B: '', C: '', D: '' },
-        answer: w.answer,
-        explanation: '錯題再次複習'
-      }));
-      renderOnlineQuiz(selected, '錯題本特訓', '個人錯題複習');
+      renderInteractiveQuiz(wrongQuestions, '錯題本特訓', '個人錯題複習');
     }
 
     function closeVocabPanel() {
