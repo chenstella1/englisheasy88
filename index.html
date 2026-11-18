@@ -6,8 +6,8 @@
   <title>優華數位刷題網</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- html2pdf.js 支援轉成 PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- html2canvas 支援轉成高解析度 JPG 圖片 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -26,7 +26,6 @@
     }
   </script>
   <style>
-    /* 全站預設字級 18px 與行距 2 */
     body {
       font-size: 18px !important;
       line-height: 2 !important;
@@ -38,7 +37,6 @@
       .card-box { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 20px !important; break-inside: avoid; }
       .page-break { page-break-before: always; }
     }
-    /* 點擊英文單字查詢樣式 */
     .lookup-word {
       border-bottom: 1px dashed #059669;
       cursor: pointer;
@@ -130,17 +128,17 @@
           <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
             <span>🔥 [練功日記] 戰力與寶物面板</span>
           </h3>
-          <span id="diary-month-badge" class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">本月紀錄</span>
+          <span id="diary-month-badge" class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">累積戰績</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-            <div class="text-xs text-slate-500 font-semibold uppercase">本月練功總題數 (不重複)</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase">歷史總練功題數 (累積不歸零)</div>
             <div id="diary-total-unique" class="text-2xl font-black text-slate-800 mt-1">0 題</div>
           </div>
 
           <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-            <div class="text-xs text-slate-500 font-semibold uppercase">本月總答對題數 (不重複累積)</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase">歷史總答對題數 (累積不歸零)</div>
             <div id="diary-correct-unique" class="text-2xl font-black text-brand-700 mt-1">0 題</div>
           </div>
 
@@ -153,7 +151,7 @@
 
         <!-- 系統自動化記錄 Checklist -->
         <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">📋 今日練功自動紀錄 (系統判定)：</div>
+          <div class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">📋 今日練功自動紀錄 (每天 00:00 自動重置)：</div>
           <div class="space-y-2 text-sm">
             <div id="sys-box-1" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors">
               <div id="sys-icon-1" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm">🐱</div>
@@ -161,16 +159,16 @@
             </div>
             <div id="sys-box-2" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors">
               <div id="sys-icon-2" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm">🐱</div>
-              <span id="sys-text-2" class="font-medium text-slate-500">本月累積答對達 50 題解鎖第一樣寶物 (進行中)</span>
+              <span id="sys-text-2" class="font-medium text-slate-500">累積答對達 50 題解鎖第一樣寶物 (進行中)</span>
             </div>
           </div>
         </div>
 
-        <!-- 本月寶物區與本年度寶物區 -->
+        <!-- 寶物區與本年度寶物區 -->
         <div class="pt-4 border-t border-slate-100 space-y-4">
           <div>
             <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
-              <span>🐱 本月寶物區 (累積每 50 題解鎖 1 款，共 12 款)</span>
+              <span>🐱 寶物殿堂 (累積每 50 題解鎖 1 款，共 12 款)</span>
               <span id="month-treasure-count" class="text-xs text-brand-600 font-normal">已收集 0 / 12</span>
             </h4>
             <div id="month-treasure-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
@@ -178,7 +176,7 @@
 
           <div class="pt-2">
             <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
-              <span>🏆 本年度寶物殿堂 (年度榮譽收藏)</span>
+              <span>🏆 年度榮譽殿堂</span>
               <span id="year-treasure-count" class="text-xs text-amber-600 font-normal">年度總收藏: 0</span>
             </h4>
             <div id="year-treasure-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
@@ -230,7 +228,7 @@
             🚀 線上練習 (亂數出題 + 即時解析)
           </button>
           <button onclick="startQuiz('print')" class="bg-slate-800 hover:bg-slate-900 text-white text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
-            🖨️ 生成可列印試卷及答案解析 (列印/PDF/Word)
+            🖨️ 生成可列印試卷及答案解析 (列印/JPG)
           </button>
         </div>
       </section>
@@ -255,24 +253,22 @@
       <!-- 試卷列印與匯出檔案控制按鈕區 -->
       <div id="print-actions" class="hidden flex flex-wrap gap-3 justify-end no-print">
         <button onclick="window.print()" class="bg-slate-700 text-white px-5 py-2.5 rounded-xl text-base font-bold">直接列印試卷與解答</button>
-        <button onclick="exportToPDF('quiz-container', '英文試卷與解答')" class="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-base font-bold">下載 PDF 試卷與解答</button>
-        <button onclick="exportToWord('quiz-container', '英文試卷與解答')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-base font-bold">下載 Word 試卷與解答</button>
+        <button onclick="exportToJPG('quiz-container', '英文試卷與解答')" class="bg-brand-600 text-white px-5 py-2.5 rounded-xl text-base font-bold">下載 JPG 試卷與解答</button>
       </div>
 
     </div>
 
-    <!-- 頁籤二：錯題區本 -->
+    <!-- 頁籤二：錯題本 -->
     <div id="tab-wrong" class="hidden space-y-5">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-4 no-print">
         <div>
           <h2 class="text-xl font-bold text-slate-800">專屬錯題複習區</h2>
-          <p class="text-sm text-slate-500 mt-1">自動收集答錯的題目，隨時複習，支援「再次練習測驗」與匯出講義。</p>
+          <p class="text-sm text-slate-500 mt-1">自動收集答錯的題目，隨時複習，支援「再次練習測驗」與匯出 JPG。</p>
         </div>
         <div class="flex flex-wrap gap-2.5">
           <button onclick="startWrongPractice()" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl shadow">▶️ 針對錯題再次練習</button>
           <button onclick="switchTab('quiz')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-bold px-4 py-2.5 rounded-xl">返回主頁測驗</button>
-          <button onclick="exportToPDF('wrong-list-container', '英文錯題本')" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl">匯出錯題本 PDF</button>
-          <button onclick="exportToWord('wrong-list-container', '英文錯題本')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl">匯出錯題本 Word</button>
+          <button onclick="exportToJPG('wrong-list-container', '英文錯題本')" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold px-4 py-2.5 rounded-xl">匯出錯題本 JPG</button>
           <button onclick="clearWrongQuestions()" class="bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold px-4 py-2.5 rounded-xl border border-red-200">清空</button>
         </div>
       </div>
@@ -297,7 +293,7 @@
 
   </main>
 
-  <!-- 單字即時查詢與中文翻譯面板 -->
+  <!-- 單字即時查詢面板 -->
   <div id="vocab-card-panel" class="fixed bottom-6 right-6 bg-white rounded-3xl shadow-2xl border-2 border-brand-500 p-6 max-w-sm w-full z-50 hidden space-y-3 no-print">
     <div class="flex justify-between items-center">
       <div class="flex items-center gap-2">
@@ -307,7 +303,7 @@
       <button onclick="closeVocabPanel()" class="text-slate-400 hover:text-slate-600 font-bold text-base px-2">✕</button>
     </div>
     <div class="text-sm text-slate-700 bg-slate-50 p-3 rounded-2xl border border-slate-100">
-      <div class="font-semibold text-slate-500 text-xs mb-1">中文含意 (中文化釋義)：</div>
+      <div class="font-semibold text-slate-500 text-xs mb-1">中文含意：</div>
       <div id="panel-definition" class="text-slate-900 font-bold text-base">查詢中...</div>
     </div>
     <div class="flex gap-2 pt-1">
@@ -319,8 +315,6 @@
   <script>
     const SPREADSHEET_ID = '11rFyQ1FLFflBAUzBoJGI2p8EChYSJWuje16DkZZdSWc';
     const GOOGLE_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
-    
-    // 使用您剛剛提供的新 Google Apps Script 網址
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw5yZUcaX0hHwT8HFMHCScPs0mP5WXrblLVBcjezJk2d2AYVrk8a1VqRCfgSrKNErBr/exec';
 
     const TREASURES = [
@@ -352,7 +346,7 @@
     const STUDENT_PASS = '1155665';
 
     window.onload = () => {
-      const savedUser = localStorage.getItem('yh_user_v12');
+      const savedUser = localStorage.getItem('yh_user_v13');
       if (savedUser) {
         currentUser = JSON.parse(savedUser);
         document.getElementById('login-modal').classList.add('hidden');
@@ -376,6 +370,7 @@
       document.getElementById('nav-home-btn').innerText = '管理者後台';
     }
 
+    // 跨裝置雲端載入與智慧合併
     async function loadUserData() {
       if (!currentUser) return;
       const localData = JSON.parse(localStorage.getItem('yh_student_' + currentUser.email) || '{}');
@@ -385,16 +380,31 @@
 
       updateWrongBadge();
       updateVocabBadge();
+      renderDiaryStats();
 
       try {
-        showStatus('正在從雲端同步您的歷史練習紀錄...', 'info');
+        showStatus('正在從雲端同步您的跨裝置學習紀錄...', 'info');
         const res = await fetch(`${GAS_API_URL}?email=${encodeURIComponent(currentUser.email)}`);
         const cloudData = await res.json();
 
-        if (cloudData) {
-          if (cloudData.logs && cloudData.logs.length > 0) userLogs = cloudData.logs;
-          if (cloudData.wrongs) wrongQuestions = cloudData.wrongs;
-          if (cloudData.vocab) vocabBank = cloudData.vocab;
+        if (cloudData && cloudData.status === 'success') {
+          const logMap = new Map();
+          [...(cloudData.logs || []), ...userLogs].forEach(item => {
+            const key = item.id || (item.timestamp + '_' + item.total);
+            logMap.set(key, item);
+          });
+          userLogs = Array.from(logMap.values());
+
+          if (cloudData.wrongs && cloudData.wrongs.length > 0) {
+            const wrongMap = new Map();
+            [...cloudData.wrongs, ...wrongQuestions].forEach(w => wrongMap.set(w.id || w.question, w));
+            wrongQuestions = Array.from(wrongMap.values());
+          }
+          if (cloudData.vocab && cloudData.vocab.length > 0) {
+            const vocabMap = new Map();
+            [...cloudData.vocab, ...vocabBank].forEach(v => vocabMap.set(v.word, v));
+            vocabBank = Array.from(vocabMap.values());
+          }
 
           localStorage.setItem('yh_student_' + currentUser.email, JSON.stringify({
             logs: userLogs,
@@ -405,10 +415,10 @@
           updateWrongBadge();
           updateVocabBadge();
           renderDiaryStats();
-          showStatus('雲端練習紀錄同步完成！', 'success');
+          showStatus('跨裝置雲端紀錄同步完成！', 'success');
         }
       } catch (err) {
-        console.log('雲端讀取失敗，暫時使用本機紀錄:', err);
+        console.log('雲端讀取失敗，使用本機紀錄:', err);
       }
     }
 
@@ -424,8 +434,6 @@
       updateVocabBadge();
 
       if (syncToCloud) {
-        const now = new Date();
-        const ts = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
         fetch(GAS_API_URL, {
           method: 'POST',
           mode: 'no-cors',
@@ -433,7 +441,7 @@
           body: JSON.stringify({
             action: 'syncState',
             email: currentUser.email,
-            timestamp: ts,
+            logs: userLogs,
             wrongItems: wrongQuestions,
             vocabBank: vocabBank
           })
@@ -441,88 +449,136 @@
       }
     }
 
+    function recordQuizSession(totalCount, correctCount, wrongCount, rangeText, sessionWrongItems = [], attemptedIds = [], correctIds = []) {
+      if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
+
+      const now = new Date();
+      const yStr = now.getFullYear();
+      const mStr = String(now.getMonth() + 1).padStart(2, '0');
+      const dStr = String(now.getDate()).padStart(2, '0');
+      const dateKey = `${yStr}/${mStr}/${dStr}`;
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      const sessionData = {
+        id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        date: dateKey,
+        timestamp: `${dateKey} ${timeStr}`,
+        timeOnly: timeStr,
+        total: totalCount,
+        correct: correctCount,
+        wrong: wrongCount,
+        range: rangeText,
+        wrongItems: sessionWrongItems,
+        attemptedItems: attemptedIds,
+        correctItems: correctIds
+      };
+
+      userLogs.push(sessionData);
+      saveUserDataToLocal(false);
+      renderDiaryStats();
+
+      fetch(GAS_API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'recordQuiz',
+          email: currentUser.email,
+          timestamp: sessionData.timestamp,
+          total: totalCount,
+          correct: correctCount,
+          wrong: wrongCount,
+          range: rangeText,
+          logs: userLogs,
+          wrongItems: wrongQuestions,
+          vocabBank: vocabBank
+        })
+      }).catch(err => console.log('Cloud sync error:', err));
+
+      return sessionData;
+    }
+
+    // 練功日記統計：寶物與總題數累積不歸零，每日練習 Checklist 每天重置
     function renderDiaryStats() {
       const now = new Date();
-      const currentMonth = now.getMonth() + 1;
       const currentYear = now.getFullYear();
-      document.getElementById('diary-month-badge').innerText = `本月 (${currentMonth} 月)`;
+      const todayFull = `${currentYear}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+      const todayShort = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
 
-      let attemptedIds = new Set();
-      let correctIds = new Set();
+      let allAttemptedIds = new Set();
+      let allCorrectIds = new Set();
+      let fallbackTotal = 0;
+      let fallbackCorrect = 0;
       let hasPracticedToday = false;
-      const todayStr = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
 
       userLogs.forEach(log => {
-        const parts = (log.timestamp || '').split(' ')[0].split('/');
-        if (parts.length === 2 && parseInt(parts[0]) === currentMonth) {
-          if ((log.timestamp || '').includes(todayStr)) hasPracticedToday = true;
-          if (log.attemptedItems && log.attemptedItems.length > 0) {
-            log.attemptedItems.forEach(id => attemptedIds.add(id));
-          } else {
-            for(let i=0; i<log.total; i++) attemptedIds.add(log.timestamp + '_' + i);
-          }
+        const ts = log.timestamp || '';
+        const datePart = ts.split(' ')[0];
+        if (datePart === todayFull || datePart === todayShort) {
+          hasPracticedToday = true;
+        }
 
-          if (log.correctItems && log.correctItems.length > 0) {
-            log.correctItems.forEach(id => correctIds.add(id));
-          } else {
-            for(let i=0; i<log.correct; i++) correctIds.add(log.timestamp + '_' + i);
-          }
+        if (log.attemptedItems && log.attemptedItems.length > 0) {
+          log.attemptedItems.forEach(id => allAttemptedIds.add(id));
+        } else {
+          fallbackTotal += (log.total || 0);
+        }
+
+        if (log.correctItems && log.correctItems.length > 0) {
+          log.correctItems.forEach(id => allCorrectIds.add(id));
+        } else {
+          fallbackCorrect += (log.correct || 0);
         }
       });
 
-      let monthTotal = attemptedIds.size > 0 ? attemptedIds.size : userLogs.reduce((acc, log) => {
-        const parts = (log.timestamp || '').split(' ')[0].split('/');
-        return (parts.length === 2 && parseInt(parts[0]) === currentMonth) ? acc + (log.total || 0) : acc;
-      }, 0);
+      const totalUnique = allAttemptedIds.size + fallbackTotal;
+      const correctUnique = allCorrectIds.size + fallbackCorrect;
 
-      let monthCorrect = correctIds.size > 0 ? correctIds.size : userLogs.reduce((acc, log) => {
-        const parts = (log.timestamp || '').split(' ')[0].split('/');
-        return (parts.length === 2 && parseInt(parts[0]) === currentMonth) ? acc + (log.correct || 0) : acc;
-      }, 0);
+      document.getElementById('diary-total-unique').innerText = `${totalUnique} 題`;
+      document.getElementById('diary-correct-unique').innerText = `${correctUnique} 題`;
 
-      document.getElementById('diary-total-unique').innerText = `${monthTotal} 題`;
-      document.getElementById('diary-correct-unique').innerText = `${monthCorrect} 題`;
+      const unlockedTreasuresCount = Math.floor(correctUnique / 50);
+      document.getElementById('diary-level-badge').innerText = `🎁 累積 ${correctUnique} 題`;
 
-      const unlockedTreasuresCount = Math.floor(monthCorrect / 50);
-      document.getElementById('diary-level-badge').innerText = `🎁 累積 ${monthCorrect} 題`;
-
+      // 每日練習 Checklist (每天 00:00 歸零)
       const box1 = document.getElementById('sys-box-1');
       const icon1 = document.getElementById('sys-icon-1');
       const t1 = document.getElementById('sys-text-1');
-      if (hasPracticedToday || userLogs.length > 0) {
+      if (hasPracticedToday) {
         box1.className = "flex items-center gap-3 p-3 rounded-xl bg-pink-50 border border-pink-200 transition-colors";
         icon1.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-pink-200 text-pink-700 font-bold text-sm shadow-sm";
         icon1.innerText = "🐱✅";
         t1.className = "font-medium text-pink-700";
-        t1.innerText = "完成至少 1 次線上刷題或練習 (已達成 ✅)";
+        t1.innerText = `今日 (${todayShort}) 已完成線上刷題練習 (已達成 ✅，明天自動重置)`;
       } else {
         box1.className = "flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors";
         icon1.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm";
         icon1.innerText = "🐱";
         t1.className = "font-medium text-slate-500";
-        t1.innerText = "完成至少 1 次線上刷題或練習 (未完成)";
+        t1.innerText = `今日 (${todayShort}) 完成至少 1 次線上刷題或練習 (尚未完成)`;
       }
 
+      // 寶物累積解鎖狀態 (跨日永久累積)
       const box2 = document.getElementById('sys-box-2');
       const icon2 = document.getElementById('sys-icon-2');
       const t2 = document.getElementById('sys-text-2');
+      const nextTarget = (unlockedTreasuresCount + 1) * 50;
       
-      const nextTarget = (Math.floor(monthCorrect / 50) + 1) * 50;
-      if (monthCorrect >= 50) {
+      if (correctUnique >= 50) {
         box2.className = "flex items-center gap-3 p-3 rounded-xl bg-pink-50 border border-pink-200 transition-colors";
         icon2.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-pink-200 text-pink-700 font-bold text-sm shadow-sm";
         icon2.innerText = "🐱✅";
         t2.className = "font-medium text-pink-700";
-        t2.innerText = `本月累積答對已達 ${monthCorrect} 題，已解鎖 ${unlockedTreasuresCount} 件寶物！(距離下一件還需 ${nextTarget - monthCorrect} 題)`;
+        t2.innerText = `總累積答對已達 ${correctUnique} 題，已解鎖 ${unlockedTreasuresCount} 件寶物！(距離下一件還需 ${nextTarget - correctUnique} 題)`;
       } else {
         box2.className = "flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors";
         icon2.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm";
         icon2.innerText = "🐱";
         t2.className = "font-medium text-slate-500";
-        t2.innerText = `本月累積答對 ${monthCorrect} 題 / 目標 50 題解鎖第一樣寶物 (還差 ${50 - monthCorrect} 題)`;
+        t2.innerText = `總累積答對 ${correctUnique} 題 / 目標 50 題解鎖第一樣寶物 (還差 ${50 - correctUnique} 題)`;
       }
 
-      renderTreasures(unlockedTreasuresCount, currentYear, monthCorrect);
+      renderTreasures(unlockedTreasuresCount, currentYear, correctUnique);
     }
 
     function renderTreasures(unlockedCount, currentYear, totalCorrect) {
@@ -562,51 +618,45 @@
       }
     }
 
-    function recordQuizSession(totalCount, correctCount, wrongCount, rangeText, sessionWrongItems = [], attemptedIds = [], correctIds = []) {
-      if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
+    // 高畫質 JPG 下載函式（支援試卷與錯題本）
+    async function exportToJPG(elementId, fileNamePrefix) {
+      const element = document.getElementById(elementId);
+      if (!element || element.innerHTML.trim() === '') {
+        alert('目前沒有內容可以匯出成圖片！');
+        return;
+      }
 
-      const now = new Date();
-      const mStr = String(now.getMonth() + 1).padStart(2, '0');
-      const dStr = String(now.getDate()).padStart(2, '0');
-      const dateKey = `${mStr}/${dStr}`;
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      showStatus('正在產生高畫質 JPG 圖片，請稍候...', 'info');
 
-      const sessionData = {
-        id: 'log_' + Date.now(),
-        date: dateKey,
-        timestamp: `${dateKey} ${timeStr}`,
-        timeOnly: timeStr,
-        total: totalCount,
-        correct: correctCount,
-        wrong: wrongCount,
-        range: rangeText,
-        wrongItems: sessionWrongItems,
-        attemptedItems: attemptedIds,
-        correctItems: correctIds
-      };
+      try {
+        const noPrintEls = element.querySelectorAll('.no-print');
+        noPrintEls.forEach(el => el.style.display = 'none');
 
-      userLogs.push(sessionData);
-      saveUserDataToLocal(false);
-      renderDiaryStats();
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false
+        });
 
-      fetch(GAS_API_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'recordQuiz',
-          email: currentUser.email,
-          timestamp: sessionData.timestamp,
-          total: totalCount,
-          correct: correctCount,
-          wrong: wrongCount,
-          range: rangeText,
-          wrongItems: wrongQuestions,
-          vocabBank: vocabBank
-        })
-      }).catch(err => console.log('Cloud sync error:', err));
+        noPrintEls.forEach(el => el.style.display = '');
 
-      return sessionData;
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        const link = document.createElement('a');
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+        
+        link.download = `${fileNamePrefix}_${dateStr}.jpg`;
+        link.href = imgData;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showStatus('JPG 圖片已成功下載！', 'success');
+      } catch (err) {
+        console.error('JPG 匯出失敗:', err);
+        alert('圖片產生失敗，請稍後再試或改用列印功能。');
+      }
     }
 
     function handleLogin(e) {
@@ -632,7 +682,7 @@
       }
 
       currentUser = { email: email };
-      localStorage.setItem('yh_user_v12', JSON.stringify(currentUser));
+      localStorage.setItem('yh_user_v13', JSON.stringify(currentUser));
       document.getElementById('login-modal').classList.add('hidden');
       document.getElementById('user-status').innerText = `👤 ${email}`;
 
@@ -646,7 +696,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('yh_user_v12');
+      localStorage.removeItem('yh_user_v13');
       location.reload();
     }
 
@@ -673,445 +723,57 @@
           
           const optKeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
           let opts = {};
-          for (let i = 0; i < optKeys.length; i++) {
-            opts[`option${optKeys[i]}`] = cols[4 + i] || '';
-          }
+          let optIdx = 4;
+          optKeys.forEach(k => {
+            opts[k] = cols[optIdx] || '';
+            optIdx++;
+          });
 
-          const answer = cols[12] ? cols[12].toUpperCase() : '';
+          const answer = cols[12] || '';
           const explanation = cols[13] || '';
-          const subject = cols[14] || '';
 
-          if (!answer && !opts.optionA && id && !id.includes('-')) {
-            readingArticles[id] = questionText;
-            readingArticles['article_' + id] = explanation; 
-            return;
-          }
-
-          if (questionText || opts.optionA) {
-            const subNum = id.includes('-') ? id.split('-')[1] : '';
-            const displayTitle = questionText || (subNum ? `請選出文章中第 (${subNum}) 格最適合的答案：` : '請選出最適合的答案：');
-
+          if (questionText) {
             rawQuestions.push({
-              id: id,
-              grade: grade,
-              category: unit,
-              title: displayTitle,
-              isClozeBlank: !questionText,
-              ...opts,
-              answer: answer,
-              analysis: explanation || '暫無詳細解析',
-              subject: subject
+              id, grade, unit, questionText, opts, answer, explanation
             });
           }
         });
 
-        renderSubjectAndGrades();
-        const totalUnits = countQuestionUnits(rawQuestions);
-        showStatus(`成功載入 ${totalUnits} 題（含題組）試題！`, 'success');
+        initFilterOptions();
+        showStatus('題庫載入成功！', 'success');
       } catch (err) {
-        showStatus('題庫讀取失敗，請確認 Google Sheet 是否已開啟公開檢視權限。', 'error');
+        console.error('載入題庫失敗:', err);
+        showStatus('題庫載入失敗，請檢查 Google 試算表公開權限或網路連線。', 'error');
       }
     }
 
-    function countQuestionUnits(questionList) {
-      const seenGroups = new Set();
-      let count = 0;
-      questionList.forEach(q => {
-        if (q.id && q.id.includes('-')) {
-          const baseId = q.id.split('-')[0];
-          if (!seenGroups.has(baseId)) {
-            seenGroups.add(baseId);
-            count++;
-          }
-        } else {
-          count++;
-        }
-      });
-      return count;
-    }
-
-    function renderSubjectAndGrades() {
-      const subjects = [...new Set(rawQuestions.map(q => q.subject).filter(Boolean))];
-      const subjectContainer = document.getElementById('subject-filter-container');
-      const subjectRadioes = document.getElementById('subject-radioes');
-
-      if (subjects.length > 0) {
-        subjectContainer.classList.remove('hidden');
-        document.getElementById('grade-label-num').innerText = '2';
-        document.getElementById('unit-label-num').innerText = '3';
-
-        subjectRadioes.innerHTML = `
-          <label class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
-            <input type="radio" name="subject-radio" value="" checked onchange="onSubjectChange()" class="text-brand-600 w-4 h-4"> 
-            <span>全部科目</span>
-          </label>
-        ` + subjects.map(sub => `
-          <label class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
-            <input type="radio" name="subject-radio" value="${sub}" onchange="onSubjectChange()" class="text-brand-600 w-4 h-4"> 
-            <span>${sub}</span>
-          </label>
-        `).join('');
+    function showStatus(msg, type) {
+      const box = document.getElementById('status-msg');
+      box.innerText = msg;
+      box.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200', 'bg-amber-50', 'text-amber-800', 'border-amber-200', 'bg-red-50', 'text-red-800', 'border-red-200');
+      if (type === 'success') {
+        box.classList.add('bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+      } else if (type === 'info') {
+        box.classList.add('bg-amber-50', 'text-amber-800', 'border-amber-200');
       } else {
-        subjectContainer.classList.add('hidden');
-        document.getElementById('grade-label-num').innerText = '1';
-        document.getElementById('unit-label-num').innerText = '2';
-      }
-
-      renderGradeRadios();
-    }
-
-    function onSubjectChange() {
-      renderGradeRadios();
-    }
-
-    function getSelectedSubject() {
-      const selectedSubInput = document.querySelector('input[name="subject-radio"]:checked');
-      return selectedSubInput ? selectedSubInput.value : '';
-    }
-
-    function renderGradeRadios() {
-      const currentSubject = getSelectedSubject();
-      const filteredBySub = currentSubject ? rawQuestions.filter(q => q.subject === currentSubject) : rawQuestions;
-      
-      const grades = [...new Set(filteredBySub.map(q => q.grade).filter(Boolean))];
-      const gradeContainer = document.getElementById('grade-radioes');
-      
-      if (grades.length === 0) {
-        gradeContainer.innerHTML = '<span class="text-slate-400 text-xs">無符合的年級資料</span>';
-        document.getElementById('category-checkboxes').innerHTML = '<span class="text-slate-400 text-xs">無學習類別</span>';
-        return;
-      }
-
-      gradeContainer.innerHTML = grades.map((g, idx) => {
-        const count = countQuestionUnits(filteredBySub.filter(q => q.grade === g));
-        const checked = idx === 0 ? 'checked' : '';
-        return `
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
-            <input type="radio" name="grade-radio" value="${g}" ${checked} onchange="onGradeChange()" class="text-brand-600 w-4 h-4"> 
-            <span>${g}</span> 
-            <span class="text-xs text-slate-400 ml-auto">(${count}題)</span>
-          </label>
-        `;
-      }).join('');
-
-      onGradeChange();
-    }
-
-    function onGradeChange() {
-      const currentSubject = getSelectedSubject();
-      const selectedGradeInput = document.querySelector('input[name="grade-radio"]:checked');
-      if (!selectedGradeInput) return;
-
-      const selectedGrade = selectedGradeInput.value;
-      const filteredBySub = currentSubject ? rawQuestions.filter(q => q.subject === currentSubject) : rawQuestions;
-      const gradeQuestions = filteredBySub.filter(q => q.grade === selectedGrade);
-      
-      const categories = [...new Set(gradeQuestions.map(q => q.category).filter(Boolean))];
-      const categoryContainer = document.getElementById('category-checkboxes');
-
-      if (categories.length === 0) {
-        categoryContainer.innerHTML = '<span class="text-slate-400 text-xs">此條件無學習類別</span>';
-        return;
-      }
-
-      categoryContainer.innerHTML = categories.map(cat => {
-        const count = countQuestionUnits(gradeQuestions.filter(q => q.category === cat));
-        return `
-          <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 cursor-pointer font-medium">
-            <input type="checkbox" value="${cat}" class="category-cb text-brand-600 rounded w-4 h-4" checked> 
-            <span>${cat}</span> 
-            <span class="text-xs text-slate-400 ml-auto">(${count}題)</span>
-          </label>
-        `;
-      }).join('');
-    }
-
-    function toggleAllCategories(select) {
-      const checkboxes = document.querySelectorAll('.category-cb');
-      checkboxes.forEach(cb => { cb.checked = select; });
-    }
-
-    function getFilteredQuestions() {
-      const currentSubject = getSelectedSubject();
-      const selectedGradeInput = document.querySelector('input[name="grade-radio"]:checked');
-      const selectedGrade = selectedGradeInput ? selectedGradeInput.value : '';
-      const selectedCategories = Array.from(document.querySelectorAll('.category-cb:checked')).map(cb => cb.value);
-
-      return rawQuestions.filter(q => {
-        if (currentSubject && q.subject !== currentSubject) return false;
-        if (q.grade !== selectedGrade) return false;
-        if (selectedCategories.length > 0 && !selectedCategories.includes(q.category)) return false;
-        return true;
-      });
-    }
-
-    function buildGroupedQuizSelection(filteredList, targetUnits) {
-      let singleQuestions = [];
-      let articleGroupsMap = new Map();
-      let articleGroupKeys = [];
-
-      filteredList.forEach(q => {
-        if (q.id && q.id.includes('-')) {
-          const baseId = q.id.split('-')[0];
-          if (!articleGroupsMap.has(baseId)) {
-            articleGroupsMap.set(baseId, []);
-            articleGroupKeys.push(baseId);
-          }
-          articleGroupsMap.get(baseId).push(q);
-        } else {
-          singleQuestions.push(q);
-        }
-      });
-
-      articleGroupsMap.forEach((subList, baseId) => {
-        subList.sort((a, b) => {
-          const numA = parseInt(a.id.split('-')[1]) || 0;
-          const numB = parseInt(b.id.split('-')[1]) || 0;
-          return numA - numB;
-        });
-      });
-
-      const shuffledSingles = [...singleQuestions].sort(() => 0.5 - Math.random());
-      const shuffledArticles = [...articleGroupKeys].sort(() => 0.5 - Math.random());
-
-      let finalSelected = [];
-      let currentUnits = 0;
-
-      for (let baseId of shuffledArticles) {
-        if (currentUnits >= targetUnits) break;
-        const subList = articleGroupsMap.get(baseId);
-        finalSelected.push(...subList);
-        currentUnits++;
-      }
-
-      for (let q of shuffledSingles) {
-        if (currentUnits >= targetUnits) break;
-        finalSelected.push(q);
-        currentUnits++;
-      }
-
-      return finalSelected;
-    }
-
-    function processTextWithLookup(text) {
-      if (!text) return '';
-      return text.replace(/\b[a-zA-Z]+\b/g, (word) => {
-        if (word.length > 1) {
-          return `<span class="lookup-word" onclick="lookupWord('${word}')">${word}</span>`;
-        }
-        return word;
-      });
-    }
-
-    async function lookupWord(word) {
-      activeSelectedWord = word;
-      document.getElementById('panel-word').innerText = word;
-      document.getElementById('panel-definition').innerText = '正在查詢中文釋義...';
-      document.getElementById('vocab-card-panel').classList.remove('hidden');
-
-      speakActiveWord();
-
-      try {
-        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|zh-TW`);
-        const data = await res.json();
-        
-        if (data && data.responseData && data.responseData.translatedText) {
-          let trans = data.responseData.translatedText;
-          if (trans.includes('MYMEMORY WARNING') || trans.trim() === '') {
-            activeWordDefinition = '查無明確中文釋義';
-          } else {
-            activeWordDefinition = trans;
-          }
-        } else {
-          activeWordDefinition = '常見英文單字';
-        }
-        document.getElementById('panel-definition').innerText = activeWordDefinition;
-      } catch (err) {
-        activeWordDefinition = '點擊可加入單字庫';
-        document.getElementById('panel-definition').innerText = activeWordDefinition;
+        box.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
       }
     }
 
-    function speakActiveWord() {
-      if (!activeSelectedWord) return;
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(activeSelectedWord);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-      }
-    }
+    function switchTab(tabName) {
+      document.getElementById('tab-admin').classList.add('hidden');
+      document.getElementById('tab-quiz').classList.add('hidden');
+      document.getElementById('tab-wrong').classList.add('hidden');
+      document.getElementById('tab-vocab-bank').classList.add('hidden');
 
-    function closeVocabPanel() {
-      document.getElementById('vocab-card-panel').classList.add('hidden');
-    }
-
-    function confirmAddVocab() {
-      if (!activeSelectedWord) return;
-      let vocabEntry = `${activeSelectedWord}：${activeWordDefinition}`;
-      if (!vocabBank.includes(vocabEntry)) {
-        vocabBank.push(vocabEntry);
-        saveUserDataToLocal(true);
-        alert(`已成功將 "${activeSelectedWord}" 加入單字庫！`);
-      } else {
-        alert(`"${activeSelectedWord}" 已經在你的單字庫中囉！`);
-      }
-      closeVocabPanel();
-    }
-
-    function updateVocabBadge() {
-      document.getElementById('vocab-count-badge').innerText = vocabBank.length;
-    }
-
-    function startQuiz(mode) {
-      const filtered = getFilteredQuestions();
-      const count = parseInt(document.getElementById('question-count').value) || 10;
-
-      if (filtered.length === 0) {
-        showStatus('找不到符合條件的題目，請至少勾選一項學習類別！', 'error');
-        return;
-      }
-
-      const quizQuestions = buildGroupedQuizSelection(filtered, count);
-      const container = document.getElementById('quiz-container');
-      const actionBox = document.getElementById('print-actions');
-      const finishBox = document.getElementById('quiz-finish-actions');
-      container.innerHTML = '';
-
-      if (mode === 'online') {
-        actionBox.classList.add('hidden');
-        finishBox.classList.add('hidden');
-        renderOnlineQuiz(container, quizQuestions);
-        showStatus(`已載入測驗題目，總計 ${quizQuestions.length} 小題，請開始作答。`, 'success');
-      } else {
-        finishBox.classList.add('hidden');
-        actionBox.classList.remove('hidden');
-        // 列印模式不呼叫 recordQuizSession，因此不計入本月刷題紀錄
-        renderPrintableQuizAndAnswers(container, quizQuestions);
-        showStatus(`已產出隨堂測驗卷與解答解析，可直接列印或匯出 PDF/Word (此列印模式不計入刷題紀錄)。`, 'success');
-      }
-    }
-
-    function renderOnlineQuiz(container, questions) {
-      window.currentQuizSession = {
-        total: questions.length,
-        correct: 0,
-        wrong: 0,
-        answeredCount: 0,
-        wrongItems: [],
-        attemptedIds: questions.map(q => q.id),
-        correctIds: [],
-        rangeText: (() => {
-          const g = document.querySelector('input[name="grade-radio"]:checked')?.value || '';
-          const cats = Array.from(document.querySelectorAll('.category-cb:checked')).map(cb => cb.value).join(', ');
-          return `${g} / [${cats}]`;
-        })()
-      };
-
-      let renderedArticles = new Set();
-
-      questions.forEach((q, idx) => {
-        let articleHtml = '';
-        if (q.id && q.id.includes('-')) {
-          const baseId = q.id.split('-')[0];
-          if (readingArticles[baseId] && !renderedArticles.has(baseId)) {
-            renderedArticles.add(baseId);
-            articleHtml = `
-              <div class="bg-slate-50 p-6 rounded-2xl border border-brand-200 mb-4 space-y-3">
-                <div class="text-xs font-bold text-brand-700 uppercase tracking-wider">📖 閱讀 / 克漏字文章</div>
-                <div class="text-slate-800 leading-[2] article-content">${processTextWithLookup(readingArticles[baseId])}</div>
-                ${readingArticles['article_' + baseId] ? `<div class="text-xs text-slate-500 pt-2 border-t border-slate-200 article-content"><strong>【中文翻譯/說明】：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
-              </div>
-            `;
-          }
-        }
-
-        let optsHtml = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(opt => {
-          const val = q[`option${opt}`];
-          if (!val || val.trim() === '') return '';
-          return `
-            <button onclick="checkAnswer('${q.id}', '${opt}', '${q.answer}')" 
-              class="opt-btn-${q.id.replace(/[^a-zA-Z0-9]/g, '_')} w-full text-left p-3.5 rounded-2xl border border-slate-200 hover:bg-slate-50 transition-all font-medium flex items-center justify-between">
-              <span><strong class="text-slate-400 mr-2">${opt}.</strong> ${processTextWithLookup(val)}</span>
-            </button>
-          `;
-        }).join('');
-
-        const card = document.createElement('div');
-        card.className = "bg-white p-6 rounded-3xl shadow-sm border border-slate-200 card-box leading-[2] text-[18px]";
-        card.innerHTML = `
-          ${articleHtml}
-          <div class="flex items-center gap-2 mb-3">
-            <span class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">(          ) ${idx + 1}.</span>
-          </div>
-          <div class="text-slate-900 font-bold mb-4 text-[18px]">${processTextWithLookup(q.title)}</div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[18px] mb-4">
-            ${optsHtml}
-          </div>
-
-          <div id="feedback-${q.id.replace(/[^a-zA-Z0-9]/g, '_')}" class="hidden p-4 rounded-2xl text-[18px] border space-y-1.5"></div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function checkAnswer(qId, selectedOpt, correctOpt) {
-      const q = rawQuestions.find(item => item.id === qId);
-      const safeId = qId.replace(/[^a-zA-Z0-9]/g, '_');
-      const feedbackEl = document.getElementById(`feedback-${safeId}`);
-      const buttons = document.querySelectorAll(`.opt-btn-${safeId}`);
-
-      buttons.forEach(btn => btn.disabled = true);
-      const isCorrect = selectedOpt === correctOpt;
-
-      if (isCorrect) {
-        feedbackEl.className = "p-4 rounded-2xl text-[18px] border bg-green-50 border-green-200 text-green-900 font-medium leading-[2]";
-        feedbackEl.innerHTML = `
-          <div class="font-bold text-green-700 mb-1">✅ 回答正確！</div>
-          <div><strong>正確答案：</strong> (${correctOpt})</div>
-          <div class="text-[18px] text-green-950 mt-1"><strong>【解析】</strong> ${processTextWithLookup(q.analysis)}</div>
-        `;
-        if (window.currentQuizSession) {
-          window.currentQuizSession.correct++;
-          window.currentQuizSession.correctIds.push(qId);
-        }
-      } else {
-        feedbackEl.className = "p-4 rounded-2xl text-[18px] border bg-red-50 border-red-200 text-red-900 font-medium leading-[2]";
-        feedbackEl.innerHTML = `
-          <div class="font-bold text-red-700 mb-1">❌ 回答錯誤 (已自動收錄至錯題區)</div>
-          <div><strong>您的選擇：</strong> ${selectedOpt} | <strong>正確答案：</strong> (${correctOpt})</div>
-          <div class="text-[18px] text-red-950 mt-1"><strong>【解析】</strong> ${processTextWithLookup(q.analysis)}</div>
-        `;
-        
-        const wrongRecord = { ...q, userAnswer: selectedOpt };
-        if (window.currentQuizSession) {
-          window.currentQuizSession.wrong++;
-          window.currentQuizSession.wrongItems.push(wrongRecord);
-        }
-        addWrongQuestion(wrongRecord);
-      }
-
-      feedbackEl.classList.remove('hidden');
-
-      if (window.currentQuizSession) {
-        window.currentQuizSession.answeredCount++;
-        if (window.currentQuizSession.answeredCount === window.currentQuizSession.total) {
-          const s = window.currentQuizSession;
-          recordQuizSession(s.total, s.correct, s.wrong, s.rangeText, s.wrongItems, s.attemptedIds, s.correctIds);
-          
-          const summaryEl = document.getElementById('quiz-score-summary');
-          summaryEl.innerText = `本次測驗共 ${s.total} 題｜答對 ${s.correct} 題｜答錯 ${s.wrong} 題`;
-          document.getElementById('quiz-finish-actions').classList.remove('hidden');
-        }
-      }
-    }
-
-    function addWrongQuestion(q) {
-      if (!wrongQuestions.some(item => item.id === q.id && item.title === q.title)) {
-        wrongQuestions.push(q);
-        saveUserDataToLocal(false);
+      if (tabName === 'quiz') {
+        document.getElementById('tab-quiz').classList.remove('hidden');
+      } else if (tabName === 'wrong-notebook') {
+        document.getElementById('tab-wrong').classList.remove('hidden');
+        renderWrongNotebook();
+      } else if (tabName === 'vocab-bank') {
+        document.getElementById('tab-vocab-bank').classList.remove('hidden');
+        renderVocabBank();
       }
     }
 
@@ -1125,275 +787,8 @@
       }
     }
 
-    function renderPrintableQuizAndAnswers(container, questions) {
-      const selectedCategories = Array.from(document.querySelectorAll('.category-cb:checked')).map(cb => cb.value).join(', ');
-
-      let html = `
-        <div id="pdf-export-root" class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 card-box leading-[2] text-[18px]">
-          <div class="relative border-b border-slate-200 pb-5 mb-6">
-            <div class="absolute top-0 right-0 text-slate-500 font-medium text-[12px]">
-              ${selectedCategories ? `學習類別：${selectedCategories}` : ''}
-            </div>
-            <h1 class="text-2xl font-black text-slate-800 text-center">優華數位英文 - 隨堂測驗卷</h1>
-          </div>
-          <div class="space-y-6">
-      `;
-
-      let printedArticles = new Set();
-
-      questions.forEach((q, idx) => {
-        if (q.id && q.id.includes('-')) {
-          const baseId = q.id.split('-')[0];
-          if (readingArticles[baseId] && !printedArticles.has(baseId)) {
-            printedArticles.add(baseId);
-            html += `
-              <div class="bg-slate-50 p-5 rounded-2xl border border-slate-300 my-4 space-y-2">
-                <div class="font-bold text-slate-800">【閱讀 / 克漏字文章】</div>
-                <div class="text-slate-900 article-content">${readingArticles[baseId]}</div>
-                ${readingArticles['article_' + baseId] ? `<div class="text-sm text-slate-600 pt-2 border-t border-slate-200 article-content"><strong>中文翻譯：</strong>${readingArticles['article_' + baseId]}</div>` : ''}
-              </div>
-            `;
-          }
-        }
-
-        let optsHtml = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(opt => {
-          const val = q[`option${opt}`];
-          if (!val || val.trim() === '') return '';
-          return `<div>(${opt}) ${val}</div>`;
-        }).join('');
-
-        html += `
-          <div class="space-y-2">
-            <div class="font-bold text-slate-900 text-[18px]">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. ${q.isClozeBlank ? '' : q.title}</div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4 text-[18px] text-slate-700">
-              ${optsHtml}
-            </div>
-          </div>
-        `;
-      });
-
-      html += `
-          </div>
-        </div>
-        <div class="page-break"></div>
-        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 card-box leading-[2] text-[18px]">
-          <div class="border-b border-slate-200 pb-4 mb-6">
-            <h2 class="text-xl font-black text-slate-800">參考答案與詳細解析</h2>
-          </div>
-          <div class="space-y-4">
-      `;
-
-      questions.forEach((q, idx) => {
-        html += `
-          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-[18px] space-y-1">
-            <div class="font-bold text-slate-900">( &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ) ${idx + 1}. ${q.title}</div>
-            <div class="text-brand-700 font-bold">正確答案：(${q.answer})</div>
-            <div class="text-slate-600"><strong>【解析】</strong> ${q.analysis}</div>
-          </div>
-        `;
-      });
-
-      html += `
-          </div>
-        </div>
-      `;
-
-      container.innerHTML = html;
-    }
-
-    function switchTab(tab) {
-      if (currentUser && currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
-
-      const quizTab = document.getElementById('tab-quiz');
-      const wrongTab = document.getElementById('tab-wrong');
-      const vocabTab = document.getElementById('tab-vocab-bank');
-      const adminTab = document.getElementById('tab-admin');
-
-      quizTab.classList.add('hidden');
-      wrongTab.classList.add('hidden');
-      vocabTab.classList.add('hidden');
-      if (adminTab) adminTab.classList.add('hidden');
-
-      if (tab === 'wrong-notebook') {
-        wrongTab.classList.remove('hidden');
-        renderWrongNotebook();
-      } else if (tab === 'vocab-bank') {
-        vocabTab.classList.remove('hidden');
-        renderVocabBank();
-      } else {
-        quizTab.classList.remove('hidden');
-      }
-    }
-
-    function renderWrongNotebook() {
-      const container = document.getElementById('wrong-list-container');
-      if (wrongQuestions.length === 0) {
-        container.innerHTML = `
-          <div class="bg-white p-12 rounded-3xl text-center shadow-sm border border-slate-200">
-            <div class="text-5xl mb-3">🎉</div>
-            <p class="text-lg font-bold text-slate-700">太棒了！您的錯題本目前沒有任何題目。</p>
-            <p class="text-sm text-slate-400 mt-1">在線上練習中答錯的題目會自動同步至此供您反覆複習。</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = wrongQuestions.map((q, idx) => {
-        let optsHtml = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].map(opt => {
-          const val = q[`option${opt}`];
-          if (!val || val.trim() === '') return '';
-          return `<div>(${opt}) ${processTextWithLookup(val)}</div>`;
-        }).join('');
-
-        return `
-          <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 card-box space-y-3 leading-[2] text-[18px]">
-            <div class="flex justify-between items-center">
-              <span class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-bold">錯題 #${idx + 1} (${q.grade} / ${q.category})</span>
-              <button onclick="removeWrongItem('${q.id}')" class="text-slate-400 hover:text-red-600 text-xs font-bold no-print">❌ 移除此題</button>
-            </div>
-            <div class="text-slate-900 font-bold text-[18px]">${processTextWithLookup(q.title)}</div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-2 text-[18px] text-slate-700">
-              ${optsHtml}
-            </div>
-            <div class="p-4 rounded-2xl bg-brand-50 border border-brand-200 text-brand-900 text-[18px] space-y-1">
-              <div class="font-bold text-brand-700">正確答案：(${q.answer})</div>
-              <div><strong>【解析】</strong> ${processTextWithLookup(q.analysis)}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function startWrongPractice() {
-      if (wrongQuestions.length === 0) {
-        alert('目前沒有錯題可以練習！');
-        return;
-      }
-      switchTab('quiz');
-      const container = document.getElementById('quiz-container');
-      document.getElementById('print-actions').classList.add('hidden');
-      document.getElementById('quiz-finish-actions').classList.add('hidden');
-      container.innerHTML = '';
-      showStatus(`已載入錯題本中的 ${wrongQuestions.length} 題進行再次練習！`, 'success');
-      renderOnlineQuiz(container, wrongQuestions);
-    }
-
-    function removeWrongItem(qId) {
-      wrongQuestions = wrongQuestions.filter(q => q.id !== qId);
-      saveUserDataToLocal(true);
-      renderWrongNotebook();
-    }
-
-    function clearWrongQuestions() {
-      if (confirm('確定要清空所有錯題嗎？')) {
-        wrongQuestions = [];
-        saveUserDataToLocal(true);
-        renderWrongNotebook();
-      }
-    }
-
-    function renderVocabBank() {
-      const container = document.getElementById('vocab-list-container');
-      if (vocabBank.length === 0) {
-        container.innerHTML = `
-          <div class="bg-white p-12 rounded-3xl text-center shadow-sm border border-slate-200">
-            <div class="text-5xl mb-3">📖</div>
-            <p class="text-lg font-bold text-slate-700">你的單字庫目前是空的。</p>
-            <p class="text-sm text-slate-400 mt-1">在測驗題目或選項中點擊任何英文單字即可查詢中文並加入單字庫！</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = vocabBank.map((item, idx) => `
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
-          <div class="flex items-center gap-4">
-            <span class="bg-brand-100 text-brand-700 text-xs px-2.5 py-1 rounded-full font-bold">#${idx + 1}</span>
-            <span class="text-lg font-bold text-slate-800">${item}</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <button onclick="removeVocabWord('${item}')" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3.5 py-2 rounded-xl border border-red-200">🗑️ 刪除已學會</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function removeVocabWord(item) {
-      vocabBank = vocabBank.filter(w => w !== item);
-      saveUserDataToLocal(true);
-      renderVocabBank();
-    }
-
-    function exportToPDF(elementId, filename) {
-      const element = document.getElementById(elementId);
-      if (!element || element.innerHTML.trim() === '') {
-        alert('目前沒有可匯出的內容，請先產生試卷！');
-        return;
-      }
-      
-      const opt = {
-        margin: 10,
-        filename: `${filename}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      showStatus('正在產生 PDF，請稍候...', 'info');
-      html2pdf().from(element).set(opt).save().then(() => {
-        showStatus('PDF 下載成功！', 'success');
-      }).catch(err => {
-        console.error(err);
-        showStatus('PDF 匯出失敗，請改用直接列印功能。', 'error');
-      });
-    }
-
-    function exportToWord(elementId, filename) {
-      const element = document.getElementById(elementId);
-      if (!element || element.innerHTML.trim() === '') {
-        alert('目前沒有可匯出的內容！');
-        return;
-      }
-
-      const htmlContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-        <head>
-          <meta charset='utf-8'>
-          <title>${filename}</title>
-          <style>
-            body { font-family: 'Microsoft JhengHei', 'DFKai-SB', Arial, sans-serif; font-size: 18px; line-height: 2.0; color: #333; }
-            div { margin-bottom: 8px; }
-          </style>
-        </head>
-        <body>
-          ${element.innerHTML}
-        </body>
-        </html>
-      `;
-
-      const blob = new Blob(['\ufeff' + htmlContent], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${filename}.doc`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-
-    function showStatus(msg, type) {
-      const statusEl = document.getElementById('status-msg');
-      statusEl.classList.remove('hidden', 'bg-green-50', 'text-green-800', 'border-green-200', 'bg-red-50', 'text-red-800', 'border-red-200', 'bg-blue-50', 'text-blue-800', 'border-blue-200');
-      
-      if (type === 'success') {
-        statusEl.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
-      } else if (type === 'error') {
-        statusEl.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
-      } else {
-        statusEl.classList.add('bg-blue-50', 'text-blue-800', 'border-blue-200');
-      }
-      statusEl.innerText = msg;
+    function updateVocabBadge() {
+      document.getElementById('vocab-count-badge').innerText = vocabBank.length;
     }
   </script>
 </body>
