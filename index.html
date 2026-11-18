@@ -76,6 +76,27 @@
     </div>
   </div>
 
+  <!-- 寶物解鎖恭喜彈窗 (Modal) -->
+  <div id="treasure-unlock-modal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 border-4 border-amber-300 text-center space-y-5 relative overflow-hidden">
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-200/40 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-brand-200/40 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="space-y-1 relative">
+        <span class="inline-block bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-full tracking-wider">🎉 累積答對達標獎勵</span>
+        <h3 class="text-2xl font-black text-slate-800 pt-1">恭喜獲得新寶物！</h3>
+      </div>
+
+      <div id="unlocked-treasures-showcase" class="flex flex-wrap justify-center gap-3 py-2 relative"></div>
+
+      <p class="text-sm text-slate-500 relative">已自動收進您的「本月寶物區」，繼續刷題收集全套 12 款吧！</p>
+
+      <button onclick="closeTreasureModal()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-all text-base relative">
+        太棒了，收下寶物！ ✨
+      </button>
+    </div>
+  </div>
+
   <!-- 頂部導覽列 -->
   <header class="bg-brand-600 text-white shadow-md no-print">
     <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -119,7 +140,7 @@
       </button>
     </div>
 
-    <!-- 頁籤一：測驗與出題主頁 (含 [練功日記] 與寶物區) -->
+    <!-- 頁籤一：測驗與出題主頁 -->
     <div id="tab-quiz" class="space-y-6">
       
       <!-- [練功日記] 動力面板與自動 Checklist -->
@@ -128,7 +149,7 @@
           <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
             <span>🔥 [練功日記] 戰力與寶物面板</span>
           </h3>
-          <span id="diary-month-badge" class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">累積戰績</span>
+          <span id="diary-month-badge" class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">本月紀錄</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -145,13 +166,13 @@
           <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
             <div class="text-xs text-amber-700 font-semibold uppercase">目前寶物解鎖進度</div>
             <div id="diary-level-badge" class="text-xl font-black text-amber-800 mt-1">🎁 累積 0 題</div>
-            <div class="text-[11px] text-amber-600 mt-1 font-medium">累積答對滿 50 題解鎖第一樣寶物，第二個 50 題解鎖第二樣寶物（累進解鎖 12 款貓咪與貓用品）</div>
+            <div class="text-[11px] text-amber-600 mt-1 font-medium">累積答對滿 50 題隨機解鎖第一樣寶物（累進解鎖 12 款貓咪與貓用品）</div>
           </div>
         </div>
 
-        <!-- 系統自動化記錄 Checklist -->
+        <!-- 系統自動化記錄 Checklist (每日 00:00 歸零) -->
         <div class="pt-2">
-          <div class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">📋 今日練功自動紀錄 (每天 00:00 自動重置)：</div>
+          <div class="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wider">📋 今日練功自動紀錄 (每天 00:00 重置)：</div>
           <div class="space-y-2 text-sm">
             <div id="sys-box-1" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors">
               <div id="sys-icon-1" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm">🐱</div>
@@ -159,16 +180,16 @@
             </div>
             <div id="sys-box-2" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors">
               <div id="sys-icon-2" class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm">🐱</div>
-              <span id="sys-text-2" class="font-medium text-slate-500">累積答對達 50 題解鎖第一樣寶物 (進行中)</span>
+              <span id="sys-text-2" class="font-medium text-slate-500">本月累積答對達 50 題隨機解鎖寶物 (進行中)</span>
             </div>
           </div>
         </div>
 
-        <!-- 寶物區與本年度寶物區 -->
+        <!-- 本月寶物區與年度榮譽殿堂 -->
         <div class="pt-4 border-t border-slate-100 space-y-4">
           <div>
             <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
-              <span>🐱 寶物殿堂 (累積每 50 題解鎖 1 款，共 12 款)</span>
+              <span>🐱 本月寶物區 (每滿 50 題隨機解鎖 1 款，共 12 款)</span>
               <span id="month-treasure-count" class="text-xs text-brand-600 font-normal">已收集 0 / 12</span>
             </h4>
             <div id="month-treasure-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
@@ -176,10 +197,10 @@
 
           <div class="pt-2">
             <h4 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
-              <span>🏆 年度榮譽殿堂</span>
+              <span>🏆 年度榮譽殿堂 (跨月永久收藏)</span>
               <span id="year-treasure-count" class="text-xs text-amber-600 font-normal">年度總收藏: 0</span>
             </h4>
-            <div id="year-treasure-grid" class="grid grid-cols-4 sm:grid-cols-6 gap-2"></div>
+            <div id="year-treasure-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
           </div>
         </div>
       </section>
@@ -346,7 +367,7 @@
     const STUDENT_PASS = '1155665';
 
     window.onload = () => {
-      const savedUser = localStorage.getItem('yh_user_v13');
+      const savedUser = localStorage.getItem('yh_user_v14');
       if (savedUser) {
         currentUser = JSON.parse(savedUser);
         document.getElementById('login-modal').classList.add('hidden');
@@ -370,7 +391,6 @@
       document.getElementById('nav-home-btn').innerText = '管理者後台';
     }
 
-    // 跨裝置雲端載入與智慧合併
     async function loadUserData() {
       if (!currentUser) return;
       const localData = JSON.parse(localStorage.getItem('yh_student_' + currentUser.email) || '{}');
@@ -498,18 +518,38 @@
       return sessionData;
     }
 
-    // 練功日記統計：寶物與總題數累積不歸零，每日練習 Checklist 每天重置
+    // 渲染練功日記統計與寶物殿堂（含月度隨機抽寶物與彈窗恭喜）
     function renderDiaryStats() {
       const now = new Date();
       const currentYear = now.getFullYear();
-      const todayFull = `${currentYear}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
-      const todayShort = `${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+      const currentMonth = now.getMonth() + 1;
+      const todayFull = `${currentYear}/${String(currentMonth).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+      const todayShort = `${String(currentMonth).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+
+      document.getElementById('diary-month-badge').innerText = `本月 (${currentYear}年${currentMonth}月)`;
 
       let allAttemptedIds = new Set();
       let allCorrectIds = new Set();
+      let monthCorrectCount = 0;
       let fallbackTotal = 0;
       let fallbackCorrect = 0;
       let hasPracticedToday = false;
+
+      let savedTreasuresState = JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email) || '{}');
+      if (savedTreasuresState.yearMonth !== `${currentYear}-${currentMonth}`) {
+        if (savedTreasuresState.unlockedList && savedTreasuresState.unlockedList.length > 0) {
+          if (!savedTreasuresState.yearlyTrophies) savedTreasuresState.yearlyTrophies = [];
+          savedTreasuresState.yearlyTrophies.push({
+            title: `${savedTreasuresState.yearMonth} 榮譽收藏`,
+            items: [...savedTreasuresState.unlockedList]
+          });
+        }
+        savedTreasuresState = {
+          yearMonth: `${currentYear}-${currentMonth}`,
+          unlockedList: [],
+          yearlyTrophies: savedTreasuresState.yearlyTrophies || []
+        };
+      }
 
       userLogs.forEach(log => {
         const ts = log.timestamp || '';
@@ -518,6 +558,9 @@
           hasPracticedToday = true;
         }
 
+        const isCurrentMonthLog = ts.startsWith(`${currentYear}/${String(currentMonth).padStart(2, '0')}`) || 
+                                   ts.startsWith(`${String(currentMonth).padStart(2, '0')}/`);
+
         if (log.attemptedItems && log.attemptedItems.length > 0) {
           log.attemptedItems.forEach(id => allAttemptedIds.add(id));
         } else {
@@ -525,9 +568,13 @@
         }
 
         if (log.correctItems && log.correctItems.length > 0) {
-          log.correctItems.forEach(id => allCorrectIds.add(id));
+          log.correctItems.forEach(id => {
+            allCorrectIds.add(id);
+            if (isCurrentMonthLog) monthCorrectCount++;
+          });
         } else {
           fallbackCorrect += (log.correct || 0);
+          if (isCurrentMonthLog) monthCorrectCount += (log.correct || 0);
         }
       });
 
@@ -537,10 +584,30 @@
       document.getElementById('diary-total-unique').innerText = `${totalUnique} 題`;
       document.getElementById('diary-correct-unique').innerText = `${correctUnique} 題`;
 
-      const unlockedTreasuresCount = Math.floor(correctUnique / 50);
-      document.getElementById('diary-level-badge').innerText = `🎁 累積 ${correctUnique} 題`;
+      const targetUnlockedCount = Math.min(Math.floor(monthCorrectCount / 50), 12);
+      document.getElementById('diary-level-badge').innerText = `🎁 本月累積答對 ${monthCorrectCount} 題`;
 
-      // 每日練習 Checklist (每天 00:00 歸零)
+      if (!savedTreasuresState.unlockedList) savedTreasuresState.unlockedList = [];
+      let newlyUnlocked = [];
+
+      while (savedTreasuresState.unlockedList.length < targetUnlockedCount && savedTreasuresState.unlockedList.length < TREASURES.length) {
+        const availableTreasures = TREASURES.filter(t => !savedTreasuresState.unlockedList.some(u => u.id === t.id));
+        if (availableTreasures.length > 0) {
+          const randomIdx = Math.floor(Math.random() * availableTreasures.length);
+          const picked = availableTreasures[randomIdx];
+          savedTreasuresState.unlockedList.push(picked);
+          newlyUnlocked.push(picked);
+        } else {
+          break;
+        }
+      }
+
+      localStorage.setItem('yh_treasures_' + currentUser.email, JSON.stringify(savedTreasuresState));
+
+      if (newlyUnlocked.length > 0) {
+        showTreasureUnlockModal(newlyUnlocked);
+      }
+
       const box1 = document.getElementById('sys-box-1');
       const icon1 = document.getElementById('sys-icon-1');
       const t1 = document.getElementById('sys-text-1');
@@ -558,40 +625,61 @@
         t1.innerText = `今日 (${todayShort}) 完成至少 1 次線上刷題或練習 (尚未完成)`;
       }
 
-      // 寶物累積解鎖狀態 (跨日永久累積)
       const box2 = document.getElementById('sys-box-2');
       const icon2 = document.getElementById('sys-icon-2');
       const t2 = document.getElementById('sys-text-2');
-      const nextTarget = (unlockedTreasuresCount + 1) * 50;
-      
-      if (correctUnique >= 50) {
+      const nextTarget = (targetUnlockedCount < 12) ? (targetUnlockedCount + 1) * 50 : 600;
+
+      if (targetUnlockedCount > 0) {
         box2.className = "flex items-center gap-3 p-3 rounded-xl bg-pink-50 border border-pink-200 transition-colors";
         icon2.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-pink-200 text-pink-700 font-bold text-sm shadow-sm";
         icon2.innerText = "🐱✅";
         t2.className = "font-medium text-pink-700";
-        t2.innerText = `總累積答對已達 ${correctUnique} 題，已解鎖 ${unlockedTreasuresCount} 件寶物！(距離下一件還需 ${nextTarget - correctUnique} 題)`;
+        t2.innerText = `本月已成功解鎖 ${targetUnlockedCount} 款隨機寶物！(距離下一款還需答對 ${nextTarget - monthCorrectCount} 題)`;
       } else {
         box2.className = "flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors";
         icon2.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm";
         icon2.innerText = "🐱";
         t2.className = "font-medium text-slate-500";
-        t2.innerText = `總累積答對 ${correctUnique} 題 / 目標 50 題解鎖第一樣寶物 (還差 ${50 - correctUnique} 題)`;
+        t2.innerText = `本月已答對 ${monthCorrectCount} 題 / 滿 50 題隨機解鎖第一款寶物 (還差 ${50 - (monthCorrectCount % 50)} 題)`;
       }
 
-      renderTreasures(unlockedTreasuresCount, currentYear, correctUnique);
+      renderTreasuresUI(savedTreasuresState);
     }
 
-    function renderTreasures(unlockedCount, currentYear, totalCorrect) {
+    function showTreasureUnlockModal(newItems) {
+      const showcase = document.getElementById('unlocked-treasures-showcase');
+      showcase.innerHTML = '';
+
+      newItems.forEach(item => {
+        showcase.innerHTML += `
+          <div class="bg-gradient-to-b from-amber-50 to-amber-100 border-2 border-amber-300 rounded-2xl p-5 flex flex-col items-center justify-center shadow-md min-w-[140px] transform transition-transform hover:scale-105">
+            <div class="text-6xl mb-2 animate-bounce">${item.icon}</div>
+            <div class="text-lg font-black text-amber-900">${item.name}</div>
+            <span class="text-xs font-bold text-amber-700 bg-amber-200/70 px-2.5 py-0.5 rounded-full mt-1">${item.type}</span>
+          </div>
+        `;
+      });
+
+      document.getElementById('treasure-unlock-modal').classList.remove('hidden');
+    }
+
+    function closeTreasureModal() {
+      document.getElementById('treasure-unlock-modal').classList.add('hidden');
+    }
+
+    function renderTreasuresUI(state) {
       const monthGrid = document.getElementById('month-treasure-grid');
       const yearGrid = document.getElementById('year-treasure-grid');
       monthGrid.innerHTML = '';
       yearGrid.innerHTML = '';
 
-      let maxUnlocked = Math.min(unlockedCount, 12);
-      document.getElementById('month-treasure-count').innerText = `已收集 ${maxUnlocked} / 12`;
+      const unlockedIds = new Set((state.unlockedList || []).map(item => item.id));
+      document.getElementById('month-treasure-count').innerText = `已收集 ${unlockedIds.size} / 12`;
 
-      TREASURES.forEach((t, idx) => {
-        const isUnlocked = idx < maxUnlocked;
+      TREASURES.forEach(t => {
+        const unlockedItem = (state.unlockedList || []).find(item => item.id === t.id);
+        const isUnlocked = !!unlockedItem;
         monthGrid.innerHTML += `
           <div class="p-2.5 rounded-2xl border text-center flex flex-col items-center justify-center ${isUnlocked ? 'bg-amber-50 border-amber-300 shadow-sm' : 'bg-slate-100 border-slate-200 opacity-40 grayscale'}">
             <span class="text-2xl">${t.icon}</span>
@@ -601,24 +689,24 @@
         `;
       });
 
-      const yearTrophyCount = Math.floor(totalCorrect / 250);
-      document.getElementById('year-treasure-count').innerText = `年度總收藏: ${yearTrophyCount} 個大獎`;
-      
-      if (yearTrophyCount === 0) {
-        yearGrid.innerHTML = `<div class="col-span-full text-xs text-slate-400 text-center py-2">年度累積答對滿 250 題即可解鎖年度榮譽殿堂大獎！</div>`;
+      const trophies = state.yearlyTrophies || [];
+      document.getElementById('year-treasure-count').innerText = `年度總收藏: ${trophies.reduce((acc, t) => acc + t.items.length, 0)} 件寶物`;
+
+      if (trophies.length === 0) {
+        yearGrid.innerHTML = `<div class="col-span-full text-xs text-slate-400 text-center py-2">跨月結算後的寶物將自動永久存入年度榮譽殿堂！</div>`;
       } else {
-        for(let i=0; i<Math.min(yearTrophyCount, 6); i++) {
+        trophies.forEach(trophy => {
+          let itemsHtml = trophy.items.map(item => `<span class="text-xl" title="${item.name}">${item.icon}</span>`).join(' ');
           yearGrid.innerHTML += `
-            <div class="p-2.5 rounded-2xl border text-center flex flex-col items-center justify-center bg-gradient-to-br from-amber-100 to-amber-200 border-amber-400 shadow-sm">
-              <span class="text-2xl">🏆</span>
-              <span class="text-[10px] font-bold text-amber-900 mt-1">年度榮譽第 ${i+1} 殿堂</span>
+            <div class="p-3 rounded-2xl border bg-gradient-to-br from-amber-100 to-amber-200 border-amber-400 shadow-sm space-y-1 col-span-1">
+              <div class="text-[11px] font-bold text-amber-900">${trophy.title}</div>
+              <div class="flex flex-wrap gap-1.5 items-center justify-center pt-1">${itemsHtml}</div>
             </div>
           `;
-        }
+        });
       }
     }
 
-    // 高畫質 JPG 下載函式（支援試卷與錯題本）
     async function exportToJPG(elementId, fileNamePrefix) {
       const element = document.getElementById(elementId);
       if (!element || element.innerHTML.trim() === '') {
@@ -682,7 +770,7 @@
       }
 
       currentUser = { email: email };
-      localStorage.setItem('yh_user_v13', JSON.stringify(currentUser));
+      localStorage.setItem('yh_user_v14', JSON.stringify(currentUser));
       document.getElementById('login-modal').classList.add('hidden');
       document.getElementById('user-status').innerText = `👤 ${email}`;
 
@@ -696,7 +784,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('yh_user_v13');
+      localStorage.removeItem('yh_user_v14');
       location.reload();
     }
 
