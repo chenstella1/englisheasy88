@@ -8,8 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- html2canvas 支援轉成高解析度 JPG 圖片 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- html-docx-js 支援直接將試卷打包下載成 Word (.docx) 檔案 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.3.5/html-docx.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -527,7 +525,6 @@
       return sessionData;
     }
 
-    // 渲染練功日記統計與寶物殿堂
     function renderDiaryStats() {
       const now = new Date();
       const currentYear = now.getFullYear();
@@ -716,7 +713,7 @@
       }
     }
 
-    // 匯出 Word 試卷與解答 (.docx)
+    // 穩定的原生 HTML Blob 匯出 Word (.doc / .docx 格式相容)
     function exportToWord(elementId, fileNamePrefix) {
       const element = document.getElementById(elementId);
       if (!element || element.innerHTML.trim() === '') {
@@ -724,7 +721,7 @@
         return;
       }
 
-      showStatus('正在打包 Word 檔案，請稍候...', 'info');
+      showStatus('正在產生 Word 檔案...', 'info');
 
       try {
         const clone = element.cloneNode(true);
@@ -737,7 +734,7 @@
             <meta charset="utf-8">
             <title>${fileNamePrefix}</title>
             <style>
-              body { font-family: 'DFKai-SB', 'BiauKai', 'Microsoft JhengHei', sans-serif; font-size: 16pt; line-height: 1.8; }
+              body { font-family: 'DFKai-SB', 'BiauKai', 'Microsoft JhengHei', sans-serif; font-size: 16pt; line-height: 1.8; color: #000000; }
               div { margin-bottom: 12px; }
             </style>
           </head>
@@ -747,16 +744,21 @@
           </html>
         `;
 
-        const converted = htmlDocx.asBlob(htmlContent);
+        const blob = new Blob(['\ufeff' + htmlContent], {
+          type: 'application/msword'
+        });
+
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         const now = new Date();
         const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
         
-        link.href = URL.createObjectURL(converted);
-        link.download = `${fileNamePrefix}_${dateStr}.docx`;
+        link.href = url;
+        link.download = `${fileNamePrefix}_${dateStr}.doc`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
 
         showStatus('Word 試卷已成功下載！', 'success');
       } catch (err) {
@@ -846,7 +848,6 @@
       location.reload();
     }
 
-    // 完整題庫載入與解析邏輯
     async function loadQuestions() {
       showStatus('連線至 Google Sheet 載入題庫中...', 'info');
       try {
