@@ -518,7 +518,7 @@
       return sessionData;
     }
 
-    // 渲染練功日記統計與寶物殿堂（含月度隨機抽寶物與彈窗恭喜）
+    // 渲染練功日記統計與寶物殿堂
     function renderDiaryStats() {
       const now = new Date();
       const currentYear = now.getFullYear();
@@ -788,6 +788,7 @@
       location.reload();
     }
 
+    // 完整題庫載入與解析邏輯 (修正版)
     async function loadQuestions() {
       showStatus('連線至 Google Sheet 載入題庫中...', 'info');
       try {
@@ -833,6 +834,336 @@
         console.error('載入題庫失敗:', err);
         showStatus('題庫載入失敗，請檢查 Google 試算表公開權限或網路連線。', 'error');
       }
+    }
+
+    // 初始化過濾條件介面
+    function initFilterOptions() {
+      const grades = [...new Set(rawQuestions.map(q => q.grade))].filter(Boolean);
+      const gradeContainer = document.getElementById('grade-radioes');
+      gradeContainer.innerHTML = '';
+
+      if (grades.length === 0) {
+        gradeContainer.innerHTML = '<span class="text-slate-400 text-xs">找不到年級分類，請確認試算表格式。</span>';
+        return;
+      }
+
+      grades.forEach((g, idx) => {
+        gradeContainer.innerHTML += `
+          <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+            <input type="radio" name="grade-option" value="${g}" ${idx === 0 ? 'checked' : ''} onchange="onGradeChange()" class="text-brand-600 focus:ring-brand-500">
+            <span class="font-medium text-slate-800">${g}</span>
+          </label>
+        `;
+      });
+
+      onGradeChange();
+    }
+
+    function onGradeChange() {
+      const selectedGrade = document.querySelector('input[name="grade-option"]:checked')?.value;
+      if (!selectedGrade) return;
+
+      const filtered = rawQuestions.filter(q => q.grade === selectedGrade);
+      const units = [...new Set(filtered.map(q => q.unit))].filter(Boolean);
+      const unitContainer = document.getElementById('category-checkboxes');
+      unitContainer.innerHTML = '';
+
+      if (units.length === 0) {
+        unitContainer.innerHTML = '<span class="text-slate-400 text-xs">此年級無學習類別</span>';
+        return;
+      }
+
+      units.forEach(u => {
+        unitContainer.innerHTML += `
+          <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+            <input type="checkbox" name="unit-checkbox" value="${u}" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+            <span class="text-slate-700">${u}</span>
+          </label>
+        `;
+      });
+    }
+
+    function toggleAllCategories(select) {
+      document.querySelectorAll('input[name="unit-checkbox"]').forEach(cb => cb.checked = select);
+    }
+
+    // 開始測驗或生成列印試卷
+    function startQuiz(mode) {
+      const selectedGrade = document.querySelector('input[name="grade-option"]:checked')?.value;
+      const selectedUnits = Array.from(document.querySelectorAll('input[name="unit-checkbox"]:checked')).map(cb => cb.value);
+      const count = parseInt(document.getElementById('question-count').value) || 10;
+
+      if (!selectedGrade) {
+        alert('請先選擇年級！');
+        return;
+      }
+      if (selectedUnits.length === 0) {
+        alert('請至少勾選一個學習類別！');
+        return;
+      }
+
+      const available = rawQuestions.filter(q => q.grade === selectedGrade && selectedUnits.includes(q.unit));
+      if (available.length === 0) {
+        alert('在您選擇的條件下找不到對應題目！');
+        return;
+      }
+
+      let shuffled = [...available].sort(() => 0.5 - Math.random());
+      let selected = shuffled.slice(0, count);
+
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      if (mode === 'print') {
+        renderPrintView(selected, selectedGrade, selectedUnits.join(', '));
+      } else {
+        renderOnlineQuiz(selected, selectedGrade, selectedUnits.join(', '));
+      }
+    }
+
+    // 渲染線上測驗互動介面
+    function renderOnlineQuiz(questions, grade, rangeText) {
+      document.getElementById('print-actions').classList.add('hidden');
+      document.getElementById('quiz-finish-actions').classList.add('hidden');
+
+      const container = document.getElementById('quiz-container');
+      let html = `<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-4 flex justify-between items-center"><div class="font-bold text-slate-800">🎯 正在進行線上測驗：${grade} (${rangeText})</div><div class="text-sm text-brand-600 font-bold">共 ${questions.length} 題</div></div>`;
+
+      questions.forEach((q, idx) => {
+        let optsHtml = '';
+        ['A', 'B', 'C', 'D'].forEach(k => {
+          if (q.opts[k]) {
+            optsHtml += `
+              <label class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                <input type="radio" name="q_${idx}" value="${k}" class="mt-1.5 text-brand-600 focus:ring-brand-500">
+                <span class="text-slate-800 font-medium">${k}. ${q.opts[k]}</span>
+              </label>
+            `;
+          }
+        });
+
+        html += `
+          <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-4 quiz-card" data-qid="${q.id}" data-ans="${q.answer}">
+            <div class="text-xs font-bold text-brand-600 uppercase tracking-wider">第 ${idx + 1} 題</div>
+            <div class="text-lg font-bold text-slate-900">${q.questionText}</div>
+            <div class="space-y-2 pt-2">${optsHtml}</div>
+            <div id="feedback_${idx}" class="hidden p-4 rounded-2xl text-sm font-semibold mt-3"></div>
+          </div>
+        `;
+      });
+
+      html += `
+        <div class="text-center pt-4 pb-8">
+          <button onclick="submitOnlineQuiz(${JSON.stringify(rangeText).replace(/"/g, '&quot;')})" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-8 py-4 rounded-2xl shadow-lg text-lg transition-transform hover:scale-105">
+            交卷看成績並上傳紀錄 🚀
+          </button>
+        </div>
+      `;
+
+      container.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 提交線上測驗並結算
+    function submitOnlineQuiz(rangeText) {
+      const cards = document.querySelectorAll('.quiz-card');
+      let correctCount = 0;
+      let sessionWrongItems = [];
+      let attemptedIds = [];
+      let correctIds = [];
+
+      cards.forEach((card, idx) => {
+        const qid = card.getAttribute('data-qid');
+        const correctAns = card.getAttribute('data-ans').trim().toUpperCase();
+        const selected = card.querySelector(`input[name="q_${idx}"]:checked`);
+        const feedback = document.getElementById(`feedback_${idx}`);
+
+        attemptedIds.push(qid || `q_${idx}`);
+
+        if (!selected) {
+          feedback.innerHTML = `❌ 未作答 (正確答案: ${correctAns})`;
+          feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-amber-50 text-amber-800 border border-amber-200";
+          feedback.classList.remove('hidden');
+          sessionWrongItems.push({ id: qid, question: card.querySelector('.text-lg').innerText, answer: correctAns });
+        } else if (selected.value.trim().toUpperCase() === correctAns) {
+          correctCount++;
+          correctIds.push(qid || `q_${idx}`);
+          feedback.innerHTML = `✅ 答對了！`;
+          feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-emerald-50 text-emerald-800 border border-emerald-200";
+          feedback.classList.remove('hidden');
+        } else {
+          feedback.innerHTML = `❌ 答錯了 (正確答案: ${correctAns})`;
+          feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-red-50 text-red-800 border border-red-200";
+          feedback.classList.remove('hidden');
+          sessionWrongItems.push({ id: qid, question: card.querySelector('.text-lg').innerText, answer: correctAns });
+        }
+      });
+
+      sessionWrongItems.forEach(w => {
+        if (!wrongQuestions.some(existing => existing.id === w.id || existing.question === w.question)) {
+          wrongQuestions.push(w);
+        }
+      });
+
+      const totalCount = cards.length;
+      const wrongCount = totalCount - correctCount;
+
+      recordQuizSession(totalCount, correctCount, wrongCount, rangeText, sessionWrongItems, attemptedIds, correctIds);
+
+      const finishActions = document.getElementById('quiz-finish-actions');
+      document.getElementById('quiz-score-summary').innerText = `總題數：${totalCount} 題 ｜ 答對：${correctCount} 題 ｜ 答錯：${wrongCount} 題`;
+      finishActions.classList.remove('hidden');
+      finishActions.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 渲染可列印試卷介面
+    function renderPrintView(questions, grade, rangeText) {
+      document.getElementById('print-actions').classList.remove('hidden');
+      document.getElementById('quiz-finish-actions').classList.add('hidden');
+
+      const container = document.getElementById('quiz-container');
+      let html = `
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 space-y-6">
+          <div class="text-center border-b pb-4">
+            <h1 class="text-2xl font-black text-slate-800">優華數位學習 — 專屬練習試卷</h1>
+            <p class="text-sm text-slate-500 mt-1">範圍：${grade} (${rangeText}) ｜ 日期：${new Date().toLocaleDateString()}</p>
+          </div>
+          <div class="space-y-6">
+      `;
+
+      questions.forEach((q, idx) => {
+        let optsHtml = '';
+        ['A', 'B', 'C', 'D'].forEach(k => {
+          if (q.opts[k]) {
+            optsHtml += `<div class="text-slate-800 py-0.5">(${k}) ${q.opts[k]}</div>`;
+          }
+        });
+
+        html += `
+          <div class="space-y-2 card-box p-4 rounded-xl border border-slate-100">
+            <div class="font-bold text-slate-900">${idx + 1}. ${q.questionText}</div>
+            <div class="pl-4 space-y-1">${optsHtml}</div>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+          <div class="page-break pt-6 border-t-2 border-dashed border-slate-300">
+            <h2 class="text-xl font-bold text-slate-800 mb-4">📋 參考答案與精選解析</h2>
+            <div class="space-y-3 text-sm">
+      `;
+
+      questions.forEach((q, idx) => {
+        html += `
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span class="font-bold text-brand-700">第 ${idx + 1} 題：答案 [ ${q.answer} ]</span>
+            <div class="text-slate-600 mt-1">{{解析}} ${q.explanation || '無提供解析'}</div>
+          </div>
+        `;
+      });
+
+      html += `</div></div></div>`;
+      container.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderWrongNotebook() {
+      const container = document.getElementById('wrong-list-container');
+      if (wrongQuestions.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-3xl text-center text-slate-400">目前沒有錯題紀錄，太棒了！繼續保持！</div>`;
+        return;
+      }
+
+      let html = '';
+      wrongQuestions.forEach((w, idx) => {
+        html += `
+          <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-2">
+            <div class="text-xs font-bold text-red-600 uppercase">錯題 #${idx + 1}</div>
+            <div class="text-base font-bold text-slate-800">${w.question}</div>
+            <div class="text-sm text-brand-700 font-semibold">正確答案：${w.answer}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderVocabBank() {
+      const container = document.getElementById('vocab-list-container');
+      if (vocabBank.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-3xl text-center text-slate-400">尚無儲存的單字，在測驗中點擊單字即可加入！</div>`;
+        return;
+      }
+
+      let html = '';
+      vocabBank.forEach((v, idx) => {
+        html += `
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
+            <div>
+              <div class="text-lg font-bold text-brand-700">${v.word}</div>
+              <div class="text-sm text-slate-600">${v.definition}</div>
+            </div>
+            <button onclick="removeVocab(${idx})" class="text-xs text-red-500 hover:text-red-700 font-bold px-3 py-1.5 rounded-lg border border-red-200">刪除</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function removeVocab(idx) {
+      vocabBank.splice(idx, 1);
+      saveUserDataToLocal(true);
+      renderVocabBank();
+      updateVocabBadge();
+    }
+
+    function clearWrongQuestions() {
+      if (confirm('確定要清空所有錯題嗎？')) {
+        wrongQuestions = [];
+        saveUserDataToLocal(true);
+        renderWrongNotebook();
+        updateWrongBadge();
+      }
+    }
+
+    function startWrongPractice() {
+      if (wrongQuestions.length === 0) {
+        alert('目前沒有錯題可以練習！');
+        return;
+      }
+      switchTab('quiz');
+      let selected = wrongQuestions.map((w, idx) => ({
+        id: w.id || `wrong_${idx}`,
+        questionText: w.question,
+        opts: { A: '(請參照原題或再次複習)', B: '', C: '', D: '' },
+        answer: w.answer,
+        explanation: '錯題再次複習'
+      }));
+      renderOnlineQuiz(selected, '錯題本特訓', '個人錯題複習');
+    }
+
+    function closeVocabPanel() {
+      document.getElementById('vocab-card-panel').classList.add('hidden');
+    }
+
+    function confirmAddVocab() {
+      if (!activeSelectedWord) return;
+      if (!vocabBank.some(v => v.word.toLowerCase() === activeSelectedWord.toLowerCase())) {
+        vocabBank.push({ word: activeSelectedWord, definition: activeWordDefinition });
+        saveUserDataToLocal(true);
+        updateVocabBadge();
+        alert(`已成功將 "${activeSelectedWord}" 加入您的單字庫！`);
+      } else {
+        alert(`"${activeSelectedWord}" 已經在您的單字庫中囉！`);
+      }
+      closeVocabPanel();
+    }
+
+    function speakActiveWord() {
+      if (!activeSelectedWord) return;
+      const utterance = new SpeechSynthesisUtterance(activeSelectedWord);
+      utterance.lang = 'en-US';
+      window.speechSynthesis.speak(utterance);
     }
 
     function showStatus(msg, type) {
