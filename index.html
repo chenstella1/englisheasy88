@@ -424,7 +424,8 @@
 
     async function loadUserData() {
       if (!currentUser) return;
-      const localData = JSON.parse(localStorage.getItem('yh_student_' + currentUser.email) || '{}');
+      const emailKey = currentUser.email.toLowerCase();
+      const localData = JSON.parse(localStorage.getItem('yh_student_' + emailKey) || '{}');
       wrongQuestions = localData.wrongs || [];
       vocabBank = localData.vocab || [];
       userLogs = localData.logs || [];
@@ -435,29 +436,39 @@
 
       try {
         showStatus('正在從雲端同步您的跨裝置學習紀錄...', 'info');
-        const res = await fetch(`${GAS_API_URL}?email=${encodeURIComponent(currentUser.email)}`);
+        const res = await fetch(`${GAS_API_URL}?email=${encodeURIComponent(emailKey)}&_t=${Date.now()}`, {
+          cache: 'no-store'
+        });
         const cloudData = await res.json();
 
         if (cloudData && cloudData.status === 'success') {
           const logMap = new Map();
           [...(cloudData.logs || []), ...userLogs].forEach(item => {
-            const key = item.id || (item.timestamp + '_' + item.total);
+            const key = item.id || `${item.timestamp || ''}_${item.range || ''}_${item.total || 0}_${item.correct || 0}`;
             logMap.set(key, item);
           });
-          userLogs = Array.from(logMap.values());
+          userLogs = Array.from(logMap.values()).sort((a, b) => {
+            return String(a.timestamp || '').localeCompare(String(b.timestamp || ''));
+          });
 
-          if (cloudData.wrongs && cloudData.wrongs.length > 0) {
+          if (Array.isArray(cloudData.wrongs)) {
             const wrongMap = new Map();
-            [...cloudData.wrongs, ...wrongQuestions].forEach(w => wrongMap.set(w.id || w.questionText, w));
+            [...wrongQuestions, ...cloudData.wrongs].forEach(w => {
+              const wKey = w.id || w.questionText;
+              if (wKey) wrongMap.set(wKey, w);
+            });
             wrongQuestions = Array.from(wrongMap.values());
           }
-          if (cloudData.vocab && cloudData.vocab.length > 0) {
+
+          if (Array.isArray(cloudData.vocab)) {
             const vocabMap = new Map();
-            [...cloudData.vocab, ...vocabBank].forEach(v => vocabMap.set(v.word, v));
+            [...vocabBank, ...cloudData.vocab].forEach(v => {
+              if (v.word) vocabMap.set(v.word.toLowerCase(), v);
+            });
             vocabBank = Array.from(vocabMap.values());
           }
 
-          localStorage.setItem('yh_student_' + currentUser.email, JSON.stringify({
+          localStorage.setItem('yh_student_' + emailKey, JSON.stringify({
             logs: userLogs,
             wrongs: wrongQuestions,
             vocab: vocabBank
@@ -475,12 +486,13 @@
 
     function saveUserDataToLocal(syncToCloud = true) {
       if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
+      const emailKey = currentUser.email.toLowerCase();
       const data = {
         logs: userLogs,
         wrongs: wrongQuestions,
         vocab: vocabBank
       };
-      localStorage.setItem('yh_student_' + currentUser.email, JSON.stringify(data));
+      localStorage.setItem('yh_student_' + emailKey, JSON.stringify(data));
       updateWrongBadge();
       updateVocabBadge();
 
@@ -488,10 +500,10 @@
         fetch(GAS_API_URL, {
           method: 'POST',
           mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'syncState',
-            email: currentUser.email,
+            email: emailKey,
             logs: userLogs,
             wrongItems: wrongQuestions,
             vocabBank: vocabBank
@@ -551,7 +563,7 @@
 
       const syncPayload = {
         action: 'recordQuiz',
-        email: currentUser.email,
+        email: currentUser.email.toLowerCase(),
         timestamp: sessionData.timestamp,
         quizTime: sessionData.timestamp,
         total: totalCount,
@@ -595,7 +607,7 @@
       let monthCorrectCount = 0;
       let hasPracticedToday = false;
 
-      let savedTreasuresState = JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email) || '{}');
+      let savedTreasuresState = JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email.toLowerCase()) || '{}');
       if (savedTreasuresState.yearMonth !== `${currentYear}-${currentMonth}`) {
         if (savedTreasuresState.unlockedList && savedTreasuresState.unlockedList.length > 0) {
           if (!savedTreasuresState.yearlyTrophies) savedTreasuresState.yearlyTrophies = [];
@@ -651,7 +663,7 @@
         }
       }
 
-      localStorage.setItem('yh_treasures_' + currentUser.email, JSON.stringify(savedTreasuresState));
+      localStorage.setItem('yh_treasures_' + currentUser.email.toLowerCase(), JSON.stringify(savedTreasuresState));
 
       if (newlyUnlocked.length > 0) {
         showTreasureUnlockModal(newlyUnlocked);
@@ -1415,3 +1427,4 @@
   </script>
 </body>
 </html>
+```[cite: 10]
