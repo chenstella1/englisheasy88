@@ -505,6 +505,23 @@
       }
     }
 
+    function formatWrongItemsForSheet(items) {
+      if (!Array.isArray(items) || items.length === 0) return '無錯題';
+      return items.map((item, idx) => {
+        const qNum = item.number || (idx + 1);
+        const qText = String(item.questionText || '').trim();
+        const qLine = /^\d+[\.、\s]/.test(qText) ? qText : `${qNum}. ${qText}`;
+        const opts = item.opts || {};
+        const optLine = ['A', 'B', 'C', 'D']
+          .filter(k => opts[k] && String(opts[k]).trim() !== '')
+          .map(k => `(${k}) ${String(opts[k]).trim()}`)
+          .join('  ');
+        const userAns = String(item.userAnswer || '').trim().toUpperCase();
+        const correctAns = String(item.answer || '').trim().toUpperCase();
+        return [qLine, optLine, `↳ 學生選錯: (${userAns || '?'}) | 正確答案: (${correctAns || '?'})`].filter(Boolean).join('\n');
+      }).join('\n\n');
+    }
+
     function recordQuizSession(totalCount, correctCount, wrongCount, rangeText, sessionWrongItems = [], attemptedIds = [], correctIds = []) {
       if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
 
@@ -533,23 +550,35 @@
       saveUserDataToLocal(false);
       renderDiaryStats();
 
+      const syncPayload = {
+        action: 'recordQuiz',
+        email: currentUser.email,
+        timestamp: sessionData.timestamp,
+        quizTime: sessionData.timestamp,
+        total: totalCount,
+        totalCount: totalCount,
+        correct: correctCount,
+        wrong: wrongCount,
+        wrongCount: wrongCount,
+        range: rangeText,
+        gradeCategory: rangeText,
+        wrongItems: sessionWrongItems,
+        wrongContent: formatWrongItemsForSheet(sessionWrongItems)
+      };
+
       fetch(GAS_API_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'recordQuiz',
-          email: currentUser.email,
-          timestamp: sessionData.timestamp,
-          total: totalCount,
-          correct: correctCount,
-          wrong: wrongCount,
-          range: rangeText,
-          logs: userLogs,
-          wrongItems: wrongQuestions,
-          vocabBank: vocabBank
-        })
-      }).catch(err => console.log('Cloud sync error:', err));
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(syncPayload)
+      })
+      .then(() => {
+        showStatus(`已同步成績至 Google Sheet（${currentUser.email}｜${rangeText}｜錯 ${wrongCount} 題）`, 'success');
+      })
+      .catch(err => {
+        console.log('Cloud sync error:', err);
+        showStatus('成績已存於本機，但雲端同步時發生網路錯誤，請稍後再試。', 'error');
+      });
 
       return sessionData;
     }
@@ -1032,6 +1061,17 @@
     function renderInteractiveQuiz(questions, grade, rangeText) {
       document.getElementById('print-actions').classList.add('hidden');
       document.getElementById('quiz-finish-actions').classList.add('hidden');
+
+      interactiveSession = {
+        total: questions.length,
+        correct: 0,
+        wrong: 0,
+        answeredCount: 0,
+        rangeText: rangeText,
+        attemptedIds: new Set(),
+        correctIds: new Set(),
+        sessionWrongItems: []
+      };
 
       const container = document.getElementById('quiz-container');
       let html = `<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-4 flex justify-between items-center"><div class="font-bold text-slate-800">🎯 正在進行線上練習：${grade} (${rangeText})</div><div class="text-sm text-brand-600 font-bold">共 ${questions.length} 題</div></div>`;
