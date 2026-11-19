@@ -153,12 +153,7 @@
           <span id="diary-month-badge" class="bg-brand-100 text-brand-700 text-sm px-3 py-1 rounded-full font-bold">本月紀錄</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-            <div class="text-xs text-slate-500 font-semibold uppercase">歷史總練功題數 (累積不歸零)</div>
-            <div id="diary-total-unique" class="text-2xl font-black text-slate-800 mt-1">0 題</div>
-          </div>
-
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
             <div class="text-xs text-slate-500 font-semibold uppercase">歷史總答對題數 (累積不歸零)</div>
             <div id="diary-correct-unique" class="text-2xl font-black text-brand-700 mt-1">0 題</div>
@@ -596,11 +591,8 @@
 
       document.getElementById('diary-month-badge').innerText = `本月 (${currentYear}年${currentMonth}月)`;
 
-      let allAttemptedIds = new Set();
-      let allCorrectIds = new Set();
+      let totalCorrectCount = 0;
       let monthCorrectCount = 0;
-      let fallbackTotal = 0;
-      let fallbackCorrect = 0;
       let hasPracticedToday = false;
 
       let savedTreasuresState = JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email) || '{}');
@@ -629,28 +621,17 @@
         const isCurrentMonthLog = ts.startsWith(`${currentYear}/${String(currentMonth).padStart(2, '0')}`) || 
                                    ts.startsWith(`${String(currentMonth).padStart(2, '0')}/`);
 
-        if (log.attemptedItems && log.attemptedItems.length > 0) {
-          log.attemptedItems.forEach(id => allAttemptedIds.add(id));
-        } else {
-          fallbackTotal += (log.total || 0);
-        }
+        const logCorrectNum = (Array.isArray(log.correctItems) && log.correctItems.length > 0)
+          ? log.correctItems.length
+          : (Number(log.correct) || 0);
 
-        if (log.correctItems && log.correctItems.length > 0) {
-          log.correctItems.forEach(id => {
-            allCorrectIds.add(id);
-            if (isCurrentMonthLog) monthCorrectCount++;
-          });
-        } else {
-          fallbackCorrect += (log.correct || 0);
-          if (isCurrentMonthLog) monthCorrectCount += (log.correct || 0);
+        totalCorrectCount += logCorrectNum;
+        if (isCurrentMonthLog) {
+          monthCorrectCount += logCorrectNum;
         }
       });
 
-      const totalUnique = allAttemptedIds.size + fallbackTotal;
-      const correctUnique = allCorrectIds.size + fallbackCorrect;
-
-      document.getElementById('diary-total-unique').innerText = `${totalUnique} 題`;
-      document.getElementById('diary-correct-unique').innerText = `${correctUnique} 題`;
+      document.getElementById('diary-correct-unique').innerText = `${totalCorrectCount} 題`;
 
       const targetUnlockedCount = Math.min(Math.floor(monthCorrectCount / 50), 12);
       document.getElementById('diary-level-badge').innerText = `🎁 本月累積答對 ${monthCorrectCount} 題`;
@@ -990,10 +971,14 @@
       }
 
       grades.forEach((g, idx) => {
+        const gCount = rawQuestions.filter(q => q.grade === g).length;
         gradeContainer.innerHTML += `
-          <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
-            <input type="radio" name="grade-option" value="${g}" ${idx === 0 ? 'checked' : ''} onchange="onGradeChange()" class="text-brand-600 focus:ring-brand-500">
-            <span class="font-medium text-slate-800">${g}</span>
+          <label class="flex items-center justify-between gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+            <span class="flex items-center gap-2">
+              <input type="radio" name="grade-option" value="${g}" ${idx === 0 ? 'checked' : ''} onchange="onGradeChange()" class="text-brand-600 focus:ring-brand-500">
+              <span class="font-medium text-slate-800">${g}</span>
+            </span>
+            <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">(${gCount} 題)</span>
           </label>
         `;
       });
@@ -1016,10 +1001,14 @@
       }
 
       units.forEach(u => {
+        const uCount = filtered.filter(q => q.unit === u).length;
         unitContainer.innerHTML += `
-          <label class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 cursor-pointer">
-            <input type="checkbox" name="unit-checkbox" value="${u}" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
-            <span class="text-slate-700">${u}</span>
+          <label class="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-slate-50 cursor-pointer">
+            <span class="flex items-center gap-2">
+              <input type="checkbox" name="unit-checkbox" value="${u}" checked class="rounded border-slate-300 text-brand-600 focus:ring-brand-500">
+              <span class="text-slate-700">${u}</span>
+            </span>
+            <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">(${uCount} 題)</span>
           </label>
         `;
       });
