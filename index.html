@@ -372,7 +372,7 @@
     function normalizeInput(val) {
       return String(val || '')
         .replace(/[！-～]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
-        .replace(/　/g, ' ')
+        .replace(/ /g, ' ')
         .trim();
     }
 
@@ -801,7 +801,7 @@
           </html>
         `;
 
-        const blob = new Blob(['﻿' + htmlContent], {
+        const blob = new Blob(['\ufeff' + htmlContent], {
           type: 'application/msword'
         });
 
@@ -1058,7 +1058,10 @@
       }
     }
 
+    let currentQuizQuestions = [];
+
     function renderInteractiveQuiz(questions, grade, rangeText) {
+      currentQuizQuestions = questions || [];
       document.getElementById('print-actions').classList.add('hidden');
       document.getElementById('quiz-finish-actions').classList.add('hidden');
 
@@ -1080,9 +1083,10 @@
         let optsHtml = '';
         ['A', 'B', 'C', 'D'].forEach(k => {
           if (q.opts[k]) {
+            const safeRange = String(rangeText || '').replace(/'/g, "\\'");
             optsHtml += `
               <label class="option-label-${idx} flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
-                <input type="radio" name="interactive_q_${idx}" value="${k}" onclick="handleOptionSelect(${idx}, '${k}', '${q.answer.trim().toUpperCase()}', ${JSON.stringify(q).replace(/"/g, '&quot;')}, '${rangeText}')" class="mt-1.5 text-brand-600 focus:ring-brand-500">
+                <input type="radio" name="interactive_q_${idx}" value="${k}" onclick="handleOptionSelect(${idx}, '${k}', '${safeRange}')" class="mt-1.5 text-brand-600 focus:ring-brand-500">
                 <span class="text-slate-800 font-medium">${k}. ${q.opts[k]}</span>
               </label>
             `;
@@ -1114,7 +1118,9 @@
       sessionWrongItems: []
     };
 
-    function handleOptionSelect(idx, selectedKey, correctAns, questionObj, rangeText) {
+    function handleOptionSelect(idx, selectedKey, rangeText) {
+      const questionObj = currentQuizQuestions[idx] || {};
+      const correctAns = String(questionObj.answer || '').trim().toUpperCase();
       const card = document.getElementById(`card_${idx}`);
       if (card.getAttribute('data-answered') === 'true') return;
       card.setAttribute('data-answered', 'true');
