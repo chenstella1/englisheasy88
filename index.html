@@ -403,7 +403,6 @@
     function parseLogYearMonthDay(ts) {
       if (!ts) return { year: null, month: null, day: null };
       const str = String(ts).trim();
-      // 匹配 YYYY/MM/DD 或 YYYY-MM-DD
       let m = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
       if (m) {
         return {
@@ -412,7 +411,6 @@
           day: parseInt(m[3], 10)
         };
       }
-      // 匹配 MM/DD
       m = str.match(/^(\d{1,2})[\/\-](\d{1,2})/);
       if (m) {
         return {
@@ -451,7 +449,6 @@
         const cloudData = await res.json();
 
         if (cloudData && cloudData.status === 'success') {
-          // 合併練習紀錄 (依 id 或 timestamp+total 去重)
           const logMap = new Map();
           [...(cloudData.logs || []), ...userLogs].forEach(item => {
             if (!item) return;
@@ -460,7 +457,6 @@
           });
           userLogs = Array.from(logMap.values());
 
-          // 合併錯題本
           if (Array.isArray(cloudData.wrongs) && cloudData.wrongs.length > 0) {
             const wrongMap = new Map();
             [...cloudData.wrongs, ...wrongQuestions].forEach(w => {
@@ -471,7 +467,6 @@
             wrongQuestions = Array.from(wrongMap.values());
           }
 
-          // 合併單字庫
           if (Array.isArray(cloudData.vocab) && cloudData.vocab.length > 0) {
             const vocabMap = new Map();
             [...cloudData.vocab, ...vocabBank].forEach(v => {
@@ -480,7 +475,6 @@
             vocabBank = Array.from(vocabMap.values());
           }
 
-          // 合併寶物狀態
           if (cloudData.treasures && cloudData.treasures.yearMonth) {
             if (!treasuresState || !treasuresState.yearMonth || (cloudData.treasures.unlockedList || []).length >= (treasuresState.unlockedList || []).length) {
               treasuresState = cloudData.treasures;
@@ -1320,7 +1314,7 @@
     // 單字點擊即時查詢功能
     function wrapLookupWords(text) {
       if (!text) return '';
-      return text.replace(/\b([a-zA-Z]{2,})\b/g, '<span class="lookup-word" onclick="lookupWord(\'$1\')">$1</span>');
+      return text.replace(/([a-zA-Z]{2,})/g, '<span class="lookup-word" onclick="lookupWord('$1')">$1</span>');
     }
 
     async function lookupWord(word) {
