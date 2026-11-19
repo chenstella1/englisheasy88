@@ -60,7 +60,7 @@
         <h2 class="text-3xl font-black text-slate-800">優華數位刷題網</h2>
         <p class="text-sm text-slate-500 mt-2">請輸入您的 Email 登入系統</p>
       </div>
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+      <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">電子信箱 (Email)</label>
           <input type="email" id="login-email" required placeholder="yourname@gmail.com" class="w-full border border-slate-300 rounded-xl p-3.5 text-base focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -69,6 +69,7 @@
           <label class="block text-sm font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">通關密碼</label>
           <input type="password" id="login-pass" required placeholder="請輸入通關密碼" class="w-full border border-slate-300 rounded-xl p-3.5 text-base focus:ring-2 focus:ring-brand-500 focus:outline-none">
         </div>
+        <div id="login-error-msg" class="hidden text-sm font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl p-3"></div>
         <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg text-base mt-3">
           立即登入系統
         </button>
@@ -339,7 +340,7 @@
   <script>
     const SPREADSHEET_ID = '11rFyQ1FLFflBAUzBoJGI2p8EChYSJWuje16DkZZdSWc';
     const GOOGLE_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw5yZUcaX0hHwT8HFMHCScPs0mP5WXrblLVBcjezJk2d2AYVrk8a1VqRCfgSrKNErBr/exec';
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbybU04m8xnIgvwwUmdpWZsWVLOXoMc4zdPifHbYqAzQnZDaDRDH3ZqQNgsQibGR1CTC5w/exec';
 
     const TREASURES = [
       { id: 1, name: "高級貓草罐", icon: "🌿", type: "用品" },
@@ -368,13 +369,40 @@
     const ADMIN_PASS = 'a18177300';
     const STUDENT_PASS = '1155665';
 
+    function normalizeInput(val) {
+      return String(val || '')
+        .replace(/[！-～]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0))
+        .replace(/　/g, ' ')
+        .trim();
+    }
+
+    function showLoginError(msg) {
+      const box = document.getElementById('login-error-msg');
+      if (box) {
+        box.textContent = msg;
+        box.classList.remove('hidden');
+      } else {
+        alert(msg);
+      }
+    }
+
+    function clearLoginError() {
+      const box = document.getElementById('login-error-msg');
+      if (box) {
+        box.textContent = '';
+        box.classList.add('hidden');
+      }
+    }
+
     window.onload = () => {
       const savedUser = localStorage.getItem('yh_user_v16');
       if (savedUser) {
         try {
           currentUser = JSON.parse(savedUser);
           if (currentUser && currentUser.email) {
-            document.getElementById('login-modal').classList.add('hidden');
+            const modal = document.getElementById('login-modal');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
             document.getElementById('user-status').innerText = `👤 ${currentUser.email}`;
 
             if (currentUser.email.toLowerCase() === ADMIN_EMAIL) {
@@ -714,7 +742,6 @@
       }
     }
 
-    // 匯出 Word (.doc 格式)
     function exportToWord(elementId, fileNamePrefix) {
       const element = document.getElementById(elementId);
       if (!element || element.innerHTML.trim() === '') {
@@ -745,7 +772,7 @@
           </html>
         `;
 
-        const blob = new Blob(['\ufeff' + htmlContent], {
+        const blob = new Blob(['﻿' + htmlContent], {
           type: 'application/msword'
         });
 
@@ -809,30 +836,47 @@
     }
 
     function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value.trim().toLowerCase();
-      const pass = document.getElementById('login-pass').value.trim();
+      if (e && typeof e.preventDefault === 'function') e.preventDefault();
+      clearLoginError();
+
+      const email = normalizeInput(document.getElementById('login-email').value).toLowerCase();
+      const rawPass = normalizeInput(document.getElementById('login-pass').value);
+      const compactPass = rawPass.replace(/\s+/g, '');
 
       if (!email) {
-        alert('請輸入 Email 帳號');
+        showLoginError('請輸入 Email 帳號');
+        return;
+      }
+
+      if (!compactPass) {
+        showLoginError('請輸入通關密碼');
         return;
       }
 
       if (email === ADMIN_EMAIL) {
-        if (pass !== ADMIN_PASS) {
-          alert('管理者通關密碼錯誤！');
+        if (rawPass !== ADMIN_PASS && compactPass !== ADMIN_PASS) {
+          showLoginError('管理者通關密碼錯誤！');
           return;
         }
       } else {
-        if (pass !== STUDENT_PASS && pass !== ADMIN_PASS) {
-          alert('通關密碼錯誤，請輸入正確通關密碼！');
+        const isStudentMatch = (rawPass === STUDENT_PASS || compactPass === STUDENT_PASS);
+        const isAdminMatch = (rawPass === ADMIN_PASS || compactPass === ADMIN_PASS);
+        if (!isStudentMatch && !isAdminMatch) {
+          showLoginError('通關密碼錯誤，請輸入正確通關密碼！');
           return;
         }
       }
 
       currentUser = { email: email };
-      localStorage.setItem('yh_user_v16', JSON.stringify(currentUser));
-      document.getElementById('login-modal').classList.add('hidden');
+      try {
+        localStorage.setItem('yh_user_v16', JSON.stringify(currentUser));
+      } catch (err) {
+        console.log('localStorage 寫入受限:', err);
+      }
+
+      const modal = document.getElementById('login-modal');
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
       document.getElementById('user-status').innerText = `👤 ${email}`;
 
       if (email === ADMIN_EMAIL) {
@@ -843,6 +887,13 @@
         loadQuestions();
       }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('login-form');
+      if (form) {
+        form.addEventListener('submit', handleLogin);
+      }
+    });
 
     function logout() {
       localStorage.removeItem('yh_user_v16');
@@ -978,7 +1029,6 @@
       }
     }
 
-    // 線上練習：答題即時顯示對錯與解析
     function renderInteractiveQuiz(questions, grade, rangeText) {
       document.getElementById('print-actions').classList.add('hidden');
       document.getElementById('quiz-finish-actions').classList.add('hidden');
@@ -1026,7 +1076,7 @@
 
     function handleOptionSelect(idx, selectedKey, correctAns, questionObj, rangeText) {
       const card = document.getElementById(`card_${idx}`);
-      if (card.getAttribute('data-answered') === 'true') return; // 已經答過不能重複點
+      if (card.getAttribute('data-answered') === 'true') return;
       card.setAttribute('data-answered', 'true');
 
       if (!interactiveSession.answeredCount) {
@@ -1047,7 +1097,7 @@
 
       const feedback = document.getElementById(`feedback_${idx}`);
       const radios = document.querySelectorAll(`input[name="interactive_q_${idx}"]`);
-      radios.forEach(r => r.disabled = true); // 鎖定選項
+      radios.forEach(r => r.disabled = true);
 
       if (selectedKey === correctAns) {
         interactiveSession.correct++;
@@ -1059,14 +1109,24 @@
         feedback.innerHTML = `❌ 答錯了！正確答案是 [ ${correctAns} ]<br><span class="font-normal text-xs mt-1 block">{{解析}} ${questionObj.explanation || '無提供解析'}</span>`;
         feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-red-50 text-red-800 border border-red-200";
 
-        // 收集至錯題本
-        if (!wrongQuestions.some(w => w.id === questionObj.id || w.questionText === questionObj.questionText)) {
-          wrongQuestions.push(questionObj);
+        const wrongItemRecord = {
+          id: questionObj.id || `q_${idx}`,
+          number: idx + 1,
+          grade: questionObj.grade || '',
+          unit: questionObj.unit || '',
+          questionText: questionObj.questionText || '',
+          opts: questionObj.opts || {},
+          answer: correctAns,
+          userAnswer: selectedKey,
+          explanation: questionObj.explanation || ''
+        };
+        interactiveSession.sessionWrongItems.push(wrongItemRecord);
+        if (!wrongQuestions.some(w => (w.id && wrongItemRecord.id && w.id === wrongItemRecord.id) || w.questionText === wrongItemRecord.questionText)) {
+          wrongQuestions.push(wrongItemRecord);
         }
       }
       feedback.classList.remove('hidden');
 
-      // 當全部題目都答完時，自動結算並上傳
       if (interactiveSession.answeredCount === interactiveSession.total) {
         recordQuizSession(
           interactiveSession.total,
@@ -1140,7 +1200,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 渲染錯題本（包含完整題目、選項與解答解析）
     function renderWrongNotebook() {
       const container = document.getElementById('wrong-list-container');
       if (wrongQuestions.length === 0) {
