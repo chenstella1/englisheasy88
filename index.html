@@ -339,8 +339,7 @@
   <script>
     const SPREADSHEET_ID = '11rFyQ1FLFflBAUzBoJGI2p8EChYSJWuje16DkZZdSWc';
     const GOOGLE_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
-    // 請確認下方網址為您最新部署之 Google Apps Script 網頁應用程式網址
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw5yZUcaX0hHwT8HFMHCScPs0mP5WXrblLVBcjezJk2d2AYVrk8a1VqRCfgSrKNErBr/exec';
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyooGEw0pF_GdX2Dfn5qIJkJ9qSe9xDEdF9StMX0zDu3vefI3dfcU6sgtei-IGmatUEag/exec';
 
     const TREASURES = [
       { id: 1, name: "高級貓草罐", icon: "🌿", type: "用品" },
@@ -362,6 +361,7 @@
     let wrongQuestions = [];
     let vocabBank = [];
     let userLogs = [];
+    let treasuresState = null;
     let activeSelectedWord = '';
     let activeWordDefinition = '';
 
@@ -382,7 +382,6 @@
               setupAdminView();
             } else {
               loadUserData();
-              renderDiaryStats();
               loadQuestions();
             }
           }
@@ -400,6 +399,39 @@
       document.getElementById('nav-home-btn').innerText = '管理者後台';
     }
 
+    // 標準化日期格式工具 (統一解析 YYYY/MM/DD、YYYY-MM-DD 或 MM/DD)
+    function parseLogYearMonthDay(ts) {
+      if (!ts) return { year: null, month: null, day: null };
+      const str = String(ts).trim();
+      // 匹配 YYYY/MM/DD 或 YYYY-MM-DD
+      let m = str.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+      if (m) {
+        return {
+          year: parseInt(m[1], 10),
+          month: parseInt(m[2], 10),
+          day: parseInt(m[3], 10)
+        };
+      }
+      // 匹配 MM/DD
+      m = str.match(/^(\d{1,2})[\/\-](\d{1,2})/);
+      if (m) {
+        return {
+          year: new Date().getFullYear(),
+          month: parseInt(m[1], 10),
+          day: parseInt(m[2], 10)
+        };
+      }
+      return { year: null, month: null, day: null };
+    }
+
+    function getCurrentTreasuresState() {
+      if (!currentUser) return {};
+      if (treasuresState && treasuresState.yearMonth) return treasuresState;
+      const local = JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email) || '{}');
+      treasuresState = local;
+      return treasuresState;
+    }
+
     // 跨裝置同步：從雲端讀取並與本機紀錄合併
     async function loadUserData() {
       if (!currentUser) return;
@@ -407,10 +439,11 @@
       wrongQuestions = localData.wrongs || [];
       vocabBank = localData.vocab || [];
       userLogs = localData.logs || [];
+      treasuresState = JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email) || 'null');
 
       updateWrongBadge();
       updateVocabBadge();
-      renderDiaryStats();
+      renderDiaryStats(false);
 
       try {
         showStatus('正在從雲端同步您的跨裝置學習紀錄...', 'info');
@@ -418,28 +451,40 @@
         const cloudData = await res.json();
 
         if (cloudData && cloudData.status === 'success') {
+          // 合併練習紀錄 (依 id 或 timestamp+total 去重)
           const logMap = new Map();
           [...(cloudData.logs || []), ...userLogs].forEach(item => {
-            const key = item.id || (item.timestamp + '_' + item.total);
+            if (!item) return;
+            const key = item.id || (String(item.timestamp || '') + '_' + String(item.total || 0) + '_' + String(item.correct || 0));
             logMap.set(key, item);
           });
           userLogs = Array.from(logMap.values());
 
-          if (cloudData.wrongs && cloudData.wrongs.length > 0) {
+          // 合併錯題本
+          if (Array.isArray(cloudData.wrongs) && cloudData.wrongs.length > 0) {
             const wrongMap = new Map();
             [...cloudData.wrongs, ...wrongQuestions].forEach(w => {
+              if (!w) return;
               const key = w.id || w.questionText || w.title;
               if (key) wrongMap.set(key, w);
             });
             wrongQuestions = Array.from(wrongMap.values());
           }
 
-          if (cloudData.vocab && cloudData.vocab.length > 0) {
+          // 合併單字庫
+          if (Array.isArray(cloudData.vocab) && cloudData.vocab.length > 0) {
             const vocabMap = new Map();
             [...cloudData.vocab, ...vocabBank].forEach(v => {
-              if (v && v.word) vocabMap.set(v.word, v);
+              if (v && v.word) vocabMap.set(v.word.toLowerCase(), v);
             });
             vocabBank = Array.from(vocabMap.values());
+          }
+
+          // 合併寶物狀態
+          if (cloudData.treasures && cloudData.treasures.yearMonth) {
+            if (!treasuresState || !treasuresState.yearMonth || (cloudData.treasures.unlockedList || []).length >= (treasuresState.unlockedList || []).length) {
+              treasuresState = cloudData.treasures;
+            }
           }
 
           localStorage.setItem('yh_student_' + currentUser.email, JSON.stringify({
@@ -447,10 +492,13 @@
             wrongs: wrongQuestions,
             vocab: vocabBank
           }));
+          if (treasuresState) {
+            localStorage.setItem('yh_treasures_' + currentUser.email, JSON.stringify(treasuresState));
+          }
 
           updateWrongBadge();
           updateVocabBadge();
-          renderDiaryStats();
+          renderDiaryStats(false);
           showStatus('跨裝置雲端紀錄同步完成！', 'success');
         }
       } catch (err) {
@@ -461,12 +509,16 @@
 
     function saveUserDataToLocal(syncToCloud = true) {
       if (!currentUser || currentUser.email.toLowerCase() === ADMIN_EMAIL) return;
+      const currentTreasures = getCurrentTreasuresState();
       const data = {
         logs: userLogs,
         wrongs: wrongQuestions,
         vocab: vocabBank
       };
       localStorage.setItem('yh_student_' + currentUser.email, JSON.stringify(data));
+      if (currentTreasures && currentTreasures.yearMonth) {
+        localStorage.setItem('yh_treasures_' + currentUser.email, JSON.stringify(currentTreasures));
+      }
       updateWrongBadge();
       updateVocabBadge();
 
@@ -480,7 +532,8 @@
             email: currentUser.email,
             logs: userLogs,
             wrongItems: wrongQuestions,
-            vocabBank: vocabBank
+            vocabBank: vocabBank,
+            treasures: currentTreasures
           })
         }).catch(err => console.log('Sync state error:', err));
       }
@@ -494,7 +547,7 @@
       const mStr = String(now.getMonth() + 1).padStart(2, '0');
       const dStr = String(now.getDate()).padStart(2, '0');
       const dateKey = `${yStr}/${mStr}/${dStr}`;
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
       const sessionData = {
         id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -511,8 +564,10 @@
       };
 
       userLogs.push(sessionData);
+      renderDiaryStats(true);
       saveUserDataToLocal(false);
-      renderDiaryStats();
+
+      const currentTreasures = getCurrentTreasuresState();
 
       fetch(GAS_API_URL, {
         method: 'POST',
@@ -528,19 +583,21 @@
           range: rangeText,
           logs: userLogs,
           wrongItems: wrongQuestions,
-          vocabBank: vocabBank
+          vocabBank: vocabBank,
+          treasures: currentTreasures
         })
       }).catch(err => console.log('Cloud sync error:', err));
 
       return sessionData;
     }
 
-    function renderDiaryStats() {
+    function renderDiaryStats(allowPopup = false) {
+      if (!currentUser) return;
       const now = new Date();
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth() + 1;
-      const todayFull = `${currentYear}/${String(currentMonth).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
-      const todayShort = `${String(currentMonth).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+      const currentDay = now.getDate();
+      const todayShort = `${String(currentMonth).padStart(2, '0')}/${String(currentDay).padStart(2, '0')}`;
 
       document.getElementById('diary-month-badge').innerText = `本月 (${currentYear}年${currentMonth}月)`;
 
@@ -548,7 +605,7 @@
       let monthCorrectCount = 0;
       let hasPracticedToday = false;
 
-      let savedTreasuresState = JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email) || '{}');
+      let savedTreasuresState = getCurrentTreasuresState();
       if (savedTreasuresState.yearMonth !== `${currentYear}-${currentMonth}`) {
         if (savedTreasuresState.unlockedList && savedTreasuresState.unlockedList.length > 0) {
           if (!savedTreasuresState.yearlyTrophies) savedTreasuresState.yearlyTrophies = [];
@@ -565,18 +622,13 @@
       }
 
       userLogs.forEach(log => {
-        const ts = log.timestamp || '';
-        const datePart = ts.split(' ')[0];
-        if (datePart === todayFull || datePart === todayShort) {
+        const parsed = parseLogYearMonthDay(log.timestamp || log.date);
+        if (parsed.year === currentYear && parsed.month === currentMonth && parsed.day === currentDay) {
           hasPracticedToday = true;
         }
-
-        const isCurrentMonthLog = ts.startsWith(`${currentYear}/${String(currentMonth).padStart(2, '0')}`) || 
-                                   ts.startsWith(`${String(currentMonth).padStart(2, '0')}/`);
-
-        if (isCurrentMonthLog) {
-          monthTotalCount += (log.total || 0);
-          monthCorrectCount += (log.correct || 0);
+        if (parsed.year === currentYear && parsed.month === currentMonth) {
+          monthTotalCount += (Number(log.total) || 0);
+          monthCorrectCount += (Number(log.correct) || 0);
         }
       });
 
@@ -601,9 +653,10 @@
         }
       }
 
+      treasuresState = savedTreasuresState;
       localStorage.setItem('yh_treasures_' + currentUser.email, JSON.stringify(savedTreasuresState));
 
-      if (newlyUnlocked.length > 0) {
+      if (allowPopup && newlyUnlocked.length > 0) {
         showTreasureUnlockModal(newlyUnlocked);
       }
 
@@ -634,7 +687,7 @@
         icon2.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-pink-200 text-pink-700 font-bold text-sm shadow-sm";
         icon2.innerText = "🐱✅";
         t2.className = "font-medium text-pink-700";
-        t2.innerText = `本月已成功解鎖 ${targetUnlockedCount} 款隨機寶物！(距離下一款還需答對 ${nextTarget - monthCorrectCount} 題)`;
+        t2.innerText = `本月已成功解鎖 ${targetUnlockedCount} 款隨機寶物！(距離下一款還需答對 ${Math.max(0, nextTarget - monthCorrectCount)} 題)`;
       } else {
         box2.className = "flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 transition-colors";
         icon2.className = "w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200 text-slate-500 font-bold text-sm";
@@ -830,7 +883,6 @@
         setupAdminView();
       } else {
         loadUserData();
-        renderDiaryStats();
         loadQuestions();
       }
     }
@@ -989,41 +1041,6 @@
       }
     }
 
-    function renderInteractiveQuiz(questions, grade, rangeText) {
-      document.getElementById('print-actions').classList.add('hidden');
-      document.getElementById('quiz-finish-actions').classList.add('hidden');
-
-      const container = document.getElementById('quiz-container');
-      let html = `<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-4 flex justify-between items-center"><div class="font-bold text-slate-800">🎯 正在進行線上練習：${grade} (${rangeText})</div><div class="text-sm text-brand-600 font-bold">共 ${questions.length} 題</div></div>`;
-
-      questions.forEach((q, idx) => {
-        let opts = q.opts || { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
-        let optsHtml = '';
-        ['A', 'B', 'C', 'D'].forEach(k => {
-          if (opts && opts[k]) {
-            optsHtml += `
-              <label class="option-label-${idx} flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
-                <input type="radio" name="interactive_q_${idx}" value="${k}" onclick="handleOptionSelect(${idx}, '${k}', '${q.answer.trim().toUpperCase()}', ${JSON.stringify(q).replace(/"/g, '&quot;')}, '${rangeText}')" class="mt-1.5 text-brand-600 focus:ring-brand-500">
-                <span class="text-slate-800 font-medium">${k}. ${opts[k]}</span>
-              </label>
-            `;
-          }
-        });
-
-        html += `
-          <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-4 quiz-card-interactive" id="card_${idx}" data-answered="false">
-            <div class="text-xs font-bold text-brand-600 uppercase tracking-wider">第 ${idx + 1} 題</div>
-            <div class="text-lg font-bold text-slate-900">${q.questionText || q.title}</div>
-            <div class="space-y-2 pt-2">${optsHtml}</div>
-            <div id="feedback_${idx}" class="hidden p-4 rounded-2xl text-sm font-semibold mt-3"></div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     let interactiveSession = {
       total: 0,
       correct: 0,
@@ -1035,23 +1052,56 @@
       sessionWrongItems: []
     };
 
-    function handleOptionSelect(idx, selectedKey, correctAns, questionObj, rangeText) {
+    function renderInteractiveQuiz(questions, grade, rangeText) {
+      document.getElementById('print-actions').classList.add('hidden');
+      document.getElementById('quiz-finish-actions').classList.add('hidden');
+
+      interactiveSession = {
+        total: questions.length,
+        correct: 0,
+        wrong: 0,
+        answeredCount: 0,
+        rangeText: `${grade} (${rangeText})`,
+        attemptedIds: new Set(),
+        correctIds: new Set(),
+        sessionWrongItems: []
+      };
+
+      const container = document.getElementById('quiz-container');
+      let html = `<div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-4 flex justify-between items-center"><div class="font-bold text-slate-800">🎯 正在進行線上練習：${grade} (${rangeText})</div><div class="text-sm text-brand-600 font-bold">共 ${questions.length} 題</div></div>`;
+
+      questions.forEach((q, idx) => {
+        let opts = q.opts || { A: q.optionA, B: q.optionB, C: q.optionC, D: q.optionD };
+        let optsHtml = '';
+        ['A', 'B', 'C', 'D'].forEach(k => {
+          if (opts && opts[k]) {
+            optsHtml += `
+              <label class="option-label-${idx} flex items-start gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+                <input type="radio" name="interactive_q_${idx}" value="${k}" onclick="handleOptionSelect(${idx}, '${k}', '${q.answer.trim().toUpperCase()}', ${JSON.stringify(q).replace(/"/g, '&quot;')})" class="mt-1.5 text-brand-600 focus:ring-brand-500">
+                <span class="text-slate-800 font-medium">${k}. ${opts[k]}</span>
+              </label>
+            `;
+          }
+        });
+
+        html += `
+          <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-4 quiz-card-interactive" id="card_${idx}" data-answered="false">
+            <div class="text-xs font-bold text-brand-600 uppercase tracking-wider">第 ${idx + 1} 題</div>
+            <div class="text-lg font-bold text-slate-900">${wrapLookupWords(q.questionText || q.title)}</div>
+            <div class="space-y-2 pt-2">${optsHtml}</div>
+            <div id="feedback_${idx}" class="hidden p-4 rounded-2xl text-sm font-semibold mt-3"></div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function handleOptionSelect(idx, selectedKey, correctAns, questionObj) {
       const card = document.getElementById(`card_${idx}`);
       if (card.getAttribute('data-answered') === 'true') return;
       card.setAttribute('data-answered', 'true');
-
-      if (!interactiveSession.answeredCount) {
-        interactiveSession = {
-          total: document.querySelectorAll('.quiz-card-interactive').length,
-          correct: 0,
-          wrong: 0,
-          answeredCount: 0,
-          rangeText: rangeText,
-          attemptedIds: new Set(),
-          correctIds: new Set(),
-          sessionWrongItems: []
-        };
-      }
 
       interactiveSession.answeredCount++;
       interactiveSession.attemptedIds.add(questionObj.id || `q_${idx}`);
@@ -1081,7 +1131,12 @@
           userAnswer: selectedKey
         };
 
-        if (!wrongQuestions.some(w => w.id === formattedWrongItem.id || w.questionText === formattedWrongItem.questionText)) {
+        interactiveSession.sessionWrongItems.push(formattedWrongItem);
+
+        const existingIdx = wrongQuestions.findIndex(w => w.id === formattedWrongItem.id || w.questionText === formattedWrongItem.questionText);
+        if (existingIdx >= 0) {
+          wrongQuestions[existingIdx] = formattedWrongItem;
+        } else {
           wrongQuestions.push(formattedWrongItem);
         }
       }
@@ -1098,7 +1153,7 @@
           Array.from(interactiveSession.correctIds)
         );
 
-        saveUserDataToLocal(true);
+        saveUserDataToLocal(false);
 
         const finishActions = document.getElementById('quiz-finish-actions');
         document.getElementById('quiz-score-summary').innerText = `總題數：${interactiveSession.total} 題 ｜ 答對：${interactiveSession.correct} 題 ｜ 答錯：${interactiveSession.wrong} 題`;
@@ -1260,6 +1315,31 @@
         explanation: w.explanation || w.analysis || ''
       }));
       renderInteractiveQuiz(normalizedWrong, '錯題本特訓', '個人錯題複習');
+    }
+
+    // 單字點擊即時查詢功能
+    function wrapLookupWords(text) {
+      if (!text) return '';
+      return text.replace(/\b([a-zA-Z]{2,})\b/g, '<span class="lookup-word" onclick="lookupWord(\'$1\')">$1</span>');
+    }
+
+    async function lookupWord(word) {
+      activeSelectedWord = word;
+      activeWordDefinition = '查詢中...';
+      document.getElementById('panel-word').innerText = word;
+      document.getElementById('panel-definition').innerText = '查詢中...';
+      document.getElementById('vocab-card-panel').classList.remove('hidden');
+
+      try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=en|zh-TW`);
+        const data = await res.json();
+        const translated = data?.responseData?.translatedText || '查無中文解釋';
+        activeWordDefinition = translated;
+        document.getElementById('panel-definition').innerText = translated;
+      } catch (err) {
+        activeWordDefinition = '查詢失敗，請稍後再試';
+        document.getElementById('panel-definition').innerText = activeWordDefinition;
+      }
     }
 
     function closeVocabPanel() {
