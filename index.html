@@ -451,19 +451,9 @@
           });
           userLogs = Array.from(logMap.values());
 
-          // 從雲端錯題清單及每次測驗紀錄中合併錯題
-          const cloudWrongItems = [...(cloudData.wrongs || [])];
-          (cloudData.logs || []).forEach(log => {
-            if (Array.isArray(log.wrongItems)) {
-              cloudWrongItems.push(...log.wrongItems);
-            }
-          });
-          if (cloudWrongItems.length > 0) {
+          if (cloudData.wrongs && cloudData.wrongs.length > 0) {
             const wrongMap = new Map();
-            [...cloudWrongItems, ...wrongQuestions].forEach((w, index) => {
-              const key = w.id || `${w.questionText || ''}_${w.answer || ''}_${w.userAnswer || ''}_${index}`;
-              wrongMap.set(key, w);
-            });
+            [...cloudData.wrongs, ...wrongQuestions].forEach(w => wrongMap.set(w.id || w.questionText, w));
             wrongQuestions = Array.from(wrongMap.values());
           }
           if (cloudData.vocab && cloudData.vocab.length > 0) {
@@ -518,21 +508,21 @@
     function formatWrongItemsForSheet(items) {
       if (!Array.isArray(items) || items.length === 0) return '無錯題';
       return items.map((item, idx) => {
-        const qNum = item.number || item.qNumber || (idx + 1);
-        const qText = String(item.questionText || item.question || item.text || '').trim();
-        const qLine = qText
-          ? (/^\d+[\.、\s]/.test(qText) ? qText : `${qNum}. ${qText}`)
-          : `${qNum}. (未取得題目內容)`;
-        const opts = item.opts || item.options || item.choices || {};
-        const optLine = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-          .filter(k => opts[k] && String(opts[k]).trim() !== '')
-          .map(k => `(${k}) ${String(opts[k]).trim()}`)
-          .join('  ');
+        const qNum = item.number || (idx + 1);
+        const qText = String(item.questionText || item.question || item.text || '').trim() || '(題目文字未取得)';
+        const qLine = /^\d+[\.、\s]/.test(qText) ? qText : `${qNum}. ${qText}`;
+        const opts = item.opts || item.options || {};
+        const optParts = ['A', 'B', 'C', 'D']
+          .filter(k => opts[k] !== undefined && opts[k] !== null && String(opts[k]).trim() !== '')
+          .map(k => `(${k}) ${String(opts[k]).trim()}`);
+        const optLine = optParts.length > 0 ? optParts.join('  ') : '(選項未取得)';
         const userAns = String(item.userAnswer || item.selected || '').trim().toUpperCase();
         const correctAns = String(item.answer || item.correctAnswer || '').trim().toUpperCase();
-        const explanation = String(item.explanation || item.analysis || '').trim();
-        return [qLine, optLine, `↳ 學生選錯: (${userAns || '?'}) | 正確答案: (${correctAns || '?'})`,
-          explanation ? `中文解析: ${explanation}` : ''].filter(Boolean).join('\n');
+        return [
+          qLine,
+          optLine,
+          `↳ 學生選錯: (${userAns || '?'}) | 正確答案: (${correctAns || '?'})`
+        ].join('\n');
       }).join('\n\n--------------------\n\n');
     }
 
@@ -576,20 +566,8 @@
         wrongCount: wrongCount,
         range: rangeText,
         gradeCategory: rangeText,
-        wrongItems: sessionWrongItems.map(item => ({
-          id: item.id,
-          number: item.number,
-          grade: item.grade,
-          unit: item.unit,
-          questionText: item.questionText,
-          opts: item.opts,
-          answer: item.answer,
-          userAnswer: item.userAnswer,
-          explanation: item.explanation
-        })),
-        wrongContent: formatWrongItemsForSheet(sessionWrongItems),
-        attemptedItems: attemptedIds,
-        correctItems: correctIds
+        wrongItems: sessionWrongItems,
+        wrongContent: formatWrongItemsForSheet(sessionWrongItems)
       };
 
       fetch(GAS_API_URL, {
@@ -1181,16 +1159,32 @@
         feedback.innerHTML = `❌ 答錯了！正確答案是 [ ${correctAns} ]<br><span class="font-normal text-xs mt-1 block">{{解析}} ${questionObj.explanation || '無提供解析'}</span>`;
         feedback.className = "p-4 rounded-2xl text-sm font-semibold mt-3 bg-red-50 text-red-800 border border-red-200";
 
+        const domQText = (card && card.querySelector('.text-lg.font-bold')?.textContent || '').trim();
+        const domOpts = {};
+        if (card) {
+          card.querySelectorAll('label').forEach(lbl => {
+            const inp = lbl.querySelector('input[type="radio"]');
+            const span = lbl.querySelector('span');
+            if (inp && span) {
+              const key = String(inp.value || '').trim().toUpperCase();
+              const fullTxt = String(span.textContent || '').trim();
+              domOpts[key] = fullTxt.replace(/^[A-Da-d][\.\)\s]+/, '').trim() || fullTxt;
+            }
+          });
+        }
+        const mergedOpts = Object.assign({}, domOpts, questionObj.opts || {});
+        const resolvedQText = String(questionObj.questionText || domQText || '').trim();
+
         const wrongItemRecord = {
-          id: String(questionObj.id || `q_${idx}`),
+          id: questionObj.id || `q_${idx}`,
           number: idx + 1,
-          grade: String(questionObj.grade || ''),
-          unit: String(questionObj.unit || ''),
-          questionText: String(questionObj.questionText || questionObj.question || questionObj.text || ''),
-          opts: JSON.parse(JSON.stringify(questionObj.opts || questionObj.options || {})),
+          grade: questionObj.grade || '',
+          unit: questionObj.unit || '',
+          questionText: resolvedQText,
+          opts: mergedOpts,
           answer: correctAns,
-          userAnswer: String(selectedKey),
-          explanation: String(questionObj.explanation || '')
+          userAnswer: selectedKey,
+          explanation: questionObj.explanation || ''
         };
         interactiveSession.sessionWrongItems.push(wrongItemRecord);
         if (!wrongQuestions.some(w => (w.id && wrongItemRecord.id && w.id === wrongItemRecord.id) || w.questionText === wrongItemRecord.questionText)) {
