@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>優華數位刷題網</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- html2canvas 支援轉成高解析度 JPG 圖片 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
     tailwind.config = {
@@ -115,7 +113,7 @@
 
   <!-- 主要內容區 -->
   <main class="max-w-4xl mx-auto px-4 py-8 flex-grow w-full">
-    
+
     <!-- 管理者介面 (Admin Dashboard) -->
     <div id="tab-admin" class="hidden space-y-6">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3">
@@ -143,7 +141,7 @@
 
     <!-- 頁籤一：測驗與出題主頁 -->
     <div id="tab-quiz" class="space-y-6">
-      
+
       <!-- [練功日記] 動力面板與自動 Checklist -->
       <section class="bg-white p-6 rounded-3xl shadow-sm border border-brand-200 no-print space-y-4">
         <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -255,7 +253,7 @@
 
       <!-- 測驗與試卷展示區 -->
       <section id="quiz-container" class="space-y-5"></section>
-      
+
       <!-- 線上測驗完成結算提示區 -->
       <div id="quiz-finish-actions" class="hidden bg-white p-8 rounded-3xl shadow-sm border border-slate-200 text-center space-y-4 no-print">
         <div class="text-4xl">🎉</div>
@@ -266,7 +264,7 @@
           <button onclick="switchTab('wrong-notebook')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl shadow">前往錯題本再次練習 📚</button>
         </div>
       </div>
-      
+
       <!-- 試卷列印與匯出檔案控制按鈕區 -->
       <div id="print-actions" class="hidden flex flex-wrap gap-3 justify-end no-print">
         <button onclick="exportToWord('quiz-container', '英文試卷與解答')" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-base font-bold shadow">📄 下載 Word 試卷</button>
@@ -389,6 +387,32 @@
       }
     }
 
+    function getDefaultTreasuresState() {
+      const now = new Date();
+      return {
+        yearMonth: `${now.getFullYear()}-${now.getMonth() + 1}`,
+        unlockedList: [],
+        yearlyTrophies: []
+      };
+    }
+
+    function loadTreasuresStateLocal() {
+      if (!currentUser || !currentUser.email) return getDefaultTreasuresState();
+      const raw = localStorage.getItem('yh_treasures_' + currentUser.email.toLowerCase());
+      if (!raw) return getDefaultTreasuresState();
+      try {
+        const parsed = JSON.parse(raw);
+        return Object.assign(getDefaultTreasuresState(), parsed || {});
+      } catch (e) {
+        return getDefaultTreasuresState();
+      }
+    }
+
+    function saveTreasuresStateLocal(state) {
+      if (!currentUser || !currentUser.email) return;
+      localStorage.setItem('yh_treasures_' + currentUser.email.toLowerCase(), JSON.stringify(state));
+    }
+
     window.onload = () => {
       const savedUser = localStorage.getItem('yh_user_v16');
       if (savedUser) {
@@ -422,6 +446,15 @@
       document.getElementById('nav-home-btn').innerText = '管理者後台';
     }
 
+    function getLogDedupKey(item) {
+      const ts = String(item.timestamp || '').trim();
+      const range = String(item.range || '').trim();
+      const total = Number(item.total || 0);
+      const correct = Number(item.correct || 0);
+      const wrong = Number(item.wrong || 0);
+      return `${ts}|${range}|${total}|${correct}|${wrong}`;
+    }
+
     async function loadUserData() {
       if (!currentUser) return;
       const emailKey = currentUser.email.toLowerCase();
@@ -444,8 +477,11 @@
         if (cloudData && cloudData.status === 'success') {
           const logMap = new Map();
           [...(cloudData.logs || []), ...userLogs].forEach(item => {
-            const key = item.id || `${item.timestamp || ''}_${item.range || ''}_${item.total || 0}_${item.correct || 0}`;
-            logMap.set(key, item);
+            if (!item) return;
+            const key = getLogDedupKey(item);
+            if (!logMap.has(key)) {
+              logMap.set(key, item);
+            }
           });
           userLogs = Array.from(logMap.values()).sort((a, b) => {
             return String(a.timestamp || '').localeCompare(String(b.timestamp || ''));
@@ -454,7 +490,8 @@
           if (Array.isArray(cloudData.wrongs)) {
             const wrongMap = new Map();
             [...wrongQuestions, ...cloudData.wrongs].forEach(w => {
-              const wKey = w.id || w.questionText;
+              if (!w) return;
+              const wKey = String(w.id || w.questionText || '').trim();
               if (wKey) wrongMap.set(wKey, w);
             });
             wrongQuestions = Array.from(wrongMap.values());
@@ -463,9 +500,19 @@
           if (Array.isArray(cloudData.vocab)) {
             const vocabMap = new Map();
             [...vocabBank, ...cloudData.vocab].forEach(v => {
-              if (v.word) vocabMap.set(v.word.toLowerCase(), v);
+              if (v && v.word) vocabMap.set(String(v.word).toLowerCase(), v);
             });
             vocabBank = Array.from(vocabMap.values());
+          }
+
+          if (cloudData.treasuresState && typeof cloudData.treasuresState === 'object') {
+            const localT = loadTreasuresStateLocal();
+            const cloudT = cloudData.treasuresState;
+            const mergedT = Object.assign({}, localT, cloudT);
+            if ((cloudT.unlockedList || []).length < (localT.unlockedList || []).length) {
+              mergedT.unlockedList = localT.unlockedList;
+            }
+            saveTreasuresStateLocal(mergedT);
           }
 
           localStorage.setItem('yh_student_' + emailKey, JSON.stringify({
@@ -476,11 +523,12 @@
 
           updateWrongBadge();
           updateVocabBadge();
-          renderDiaryStats();
+          renderDiaryStats(true);
           showStatus('跨裝置雲端紀錄同步完成！', 'success');
         }
       } catch (err) {
         console.log('雲端讀取失敗，使用本機紀錄:', err);
+        showStatus('目前無法連線雲端成績表，暫時顯示本機紀錄。', 'error');
       }
     }
 
@@ -506,7 +554,8 @@
             email: emailKey,
             logs: userLogs,
             wrongItems: wrongQuestions,
-            vocabBank: vocabBank
+            vocabBank: vocabBank,
+            treasuresState: loadTreasuresStateLocal()
           })
         }).catch(err => console.log('Sync state error:', err));
       }
@@ -541,7 +590,7 @@
       const mStr = String(now.getMonth() + 1).padStart(2, '0');
       const dStr = String(now.getDate()).padStart(2, '0');
       const dateKey = `${yStr}/${mStr}/${dStr}`;
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
       const sessionData = {
         id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -559,9 +608,10 @@
 
       userLogs.push(sessionData);
       saveUserDataToLocal(false);
-      renderDiaryStats();
+      renderDiaryStats(false);
 
       const syncPayload = {
+        id: sessionData.id,
         action: 'recordQuiz',
         email: currentUser.email.toLowerCase(),
         timestamp: sessionData.timestamp,
@@ -574,7 +624,10 @@
         range: rangeText,
         gradeCategory: rangeText,
         wrongItems: sessionWrongItems,
-        wrongContent: formatWrongItemsForSheet(sessionWrongItems)
+        attemptedItems: attemptedIds,
+        correctItems: correctIds,
+        wrongContent: formatWrongItemsForSheet(sessionWrongItems),
+        treasuresState: loadTreasuresStateLocal()
       };
 
       fetch(GAS_API_URL, {
@@ -594,7 +647,9 @@
       return sessionData;
     }
 
-    function renderDiaryStats() {
+    function renderDiaryStats(silentUnlockModal = false) {
+      if (!currentUser || !currentUser.email) return;
+
       const now = new Date();
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth() + 1;
@@ -607,7 +662,7 @@
       let monthCorrectCount = 0;
       let hasPracticedToday = false;
 
-      let savedTreasuresState = JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email.toLowerCase()) || '{}');
+      let savedTreasuresState = loadTreasuresStateLocal();
       if (savedTreasuresState.yearMonth !== `${currentYear}-${currentMonth}`) {
         if (savedTreasuresState.unlockedList && savedTreasuresState.unlockedList.length > 0) {
           if (!savedTreasuresState.yearlyTrophies) savedTreasuresState.yearlyTrophies = [];
@@ -624,13 +679,13 @@
       }
 
       userLogs.forEach(log => {
-        const ts = log.timestamp || '';
+        const ts = String(log.timestamp || '').trim();
         const datePart = ts.split(' ')[0];
         if (datePart === todayFull || datePart === todayShort) {
           hasPracticedToday = true;
         }
 
-        const isCurrentMonthLog = ts.startsWith(`${currentYear}/${String(currentMonth).padStart(2, '0')}`) || 
+        const isCurrentMonthLog = ts.startsWith(`${currentYear}/${String(currentMonth).padStart(2, '0')}`) ||
                                    ts.startsWith(`${String(currentMonth).padStart(2, '0')}/`);
 
         const logCorrectNum = (Array.isArray(log.correctItems) && log.correctItems.length > 0)
@@ -663,9 +718,9 @@
         }
       }
 
-      localStorage.setItem('yh_treasures_' + currentUser.email.toLowerCase(), JSON.stringify(savedTreasuresState));
+      saveTreasuresStateLocal(savedTreasuresState);
 
-      if (newlyUnlocked.length > 0) {
+      if (newlyUnlocked.length > 0 && !silentUnlockModal) {
         showTreasureUnlockModal(newlyUnlocked);
       }
 
@@ -806,7 +861,7 @@
         const link = document.createElement('a');
         const now = new Date();
         const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-        
+
         link.href = url;
         link.download = `${fileNamePrefix}_${dateStr}.doc`;
         document.body.appendChild(link);
@@ -847,7 +902,7 @@
         const link = document.createElement('a');
         const now = new Date();
         const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-        
+
         link.download = `${fileNamePrefix}_${dateStr}.jpg`;
         link.href = imgData;
         document.body.appendChild(link);
@@ -909,7 +964,7 @@
         setupAdminView();
       } else {
         loadUserData();
-        renderDiaryStats();
+        renderDiaryStats(true);
         loadQuestions();
       }
     }
@@ -933,19 +988,19 @@
         const text = await res.text();
         const jsonText = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
         const data = JSON.parse(jsonText);
-        
+
         const rows = data.table.rows || [];
         rawQuestions = [];
 
         rows.forEach((r, idx) => {
           const c = r.c || [];
           const cols = c.map(cell => cell ? String(cell.v || '').trim() : '');
-          
+
           const id = cols[0] || String(idx + 1);
           const grade = cols[1] || '';
           const unit = cols[2] || '';
           const questionText = cols[3] || '';
-          
+
           const optKeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
           let opts = {};
           let optIdx = 4;
