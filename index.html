@@ -396,18 +396,6 @@
       };
     }
 
-    function loadTreasuresStateLocal() {
-      if (!currentUser || !currentUser.email) return getDefaultTreasuresState();
-      const raw = localStorage.getItem('yh_treasures_' + currentUser.email.toLowerCase());
-      if (!raw) return getDefaultTreasuresState();
-      try {
-        const parsed = JSON.parse(raw);
-        return Object.assign(getDefaultTreasuresState(), parsed || {});
-      } catch (e) {
-        return getDefaultTreasuresState();
-      }
-    }
-
     function saveTreasuresStateLocal(state) {
       if (!currentUser || !currentUser.email) return;
       localStorage.setItem('yh_treasures_' + currentUser.email.toLowerCase(), JSON.stringify(state));
@@ -428,7 +416,7 @@
               setupAdminView();
             } else {
               loadUserData();
-              renderDiaryStats();
+              renderDiaryStats(true);
               loadQuestions();
             }
           }
@@ -446,26 +434,16 @@
       document.getElementById('nav-home-btn').innerText = '管理者後台';
     }
 
-    function getLogDedupKey(item) {
-      const ts = String(item.timestamp || '').trim();
-      const range = String(item.range || '').trim();
-      const total = Number(item.total || 0);
-      const correct = Number(item.correct || 0);
-      const wrong = Number(item.wrong || 0);
-      return `${ts}|${range}|${total}|${correct}|${wrong}`;
-    }
-
     async function loadUserData() {
       if (!currentUser) return;
       const emailKey = currentUser.email.toLowerCase();
-      const localData = JSON.parse(localStorage.getItem('yh_student_' + emailKey) || '{}');
-      wrongQuestions = localData.wrongs || [];
-      vocabBank = localData.vocab || [];
-      userLogs = localData.logs || [];
 
+      userLogs = [];
+      wrongQuestions = [];
+      vocabBank = [];
       updateWrongBadge();
       updateVocabBadge();
-      renderDiaryStats();
+      renderDiaryStats(true);
 
       try {
         showStatus('正在從雲端同步您的跨裝置學習紀錄...', 'info');
@@ -475,44 +453,14 @@
         const cloudData = await res.json();
 
         if (cloudData && cloudData.status === 'success') {
-          const logMap = new Map();
-          [...(cloudData.logs || []), ...userLogs].forEach(item => {
-            if (!item) return;
-            const key = getLogDedupKey(item);
-            if (!logMap.has(key)) {
-              logMap.set(key, item);
-            }
-          });
-          userLogs = Array.from(logMap.values()).sort((a, b) => {
-            return String(a.timestamp || '').localeCompare(String(b.timestamp || ''));
-          });
-
-          if (Array.isArray(cloudData.wrongs)) {
-            const wrongMap = new Map();
-            [...wrongQuestions, ...cloudData.wrongs].forEach(w => {
-              if (!w) return;
-              const wKey = String(w.id || w.questionText || '').trim();
-              if (wKey) wrongMap.set(wKey, w);
-            });
-            wrongQuestions = Array.from(wrongMap.values());
-          }
-
-          if (Array.isArray(cloudData.vocab)) {
-            const vocabMap = new Map();
-            [...vocabBank, ...cloudData.vocab].forEach(v => {
-              if (v && v.word) vocabMap.set(String(v.word).toLowerCase(), v);
-            });
-            vocabBank = Array.from(vocabMap.values());
-          }
+          userLogs = Array.isArray(cloudData.logs) ? cloudData.logs : [];
+          wrongQuestions = Array.isArray(cloudData.wrongs) ? cloudData.wrongs : [];
+          vocabBank = Array.isArray(cloudData.vocab) ? cloudData.vocab : [];
 
           if (cloudData.treasuresState && typeof cloudData.treasuresState === 'object') {
-            const localT = loadTreasuresStateLocal();
-            const cloudT = cloudData.treasuresState;
-            const mergedT = Object.assign({}, localT, cloudT);
-            if ((cloudT.unlockedList || []).length < (localT.unlockedList || []).length) {
-              mergedT.unlockedList = localT.unlockedList;
-            }
-            saveTreasuresStateLocal(mergedT);
+            saveTreasuresStateLocal(Object.assign(getDefaultTreasuresState(), cloudData.treasuresState));
+          } else {
+            saveTreasuresStateLocal(getDefaultTreasuresState());
           }
 
           localStorage.setItem('yh_student_' + emailKey, JSON.stringify({
@@ -524,11 +472,11 @@
           updateWrongBadge();
           updateVocabBadge();
           renderDiaryStats(true);
-          showStatus('跨裝置雲端紀錄同步完成！', 'success');
+          showStatus('已完全以雲端成績表同步最新紀錄！', 'success');
         }
       } catch (err) {
-        console.log('雲端讀取失敗，使用本機紀錄:', err);
-        showStatus('目前無法連線雲端成績表，暫時顯示本機紀錄。', 'error');
+        console.log('雲端讀取失敗:', err);
+        showStatus('目前無法連線雲端成績表，請稍後重新整理再試。', 'error');
       }
     }
 
@@ -555,7 +503,7 @@
             logs: userLogs,
             wrongItems: wrongQuestions,
             vocabBank: vocabBank,
-            treasuresState: loadTreasuresStateLocal()
+            treasuresState: JSON.parse(localStorage.getItem('yh_treasures_' + emailKey) || 'null')
           })
         }).catch(err => console.log('Sync state error:', err));
       }
@@ -627,7 +575,7 @@
         attemptedItems: attemptedIds,
         correctItems: correctIds,
         wrongContent: formatWrongItemsForSheet(sessionWrongItems),
-        treasuresState: loadTreasuresStateLocal()
+        treasuresState: JSON.parse(localStorage.getItem('yh_treasures_' + currentUser.email.toLowerCase()) || 'null')
       };
 
       fetch(GAS_API_URL, {
@@ -662,7 +610,9 @@
       let monthCorrectCount = 0;
       let hasPracticedToday = false;
 
-      let savedTreasuresState = loadTreasuresStateLocal();
+      const rawT = localStorage.getItem('yh_treasures_' + currentUser.email.toLowerCase());
+      let savedTreasuresState = rawT ? Object.assign(getDefaultTreasuresState(), JSON.parse(rawT)) : getDefaultTreasuresState();
+
       if (savedTreasuresState.yearMonth !== `${currentYear}-${currentMonth}`) {
         if (savedTreasuresState.unlockedList && savedTreasuresState.unlockedList.length > 0) {
           if (!savedTreasuresState.yearlyTrophies) savedTreasuresState.yearlyTrophies = [];
