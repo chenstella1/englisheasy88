@@ -235,7 +235,7 @@
           </div>
 
           <div class="md:col-span-12 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-4">
-            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">目標題數 (閱讀／克漏字 1 個題組算 1 題)：</label>
+            <label class="block text-sm font-semibold text-slate-600 uppercase tracking-wider">目標題數 (1 個題組算 1 題，子題依序出題)：</label>
             <input type="number" id="question-count" value="10" min="1" max="100" class="w-32 border-slate-200 rounded-xl text-base p-2.5 border font-medium">
             <span class="text-xs text-slate-500">💡 點擊英文單字即可聽發音與查中文，並可加入個人單字庫。</span>
           </div>
@@ -1352,7 +1352,6 @@
       location.reload();
     }
 
-    // 判斷是否為克漏字題組（包含子題即為 1 個題組，算 1 題）
     function detectGroupKind(q, firstSub, unitText) {
       const combined = `${unitText || ''} ${q?.unit || ''} ${firstSub?.unit || ''} ${q?.questionText || ''}`;
       if (/克漏字|cloze/i.test(combined)) {
@@ -1361,13 +1360,36 @@
       return 'reading_group';
     }
 
-    // 每個題組（無論閱讀或克漏字，含主題/文章與所有子題）皆算 1 題（unitCount = 1）
+    // 依子題編號／題目開頭編號／原始列順序進行穩定排序，確保子題永遠依序出現
+    function compareSubQuestionOrder(a, b) {
+      const qA = a.question || {};
+      const qB = b.question || {};
+      const idA = String(qA.id || '').trim();
+      const idB = String(qB.id || '').trim();
+
+      const matchA = idA.match(/^.+?[-_](\d+)$/);
+      const matchB = idB.match(/^.+?[-_](\d+)$/);
+      const numA = matchA ? parseInt(matchA[1], 10) : (Number.isFinite(a.subOrder) ? a.subOrder : Number.MAX_SAFE_INTEGER);
+      const numB = matchB ? parseInt(matchB[1], 10) : (Number.isFinite(b.subOrder) ? b.subOrder : Number.MAX_SAFE_INTEGER);
+
+      if (numA !== numB) return numA - numB;
+
+      const textNumA = parseInt((String(qA.questionText || '').match(/^\s*[\(\[]?(\d+)[\)\]\.、\s]/) || [])[1] || '', 10);
+      const textNumB = parseInt((String(qB.questionText || '').match(/^\s*[\(\[]?(\d+)[\)\]\.、\s]/) || [])[1] || '', 10);
+      if (Number.isFinite(textNumA) && Number.isFinite(textNumB) && textNumA !== textNumB) {
+        return textNumA - textNumB;
+      }
+
+      return (a.rowIndex ?? 0) - (b.rowIndex ?? 0);
+    }
+
+    // 每個題組（閱讀或克漏字，含主題/文章與所有子題）皆算 1 題（unitCount = 1），子題依序排列
     function buildQuestionUnits(questions) {
       const passageById = new Map();
       const childrenByParentId = new Map();
       const standaloneItems = [];
 
-      questions.forEach(q => {
+      questions.forEach((q, rowIndex) => {
         const cleanId = String(q.id || '').trim();
         const dashMatch = cleanId.match(/^(.+?)[-_](\d+)$/);
 
@@ -1379,7 +1401,8 @@
           }
           childrenByParentId.get(parentId).push({
             question: q,
-            subOrder: subOrder
+            subOrder: subOrder,
+            rowIndex: rowIndex
           });
         } else {
           passageById.set(cleanId, q);
@@ -1394,7 +1417,7 @@
 
         const childrenList = childrenByParentId.get(cleanId);
         if (childrenList && childrenList.length > 0) {
-          childrenList.sort((a, b) => a.subOrder - b.subOrder);
+          childrenList.sort(compareSubQuestionOrder);
           const subQuestions = childrenList.map(entry => {
             consumedChildIds.add(String(entry.question.id || '').trim());
             return entry.question;
@@ -1405,7 +1428,7 @@
 
           standaloneItems.push({
             unitType: groupKind,
-            unitCount: 1, // 1 個題組（含主題/文章與所有子題）算 1 題
+            unitCount: 1, // 1 個題組標數為 1 題
             id: cleanId,
             subject: q.subject || firstSub.subject || '',
             grade: q.grade || firstSub.grade || '',
@@ -1416,7 +1439,7 @@
         } else if (!/^.+?[-_]\d+$/.test(cleanId)) {
           standaloneItems.push({
             unitType: 'single',
-            unitCount: 1, // 1 題單題算 1 題
+            unitCount: 1, // 1 題單題標數為 1 題
             id: cleanId,
             subject: q.subject || '',
             grade: q.grade || '',
@@ -1428,7 +1451,7 @@
 
       childrenByParentId.forEach((childrenList, parentId) => {
         if (!passageById.has(parentId)) {
-          childrenList.sort((a, b) => a.subOrder - b.subOrder);
+          childrenList.sort(compareSubQuestionOrder);
           const orphanSubs = childrenList
             .map(entry => entry.question)
             .filter(sq => !consumedChildIds.has(String(sq.id || '').trim()));
@@ -1438,7 +1461,7 @@
             const groupKind = detectGroupKind(firstSub, firstSub, firstSub.unit || '');
             standaloneItems.push({
               unitType: groupKind,
-              unitCount: 1, // 1 個題組算 1 題
+              unitCount: 1, // 1 個題組標數為 1 題
               id: parentId,
               subject: firstSub.subject || '',
               grade: firstSub.grade || '',
@@ -1459,7 +1482,6 @@
       return standaloneItems;
     }
 
-    // 計算單位陣列的總題組數（1 個閱讀或克漏字題組 = 1 題）
     function sumUnitCount(units) {
       return (units || []).reduce((sum, item) => sum + (Number(item.unitCount) || 1), 0);
     }
@@ -1505,7 +1527,7 @@
 
         questionUnits = buildQuestionUnits(rawQuestions);
         initSubjectFilter();
-        showStatus(`題庫載入成功！共 ${sumUnitCount(questionUnits)} 題（閱讀／克漏字每組計 1 題）。`, 'success');
+        showStatus(`題庫載入成功！共 ${sumUnitCount(questionUnits)} 題（1 個題組標數為 1 題，子題依序出題）。`, 'success');
       } catch (err) {
         console.error('載入題庫失敗:', err);
         showStatus('題庫載入失敗，請檢查 Google 試算表公開權限或網路連線。', 'error');
@@ -1627,7 +1649,7 @@
       document.querySelectorAll('input[name="unit-checkbox"]').forEach(cb => cb.checked = select);
     }
 
-    // 依目標題數抽出對應數量的題組單位（閱讀／克漏字 1 個題組 = 1 題）
+    // 抽題時僅隨機排序題組/單題單位，子題保持原順序不亂數
     function startQuiz(mode) {
       const selectedSubject = document.querySelector('input[name="subject-option"]:checked')?.value || 'ALL';
       const selectedGrade = document.querySelector('input[name="grade-option"]:checked')?.value;
@@ -1662,7 +1684,11 @@
       for (const unitItem of shuffled) {
         const weight = Number(unitItem.unitCount) || 1;
         if (accumulatedQuestionCount + weight <= targetUnitCount || selectedUnitsList.length === 0) {
-          selectedUnitsList.push(unitItem);
+          // 保留子題原順序
+          const orderedUnit = Object.assign({}, unitItem, {
+            subQuestions: Array.isArray(unitItem.subQuestions) ? [...unitItem.subQuestions] : []
+          });
+          selectedUnitsList.push(orderedUnit);
           accumulatedQuestionCount += weight;
         }
         if (accumulatedQuestionCount >= targetUnitCount) {
@@ -1685,8 +1711,8 @@
 
     let currentAnswerableQuestions = [];
     let interactiveSession = {
-      unitTotal: 0, // 題組數（1 個閱讀／克漏字題組 = 1 題）
-      total: 0,     // 實際作答小題總數
+      unitTotal: 0,
+      total: 0,
       correct: 0,
       wrong: 0,
       answeredCount: 0,
@@ -1754,7 +1780,7 @@
           cardsHtml += `
             <div class="bg-white p-7 rounded-3xl shadow-sm border-2 border-brand-200 space-y-5">
               <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                <span class="text-sm font-black text-brand-700 bg-brand-50 px-3 py-1 rounded-full">📖 第 ${unitIdx + 1} 題（${groupTitle} #${item.id}｜1 題組｜含 ${(item.subQuestions || []).length} 子題）</span>
+                <span class="text-sm font-black text-brand-700 bg-brand-50 px-3 py-1 rounded-full">📖 第 ${unitIdx + 1} 題（${groupTitle} #${item.id}｜1 題組｜子題依序 ${(item.subQuestions || []).length} 題）</span>
                 <span class="text-xs text-slate-500">${escapeHtmlText(item.subject ? item.subject + ' · ' : '')}${escapeHtmlText(item.unit || '')}</span>
               </div>
               <div class="bg-amber-50/60 p-5 rounded-2xl border border-amber-200/80 text-slate-900 article-content text-base leading-relaxed">${makeWordsClickable(passageText)}</div>
