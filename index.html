@@ -100,13 +100,17 @@
 
   <!-- 頂部導覽列 -->
   <header class="bg-brand-600 text-white shadow-md no-print">
-    <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
         <span class="text-3xl font-black tracking-wider drop-shadow-sm">優華數位刷題網</span>
       </div>
-      <div class="flex items-center gap-4">
+      <div class="flex flex-wrap items-center gap-4">
         <span id="user-status" class="text-sm bg-brand-700 px-3.5 py-1.5 rounded-full font-medium">未登入</span>
         <button id="nav-home-btn" onclick="switchTab('quiz')" class="text-sm font-bold hover:underline">主頁測驗</button>
+        <!-- 新增：直接連往長篇閱讀測驗專區 -->
+        <a href="reading.html" class="text-sm font-bold bg-amber-400 hover:bg-amber-300 text-slate-900 px-3.5 py-1 rounded-full shadow-sm transition-colors flex items-center gap-1">
+          📖 長篇閱讀測驗
+        </a>
         <button id="nav-vocab-btn" onclick="switchTab('vocab-bank')" class="text-sm font-bold hover:underline">我的單字庫 <span id="vocab-count-badge" class="bg-amber-400 text-slate-900 px-1.5 py-0.2 rounded-full text-xs">0</span></button>
         <button onclick="logout()" class="text-sm text-brand-100 hover:text-white underline">登出</button>
       </div>
@@ -116,15 +120,34 @@
   <!-- 主要內容區 -->
   <main class="max-w-4xl mx-auto px-4 py-8 flex-grow w-full">
 
+    <!-- 新增：長篇閱讀測驗專區醒目入口卡片 (學生與老師皆可直接點擊進入) -->
+    <div class="mb-5 no-print">
+      <a href="reading.html" class="block w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-bold py-4 px-6 rounded-2xl shadow-md transition-all">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">📖</span>
+            <div>
+              <div class="text-lg font-black tracking-wide">進入【長篇閱讀精讀與測驗專區】</div>
+              <div class="text-xs text-emerald-100 font-normal">含國小／國中／高中英文閱讀 ＋ 高中國文文言文精讀（逐句解析、全文翻譯、必考重點、互動測驗）</div>
+            </div>
+          </div>
+          <span class="bg-white text-emerald-800 text-sm font-extrabold px-4 py-1.5 rounded-full shadow">立即前往 →</span>
+        </div>
+      </a>
+    </div>
+
     <!-- 管理者介面 (Admin Dashboard) -->
     <div id="tab-admin" class="hidden space-y-6">
       <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3">
         <div class="text-4xl">📊</div>
         <h2 class="text-xl font-bold text-slate-800">管理者雲端成績總覽</h2>
         <p class="text-sm text-slate-500">學生的所有刷題紀錄已自動連結至您的 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
-        <div class="pt-2">
+        <div class="pt-2 flex flex-wrap justify-center gap-3">
           <a href="https://docs.google.com/spreadsheets/d/1RkmaR4D_JgSlDirq6ayIKILnbrIKGqLfHasZu0TOdNs/edit?gid=0#gid=0" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
             📂 直接打開 Google 成績試算表
+          </a>
+          <a href="reading.html" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
+            📤 上傳 PDF/Word 生成長篇閱讀測驗
           </a>
         </div>
       </div>
@@ -354,324 +377,91 @@
     ];
 
     const QUICK_ZH_DICT = {
-      "abandon": "v. 放棄；遺棄",
-      "ability": "n. 能力；才能",
-      "abroad": "adv. 在國外；到海外",
-      "accept": "v. 接受；承認",
-      "accident": "n. 意外；事故",
-      "achieve": "v. 達成；完成",
-      "advantage": "n. 優點；優勢",
-      "adventure": "n. 冒險；奇遇",
-      "advice": "n. 建議；忠告",
-      "afford": "v. 負擔得起",
-      "afraid": "adj. 害怕的；擔心的",
-      "agree": "v. 同意；贊成",
-      "allow": "v. 允許；准許",
-      "almost": "adv. 幾乎；差不多",
-      "alone": "adj./adv. 獨自的；孤單地",
-      "already": "adv. 已經",
-      "although": "conj. 雖然；儘管",
-      "always": "adv. 總是；永遠",
-      "amazing": "adj. 令人驚奇的",
-      "among": "prep. 在……之中",
-      "ancient": "adj. 古代的；古老的",
-      "announce": "v. 宣布；宣告",
-      "answer": "n./v. 答案；回答",
-      "anxious": "adj. 焦慮的；渴望的",
-      "apologize": "v. 道歉",
-      "appear": "v. 出現；似乎",
-      "appreciate": "v. 感激；欣賞",
-      "arrive": "v. 到達",
-      "article": "n. 文章；物品；冠詞",
-      "attention": "n. 注意；專心",
-      "attitude": "n. 態度；看法",
-      "attract": "v. 吸引",
-      "available": "adj. 可取得的；有空的",
-      "avoid": "v. 避免；避開",
-      "because": "conj. 因為",
-      "become": "v. 變成；成為",
-      "before": "prep./conj./adv. 在……之前",
-      "begin": "v. 開始",
-      "behavior": "n. 行為；舉止",
-      "believe": "v. 相信；認為",
-      "benefit": "n./v. 利益；使受益",
-      "between": "prep. 在（兩者）之間",
-      "borrow": "v. 借入",
-      "brave": "adj. 勇敢的",
-      "break": "v./n. 打破；休息",
-      "bridge": "n. 橋樑",
-      "bright": "adj. 明亮的；聰明的",
-      "bring": "v. 帶來",
-      "build": "v. 建造；建立",
-      "business": "n. 生意；商業；事務",
-      "careful": "adj. 小心的；仔細的",
-      "celebrate": "v. 慶祝",
-      "center": "n. 中心",
-      "certain": "adj. 確定的；某個",
-      "challenge": "n./v. 挑戰",
-      "chance": "n. 機會；可能性",
-      "change": "v./n. 改變；零錢",
-      "character": "n. 性格；角色；字元",
-      "choice": "n. 選擇",
-      "choose": "v. 選擇",
-      "clear": "adj. 清楚的；晴朗的",
-      "collect": "v. 收集",
-      "comfortable": "adj. 舒適的",
-      "common": "adj. 常見的；共同的",
-      "communicate": "v. 溝通；交流",
-      "community": "n. 社區；社群",
-      "compare": "v. 比較",
-      "complete": "adj./v. 完整的；完成",
-      "condition": "n. 狀況；條件",
-      "confident": "adj. 有信心的",
-      "connect": "v. 連接；聯繫",
-      "consider": "v. 考慮；認為",
-      "contain": "v. 包含；容納",
-      "continue": "v. 繼續",
-      "control": "v./n. 控制",
-      "conversation": "n. 對話",
-      "correct": "adj./v. 正確的；改正",
-      "country": "n. 國家；鄉村",
-      "course": "n. 課程；路線",
-      "create": "v. 創造",
-      "culture": "n. 文化",
-      "curious": "adj. 好奇的",
-      "customer": "n. 顧客",
-      "dangerous": "adj. 危險的",
-      "decide": "v. 決定",
-      "decision": "n. 決定",
-      "describe": "v. 描述；形容",
-      "design": "v./n. 設計",
-      "develop": "v. 發展；開發",
-      "different": "adj. 不同的",
-      "difficult": "adj. 困難的",
-      "discover": "v. 發現",
-      "discuss": "v. 討論",
-      "distance": "n. 距離",
-      "during": "prep. 在……期間",
-      "effort": "n. 努力",
-      "encourage": "v. 鼓勵",
-      "energy": "n. 精力；能源",
-      "enjoy": "v. 享受；喜愛",
-      "enough": "adj./adv. 足夠的；足夠地",
-      "environment": "n. 環境",
-      "especially": "adv. 尤其；特別",
-      "event": "n. 事件；活動",
-      "example": "n. 例子",
-      "excited": "adj. 興奮的",
-      "exercise": "n./v. 運動；練習",
-      "expect": "v. 預期；期望",
-      "experience": "n./v. 經驗；經歷",
-      "explain": "v. 解釋；說明",
-      "express": "v./adj. 表達；快速的",
-      "famous": "adj. 著名的",
-      "favorite": "adj./n. 最喜愛的",
-      "feeling": "n. 感覺；感情",
-      "finally": "adv. 最後；終於",
-      "follow": "v. 跟隨；遵循",
-      "foreign": "adj. 外國的",
-      "forget": "v. 忘記",
-      "future": "n./adj. 未來；未來的",
-      "garden": "n. 花園",
-      "gather": "v. 聚集；收集",
-      "general": "adj. 一般的；普遍的",
-      "habit": "n. 習慣",
-      "happen": "v. 發生",
-      "healthy": "adj. 健康的",
-      "helpful": "adj. 有幫助的",
-      "history": "n. 歷史",
-      "holiday": "n. 假期",
-      "honest": "adj. 誠實的",
-      "hospital": "n. 醫院",
-      "however": "adv. 然而；不過",
-      "imagine": "v. 想像",
-      "important": "adj. 重要的",
-      "improve": "v. 改善；進步",
-      "include": "v. 包括；包含",
-      "increase": "v./n. 增加",
-      "information": "n. 資訊；情報",
-      "instead": "adv. 反而；代替",
-      "interest": "n./v. 興趣；使感興趣",
-      "interview": "n./v. 面試；採訪",
-      "introduce": "v. 介紹；引進",
-      "invent": "v. 發明",
-      "invite": "v. 邀請",
-      "island": "n. 島嶼",
-      "journey": "n. 旅程",
-      "knowledge": "n. 知識",
-      "language": "n. 語言",
-      "laugh": "v./n. 笑；笑聲",
-      "learn": "v. 學習；得知",
-      "leave": "v. 離開；留下",
-      "lesson": "n. 課程；教訓",
-      "library": "n. 圖書館",
-      "listen": "v. 聽",
-      "local": "adj. 當地的；局部的",
-      "machine": "n. 機器",
-      "magazine": "n. 雜誌",
-      "manage": "v. 設法做到；管理",
-      "market": "n. 市場",
-      "matter": "n./v. 事情；要緊",
-      "meaning": "n. 意思；含義",
-      "measure": "v./n. 測量；措施",
-      "member": "n. 成員；會員",
-      "mention": "v. 提到；提及",
-      "message": "n. 訊息；留言",
-      "method": "n. 方法",
-      "minute": "n. 分鐘",
-      "mistake": "n./v. 錯誤；誤會",
-      "modern": "adj. 現代的",
-      "moment": "n. 片刻；時刻",
-      "mountain": "n. 山；山脈",
-      "museum": "n. 博物館",
-      "natural": "adj. 自然的",
-      "necessary": "adj. 必要的",
-      "neighbor": "n. 鄰居",
-      "nervous": "adj. 緊張的；焦慮的",
-      "newspaper": "n. 報紙",
-      "notice": "v./n. 注意到；通知",
-      "offer": "v./n. 提供；提議",
-      "office": "n. 辦公室",
-      "often": "adv. 經常",
-      "opinion": "n. 意見；看法",
-      "opportunity": "n. 機會",
-      "order": "n./v. 順序；命令；訂購",
-      "ordinary": "adj. 普通的；平凡的",
-      "organize": "v. 組織；安排",
-      "outside": "adv./prep./adj. 在外面；外面的",
-      "parent": "n. 父或母",
-      "patient": "adj./n. 有耐心的；病人",
-      "pattern": "n. 模式；圖案",
-      "peaceful": "adj. 和平的；安靜的",
-      "people": "n. 人們",
-      "percent": "n. 百分比",
-      "perfect": "adj. 完美的",
-      "perhaps": "adv. 或許；大概",
-      "period": "n. 時期；句號",
-      "person": "n. 人",
-      "picture": "n. 照片；圖畫",
-      "place": "n./v. 地方；放置",
-      "plan": "n./v. 計畫",
-      "plant": "n./v. 植物；種植",
-      "pleasant": "adj. 令人愉快的",
-      "pleasure": "n. 愉快；樂趣",
-      "pocket": "n. 口袋",
-      "polite": "adj. 有禮貌的",
-      "popular": "adj. 受歡迎的",
-      "population": "n. 人口",
-      "possible": "adj. 可能的",
-      "practice": "n./v. 練習",
-      "prepare": "v. 準備",
-      "present": "adj./n./v. 目前的；禮物；呈現",
-      "prevent": "v. 防止；阻止",
-      "price": "n. 價格",
-      "problem": "n. 問題",
-      "process": "n./v. 過程；處理",
-      "produce": "v. 生產；製造",
-      "product": "n. 產品",
-      "program": "n. 節目；計畫；程式",
-      "progress": "n./v. 進步",
-      "project": "n. 計畫；專案",
-      "promise": "v./n. 答應；承諾",
-      "protect": "v. 保護",
-      "proud": "adj. 驕傲的；自豪的",
-      "provide": "v. 提供",
-      "public": "adj./n. 公眾的；大眾",
-      "purpose": "n. 目的",
-      "question": "n./v. 問題；提問",
-      "quickly": "adv. 迅速地",
-      "quiet": "adj. 安靜的",
-      "quite": "adv. 相當；頗",
-      "raise": "v. 舉起；飼養；籌募",
-      "reach": "v. 到達；伸手",
-      "ready": "adj. 準備好的",
-      "realize": "v. 了解；實現",
-      "reason": "n. 理由；原因",
-      "receive": "v. 收到",
-      "recently": "adv. 最近",
-      "record": "n./v. 紀錄；錄音",
-      "reduce": "v. 減少",
-      "refuse": "v. 拒絕",
-      "remember": "v. 記得",
-      "remind": "v. 提醒",
-      "report": "n./v. 報告；報導",
-      "request": "n./v. 請求",
-      "require": "v. 需要；要求",
-      "research": "n./v. 研究",
-      "result": "n./v. 結果；導致",
-      "return": "v./n. 返回；歸還",
-      "review": "v./n. 複習；評論",
-      "right": "adj./adv./n. 正確的；右邊；權利",
-      "schedule": "n./v. 行程表；安排",
-      "science": "n. 科學",
-      "season": "n. 季節",
-      "secret": "n./adj. 秘密；秘密的",
-      "sentence": "n. 句子；判決",
-      "serious": "adj. 嚴重的；認真的",
-      "service": "n. 服務",
-      "several": "adj./pron. 幾個；數個",
-      "share": "v./n. 分享",
-      "should": "aux. 應該",
-      "similar": "adj. 相似的",
-      "simple": "adj. 簡單的",
-      "since": "conj./prep. 自從；既然",
-      "situation": "n. 情況；處境",
-      "skill": "n. 技能；技巧",
-      "society": "n. 社會",
-      "solution": "n. 解決方法",
-      "solve": "v. 解決",
-      "special": "adj. 特殊的",
-      "spend": "v. 花費（時間或金錢）",
-      "spirit": "n. 精神；心靈",
-      "standard": "n./adj. 標準；標準的",
-      "story": "n. 故事",
-      "stranger": "n. 陌生人",
-      "street": "n. 街道",
-      "student": "n. 學生",
-      "subject": "n. 科目；主題",
-      "succeed": "v. 成功",
-      "success": "n. 成功",
-      "suggest": "v. 建議；暗示",
-      "support": "v./n. 支持",
-      "suppose": "v. 假設；料想",
-      "surprise": "n./v. 驚訝",
-      "system": "n. 系統",
-      "teacher": "n. 老師",
-      "technology": "n. 科技",
-      "temperature": "n. 溫度",
-      "themselves": "pron. 他們自己",
-      "thought": "n./v. 想法；思考（過去式）",
-      "through": "prep./adv. 穿過；透過",
-      "together": "adv. 一起",
-      "tomorrow": "n./adv. 明天",
-      "tonight": "adv./n. 今晚",
-      "toward": "prep. 朝向",
-      "tradition": "n. 傳統",
-      "travel": "v./n. 旅行",
-      "trouble": "n./v. 麻煩；困擾",
-      "understand": "v. 了解；明白",
-      "useful": "adj. 有用的",
-      "usually": "adv. 通常",
-      "vacation": "n. 假期",
-      "value": "n./v. 價值；重視",
-      "various": "adj. 各種各樣的",
-      "village": "n. 村莊",
-      "visit": "v./n. 拜訪；參觀",
-      "volunteer": "n./v. 志工；自願",
-      "weather": "n. 天氣",
-      "whether": "conj. 是否",
-      "without": "prep. 沒有",
-      "wonder": "v./n. 想知道；奇蹟",
-      "wonderful": "adj. 精彩的；極好的",
-      "worry": "v./n. 擔心",
-      "writer": "n. 作家"
+      "abandon": "v. 放棄；遺棄", "ability": "n. 能力；才能", "abroad": "adv. 在國外；到海外", "accept": "v. 接受；承認",
+      "accident": "n. 意外；事故", "achieve": "v. 達成；完成", "advantage": "n. 優點；優勢", "adventure": "n. 冒險；奇遇",
+      "advice": "n. 建議；忠告", "afford": "v. 負擔得起", "afraid": "adj. 害怕的；擔心的", "agree": "v. 同意；贊成",
+      "allow": "v. 允許；准許", "almost": "adv. 幾乎；差不多", "alone": "adj./adv. 獨自的；孤單地", "already": "adv. 已經",
+      "although": "conj. 雖然；儘管", "always": "adv. 總是；永遠", "amazing": "adj. 令人驚奇的", "among": "prep. 在……之中",
+      "ancient": "adj. 古代的；古老的", "announce": "v. 宣布；宣告", "answer": "n./v. 答案；回答", "anxious": "adj. 焦慮的；渴望的",
+      "apologize": "v. 道歉", "appear": "v. 出現；似乎", "appreciate": "v. 感激；欣賞", "arrive": "v. 到達",
+      "article": "n. 文章；物品；冠詞", "attention": "n. 注意；專心", "attitude": "n. 態度；看法", "attract": "v. 吸引",
+      "available": "adj. 可取得的；有空的", "avoid": "v. 避免；避開", "because": "conj. 因為", "become": "v. 變成；成為",
+      "before": "prep./conj./adv. 在……之前", "begin": "v. 開始", "behavior": "n. 行為；舉止", "believe": "v. 相信；認為",
+      "benefit": "n./v. 利益；使受益", "between": "prep. 在（兩者）之間", "borrow": "v. 借入", "brave": "adj. 勇敢的",
+      "break": "v./n. 打破；休息", "bridge": "n. 橋樑", "bright": "adj. 明亮的；聰明的", "bring": "v. 帶來",
+      "build": "v. 建造；建立", "business": "n. 生意；商業；事務", "careful": "adj. 小心的；仔細的", "celebrate": "v. 慶祝",
+      "center": "n. 中心", "certain": "adj. 確定的；某個", "challenge": "n./v. 挑戰", "chance": "n. 機會；可能性",
+      "change": "v./n. 改變；零錢", "character": "n. 性格；角色；字元", "choice": "n. 選擇", "choose": "v. 選擇",
+      "clear": "adj. 清楚的；晴朗的", "collect": "v. 收集", "comfortable": "adj. 舒適的", "common": "adj. 常見的；共同的",
+      "communicate": "v. 溝通；交流", "community": "n. 社區；社群", "compare": "v. 比較", "complete": "adj./v. 完整的；完成",
+      "condition": "n. 狀況；條件", "confident": "adj. 有信心的", "connect": "v. 連接；聯繫", "consider": "v. 考慮；認為",
+      "contain": "v. 包含；容納", "continue": "v. 繼續", "control": "v./n. 控制", "conversation": "n. 對話",
+      "correct": "adj./v. 正確的；改正", "country": "n. 國家；鄉村", "course": "n. 課程；路線", "create": "v. 創造",
+      "culture": "n. 文化", "curious": "adj. 好奇的", "customer": "n. 顧客", "dangerous": "adj. 危險的",
+      "decide": "v. 決定", "decision": "n. 決定", "describe": "v. 描述；形容", "design": "v./n. 設計",
+      "develop": "v. 發展；開發", "different": "adj. 不同的", "difficult": "adj. 困難的", "discover": "v. 發現",
+      "discuss": "v. 討論", "distance": "n. 距離", "during": "prep. 在……期間", "effort": "n. 努力",
+      "encourage": "v. 鼓勵", "energy": "n. 精力；能源", "enjoy": "v. 享受；喜愛", "enough": "adj./adv. 足夠的；足夠地",
+      "environment": "n. 環境", "especially": "adv. 尤其；特別", "event": "n. 事件；活動", "example": "n. 例子",
+      "excited": "adj. 興奮的", "exercise": "n./v. 運動；練習", "expect": "v. 預期；期望", "experience": "n./v. 經驗；經歷",
+      "explain": "v. 解釋；說明", "express": "v./adj. 表達；快速的", "famous": "adj. 著名的", "favorite": "adj./n. 最喜愛的",
+      "feeling": "n. 感覺；感情", "finally": "adv. 最後；終於", "follow": "v. 跟隨；遵循", "foreign": "adj. 外國的",
+      "forget": "v. 忘記", "future": "n./adj. 未來；未來的", "garden": "n. 花園", "gather": "v. 聚集；收集",
+      "general": "adj. 一般的；普遍的", "habit": "n. 習慣", "happen": "v. 發生", "healthy": "adj. 健康的",
+      "helpful": "adj. 有幫助的", "history": "n. 歷史", "holiday": "n. 假期", "honest": "adj. 誠實的",
+      "hospital": "n. 醫院", "however": "adv. 然而；不過", "imagine": "v. 想像", "important": "adj. 重要的",
+      "improve": "v. 改善；進步", "include": "v. 包括；包含", "increase": "v./n. 增加", "information": "n. 資訊；情報",
+      "instead": "adv. 反而；代替", "interest": "n./v. 興趣；使感興趣", "interview": "n./v. 面試；採訪", "introduce": "v. 介紹；引進",
+      "invent": "v. 發明", "invite": "v. 邀請", "island": "n. 島嶼", "journey": "n. 旅程",
+      "knowledge": "n. 知識", "language": "n. 語言", "laugh": "v./n. 笑；笑聲", "learn": "v. 學習；得知",
+      "leave": "v. 離開；留下", "lesson": "n. 課程；教訓", "library": "n. 圖書館", "listen": "v. 聽",
+      "local": "adj. 當地的；局部的", "machine": "n. 機器", "magazine": "n. 雜誌", "manage": "v. 設法做到；管理",
+      "market": "n. 市場", "matter": "n./v. 事情；要緊", "meaning": "n. 意思；含義", "measure": "v./n. 測量；措施",
+      "member": "n. 成員；會員", "mention": "v. 提到；提及", "message": "n. 訊息；留言", "method": "n. 方法",
+      "minute": "n. 分鐘", "mistake": "n./v. 錯誤；誤會", "modern": "adj. 現代的", "moment": "n. 片刻；時刻",
+      "mountain": "n. 山；山脈", "museum": "n. 博物館", "natural": "adj. 自然的", "necessary": "adj. 必要的",
+      "neighbor": "n. 鄰居", "nervous": "adj. 緊張的；焦慮的", "newspaper": "n. 報紙", "notice": "v./n. 注意到；通知",
+      "offer": "v./n. 提供；提議", "office": "n. 辦公室", "often": "adv. 經常", "opinion": "n. 意見；看法",
+      "opportunity": "n. 機會", "order": "n./v. 順序；命令；訂購", "ordinary": "adj. 普通的；平凡的", "organize": "v. 組織；安排",
+      "outside": "adv./prep./adj. 在外面；外面的", "parent": "n. 父或母", "patient": "adj./n. 有耐心的；病人", "pattern": "n. 模式；圖案",
+      "peaceful": "adj. 和平的；安靜的", "people": "n. 人們", "percent": "n. 百分比", "perfect": "adj. 完美的",
+      "perhaps": "adv. 或許；大概", "period": "n. 時期；句號", "person": "n. 人", "picture": "n. 照片；圖畫",
+      "place": "n./v. 地方；放置", "plan": "n./v. 計畫", "plant": "n./v. 植物；種植", "pleasant": "adj. 令人愉快的",
+      "pleasure": "n. 愉快；樂趣", "pocket": "n. 口袋", "polite": "adj. 有禮貌的", "popular": "adj. 受歡迎的",
+      "population": "n. 人口", "possible": "adj. 可能的", "practice": "n./v. 練習", "prepare": "v. 準備",
+      "present": "adj./n./v. 目前的；禮物；呈現", "prevent": "v. 防止；阻止", "price": "n. 價格", "problem": "n. 問題",
+      "process": "n./v. 過程；處理", "produce": "v. 生產；製造", "product": "n. 產品", "program": "n. 節目；計畫；程式",
+      "progress": "n./v. 進步", "project": "n. 計畫；專案", "promise": "v./n. 答應；承諾", "protect": "v. 保護",
+      "proud": "adj. 驕傲的；自豪的", "provide": "v. 提供", "public": "adj./n. 公眾的；大眾", "purpose": "n. 目的",
+      "question": "n./v. 問題；提問", "quickly": "adv. 迅速地", "quiet": "adj. 安靜的", "quite": "adv. 相當；頗",
+      "raise": "v. 舉起；飼養；籌募", "reach": "v. 到達；伸手", "ready": "adj. 準備好的", "realize": "v. 了解；實現",
+      "reason": "n. 理由；原因", "receive": "v. 收到", "recently": "adv. 最近", "record": "n./v. 紀錄；錄音",
+      "reduce": "v. 減少", "refuse": "v. 拒絕", "remember": "v. 記得", "remind": "v. 提醒",
+      "report": "n./v. 報告；報導", "request": "n./v. 請求", "require": "v. 需要；要求", "research": "n./v. 研究",
+      "result": "n./v. 結果；導致", "return": "v./n. 返回；歸還", "review": "v./n. 複習；評論", "right": "adj./adv./n. 正確的；右邊；權利",
+      "schedule": "n./v. 行程表；安排", "science": "n. 科學", "season": "n. 季節", "secret": "n./adj. 秘密；秘密的",
+      "sentence": "n. 句子；判決", "serious": "adj. 嚴重的；認真的", "service": "n. 服務", "several": "adj./pron. 幾個；數個",
+      "share": "v./n. 分享", "should": "aux. 應該", "similar": "adj. 相似的", "simple": "adj. 簡單的",
+      "since": "conj./prep. 自從；既然", "situation": "n. 情況；處境", "skill": "n. 技能；技巧", "society": "n. 社會",
+      "solution": "n. 解決方法", "solve": "v. 解決", "special": "adj. 特殊的", "spend": "v. 花費（時間或金錢）",
+      "spirit": "n. 精神；心靈", "standard": "n./adj. 標準；標準的", "story": "n. 故事", "stranger": "n. 陌生人",
+      "street": "n. 街道", "student": "n. 學生", "subject": "n. 科目；主題", "succeed": "v. 成功",
+      "success": "n. 成功", "suggest": "v. 建議；暗示", "support": "v./n. 支持", "suppose": "v. 假設；料想",
+      "surprise": "n./v. 驚訝", "system": "n. 系統", "teacher": "n. 老師", "technology": "n. 科技",
+      "temperature": "n. 溫度", "themselves": "pron. 他們自己", "thought": "n./v. 想法；思考（過去式）", "through": "prep./adv. 穿過；透過",
+      "together": "adv. 一起", "tomorrow": "n./adv. 明天", "tonight": "adv./n. 今晚", "toward": "prep. 朝向",
+      "tradition": "n. 傳統", "travel": "v./n. 旅行", "trouble": "n./v. 麻煩；困擾", "understand": "v. 了解；明白",
+      "useful": "adj. 有用的", "usually": "adv. 通常", "vacation": "n. 假期", "value": "n./v. 價值；重視",
+      "various": "adj. 各種各樣的", "village": "n. 村莊", "visit": "v./n. 拜訪；參觀", "volunteer": "n./v. 志工；自願",
+      "weather": "n. 天氣", "whether": "conj. 是否", "without": "prep. 沒有", "wonder": "v./n. 想知道；奇蹟",
+      "wonderful": "adj. 精彩的；極好的", "worry": "v./n. 擔心", "writer": "n. 作家"
     };
 
     const zhLookupCache = new Map();
 
     let currentUser = null;
     let rawQuestions = [];
-    let questionUnits = []; // 1 個題組（閱讀或克漏字，含文章與所有子題）皆算 1 題（unitCount = 1）
+    let questionUnits = [];
     let wrongQuestions = [];
     let vocabBank = [];
     let userLogs = [];
@@ -711,13 +501,8 @@
     async function fetchChineseMeaning(word) {
       const lower = String(word || '').toLowerCase().trim();
       if (!lower) return '查無中文解釋';
-
-      if (QUICK_ZH_DICT[lower]) {
-        return QUICK_ZH_DICT[lower];
-      }
-      if (zhLookupCache.has(lower)) {
-        return zhLookupCache.get(lower);
-      }
+      if (QUICK_ZH_DICT[lower]) return QUICK_ZH_DICT[lower];
+      if (zhLookupCache.has(lower)) return zhLookupCache.get(lower);
 
       try {
         const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-TW&dt=t&q=${encodeURIComponent(lower)}`;
@@ -1348,7 +1133,6 @@
       location.reload();
     }
 
-    // 判斷是否為克漏字／閱讀文章本體（含 ___1___ 等空格或無 A-D 選項的長文/標題列）
     function isPassageRow(q) {
       const text = String(q?.questionText || '').trim();
       const hasBlankPattern = /_{2,}\s*\d+\s*_{2,}|【\s*\d+\s*】|\(\s*\d+\s*\)\s*_{2,}/.test(text);
@@ -1360,7 +1144,6 @@
       return false;
     }
 
-    // 擷取子題的格號／題號（如「請選出第 (1) 格最適合的答案：」-> 1）
     function extractSubQuestionNumber(q, fallbackOrder = Number.MAX_SAFE_INTEGER) {
       const text = String(q?.questionText || '').trim();
       const id = String(q?.id || '').trim();
@@ -1392,14 +1175,12 @@
       return 'reading_group';
     }
 
-    // 建立題組單位：1 個題組（含文章與所有子題）固定算 1 題（unitCount = 1），子題嚴格依序排列
     function buildQuestionUnits(questions) {
       const passageById = new Map();
       const childrenByParentId = new Map();
       const consumedIds = new Set();
       const units = [];
 
-      // 第一步：處理明確有「主編號-子編號」（如 798-1、798_1）的題組
       questions.forEach((q, rowIndex) => {
         const cleanId = String(q.id || '').trim();
         const dashMatch = cleanId.match(/^(.+?)[-_](\d+)$/);
@@ -1421,7 +1202,6 @@
 
       const parentIdsWithDash = new Set(childrenByParentId.keys());
 
-      // 第二步：依原始試算表列順序掃描，把「文章列 + 緊隨的同類子題」打包成 1 個題組（算 1 題）
       let i = 0;
       while (i < questions.length) {
         const q = questions[i];
@@ -1431,7 +1211,6 @@
           continue;
         }
 
-        // 情況 A：主編號底下有 dash 子題（例如 798 與 798-1, 798-2...）
         if (parentIdsWithDash.has(cleanId)) {
           const childEntries = childrenByParentId.get(cleanId) || [];
           childEntries.sort(compareSubQuestionOrder);
@@ -1445,7 +1224,7 @@
           const groupKind = detectGroupKind(q, firstSub, q.unit || firstSub.unit || '');
           units.push({
             unitType: groupKind,
-            unitCount: 1, // 1 個題組算 1 題
+            unitCount: 1,
             id: cleanId,
             subject: q.subject || firstSub.subject || '',
             grade: q.grade || firstSub.grade || '',
@@ -1457,7 +1236,6 @@
           continue;
         }
 
-        // 情況 B：文章／克漏字列（例如 SEA GLASS ... ___1___ ... ___10___），後面跟著「第 (1) 格…」、「第 (9) 格…」等子題
         if (isPassageRow(q)) {
           const groupSubs = [];
           let j = i + 1;
@@ -1496,7 +1274,7 @@
 
           units.push({
             unitType: groupKind,
-            unitCount: 1, // 1 個題組（含文章與全部子題）算 1 題
+            unitCount: 1,
             id: cleanId,
             subject: q.subject || firstSub.subject || '',
             grade: q.grade || firstSub.grade || '',
@@ -1509,11 +1287,10 @@
           continue;
         }
 
-        // 情況 C：一般單題
         consumedIds.add(cleanId);
         units.push({
           unitType: 'single',
-          unitCount: 1, // 1 題單題算 1 題
+          unitCount: 1,
           id: cleanId,
           subject: q.subject || '',
           grade: q.grade || '',
@@ -1523,7 +1300,6 @@
         i++;
       }
 
-      // 處理沒有對應主列但有 dash 子題的孤兒題組
       childrenByParentId.forEach((childrenList, parentId) => {
         if (!passageById.has(parentId)) {
           childrenList.sort(compareSubQuestionOrder);
@@ -1536,7 +1312,7 @@
             const groupKind = detectGroupKind(firstSub, firstSub, firstSub.unit || '');
             units.push({
               unitType: groupKind,
-              unitCount: 1, // 1 個題組算 1 題
+              unitCount: 1,
               id: parentId,
               subject: firstSub.subject || '',
               grade: firstSub.grade || '',
@@ -1591,7 +1367,7 @@
 
           const answer = cols[12] || '';
           const explanation = cols[13] || '';
-          const subject = cols[14] || ''; // O 欄：科目
+          const subject = cols[14] || '';
 
           if (questionText) {
             rawQuestions.push({
@@ -1758,7 +1534,6 @@
       for (const unitItem of shuffled) {
         const weight = Number(unitItem.unitCount) || 1;
         if (accumulatedQuestionCount + weight <= targetUnitCount || selectedUnitsList.length === 0) {
-          // 子題保持嚴格排序（1, 2, 3...），不打亂
           const sortedSubs = Array.isArray(unitItem.subQuestions)
             ? [...unitItem.subQuestions].sort((a, b) => extractSubQuestionNumber(a) - extractSubQuestionNumber(b))
             : [];
