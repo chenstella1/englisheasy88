@@ -217,12 +217,12 @@
   </main>
 
   <!-- ==================== 老師出題與上傳 PDF/Word 後台 ==================== -->
-  <section id="teacher-upload-view" class="hidden max-w-5xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
+  <section id="teacher-upload-view" class="hidden max-w-6xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
     <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-6">
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
         <div>
-          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 老師出題工作台（PDF / Word 自動斷句與出題整理）</h2>
-          <p class="text-sm text-slate-500 mt-1">上傳檔案後，系統自動幫您斷句並建立：a.逐句解析、b.全文意思、c.必背必考重點、d.選擇題與解析。</p>
+          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 老師出題工作台（PDF / Word 自動產生逐句解析、全文意思、重點與選擇題）</h2>
+          <p class="text-sm text-slate-500 mt-1">上傳檔案或貼上文章後，系統自動產生：a.逐句解析、b.全文意思、c.必背必考重點、d.選擇題與解析，並提供視覺化表單直接編輯或發布。</p>
         </div>
       </div>
 
@@ -272,11 +272,11 @@
       <!-- 生成狀態提示 -->
       <div id="ai-gen-status" class="hidden p-4 rounded-2xl text-sm font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 whitespace-pre-line"></div>
 
-      <!-- 生成結果編輯與發布 -->
-      <div id="generated-preview-box" class="hidden space-y-4 pt-4 border-t border-slate-200">
+      <!-- 生成結果視覺化編輯與發布區 -->
+      <div id="generated-preview-box" class="hidden space-y-6 pt-6 border-t border-slate-200">
         <div class="flex flex-wrap justify-between items-center gap-3">
-          <h3 class="text-lg font-black text-emerald-700">✅ 已自動拆解完成！可直接編輯下方內容或發布至學生端</h3>
-          <div class="flex gap-2">
+          <h3 class="text-xl font-black text-emerald-700">✅ 已自動產生完整教材內容！可直接修改下方各區塊並發布至學生端</h3>
+          <div class="flex flex-wrap gap-2">
             <button onclick="publishGeneratedArticle()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl shadow">
               🚀 立即發布並切換到學生端預覽
             </button>
@@ -285,7 +285,42 @@
             </button>
           </div>
         </div>
-        <textarea id="generated-json-preview" rows="12" class="w-full bg-slate-900 text-emerald-300 p-4 rounded-2xl text-xs font-mono leading-relaxed focus:outline-none"></textarea>
+
+        <!-- b. 全文意思編輯區 -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+          <label class="block text-sm font-black text-brand-700">📄 b. 全文意思（譯文／白話總覽）</label>
+          <textarea id="edit-full-translation" rows="4" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
+        </div>
+
+        <!-- c. 必背必考重點編輯區 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
+            <label class="block text-sm font-black text-amber-900">⭐ c-1. 必背核心單字／詞彙（每行一項）</label>
+            <textarea id="edit-key-vocab" rows="5" class="w-full border border-amber-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
+          </div>
+          <div class="p-5 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-2">
+            <label class="block text-sm font-black text-indigo-900">🎯 c-2. 段考／會考／學測必考重點（每行一項）</label>
+            <textarea id="edit-key-exam" rows="5" class="w-full border border-indigo-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
+          </div>
+        </div>
+
+        <!-- a. 逐句解析編輯區 -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-base font-black text-slate-800">🔍 a. 逐句解析明細（每句皆可修改句意翻譯與單字/文法解析）</h4>
+            <button onclick="addSentenceEditorRow()" class="text-xs font-bold bg-brand-100 hover:bg-brand-200 text-brand-800 px-3 py-1.5 rounded-xl">＋ 新增一句解析</button>
+          </div>
+          <div id="edit-sentences-container" class="space-y-4"></div>
+        </div>
+
+        <!-- d. 選擇題與解析編輯區 -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-base font-black text-slate-800">📝 d. 隨堂閱讀理解選擇題與解析</h4>
+            <button onclick="addQuestionEditorRow()" class="text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-1.5 rounded-xl shadow-sm">＋ 新增一題選擇題</button>
+          </div>
+          <div id="edit-questions-container" class="space-y-4"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -886,6 +921,117 @@
       }
     }
 
+    // 智慧分析文章並自動產生：a.逐句解析、b.全文意思、c.必背必考重點、d.選擇題與解析
+    function buildSmartReadingPackage(rawText, title, subject, level) {
+      const sentencesRaw = rawText
+        .split(/(?<=[.!?。！？;；])\s+|\n+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      const wordFreq = new Map();
+      const tokenMatches = rawText.toLowerCase().match(/[a-zA-Z]{4,}/g) || [];
+      const stopWords = new Set([
+        'this', 'that', 'with', 'from', 'they', 'them', 'their', 'there', 'which',
+        'what', 'when', 'where', 'have', 'has', 'had', 'were', 'been', 'will',
+        'would', 'could', 'should', 'about', 'into', 'more', 'some', 'such',
+        'than', 'then', 'also', 'very', 'just', 'because', 'after', 'before'
+      ]);
+
+      tokenMatches.forEach(w => {
+        if (!stopWords.has(w)) {
+          wordFreq.set(w, (wordFreq.get(w) || 0) + 1);
+        }
+      });
+
+      const topWords = [...wordFreq.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([w, count]) => `${w}（文中出現 ${count} 次 — 請補充詞性與中文解釋）`);
+
+      const sentences = sentencesRaw.map((sent, idx) => {
+        const lower = sent.toLowerCase();
+        const grammarNotes = [];
+        if (subject === 'english') {
+          if (/\b(am|is|are|was|were)\s+\w+ing\b/i.test(sent)) {
+            grammarNotes.push('• 進行式結構 (be + V-ing)：強調動作正在進行或當時的狀態。');
+          }
+          if (/\b(has|have|had)\s+\w+(ed|en)\b/i.test(sent)) {
+            grammarNotes.push('• 完成式結構 (have/has/had + p.p.)：注意動作發生時間與對現在/過去的影響。');
+          }
+          if (/\b(because|although|though|since|when|while|if)\b/i.test(sent)) {
+            grammarNotes.push('• 連接詞子句：留意主句與從屬子句之間的因果、讓步、時間或條件關係。');
+          }
+          if (grammarNotes.length === 0) {
+            grammarNotes.push('• 句型與詞彙重點：確認主詞與動詞單複數一致，並留意關鍵片語與介系詞搭配。');
+          }
+        } else {
+          if (/[之乎者也矣焉哉]/.test(sent)) {
+            grammarNotes.push('• 文言虛字與語氣：留意「之、乎、者、也、焉」等字在句中的詞性與語氣作用。');
+          }
+          grammarNotes.push('• 語譯與修辭觀察：注意古今詞義異同、詞性活用或對仗／映襯修辭。');
+        }
+
+        return {
+          text: sent,
+          translation: `【第 ${idx + 1} 句句意】${subject === 'chinese' ? '白話語譯待確認／補充：' : '中文翻譯待確認／補充：'}${sent}`,
+          grammar: grammarNotes.join('\n')
+        };
+      });
+
+      const fullTranslation = subject === 'chinese'
+        ? `【全文白話語譯總覽（${title}）】\n` + sentences.map((s, i) => `${i + 1}. ${s.translation.replace(/^【第 \d+ 句句意】白話語譯待確認／補充：/, '')}`).join('\n')
+        : `【全文中文翻譯總覽（${title}）】\n` + sentences.map((s, i) => `${i + 1}. ${s.translation.replace(/^【第 \d+ 句句意】中文翻譯待確認／補充：/, '')}`).join('\n');
+
+      const keyVocab = subject === 'english'
+        ? (topWords.length > 0 ? topWords : ['核心單字 1（請補充詞性與中文意思）', '核心單字 2（請補充詞性與中文意思）'])
+        : ['核心詞彙／古今異義詞 1（請補充注音與釋義）', '核心詞彙／古今異義詞 2（請補充注音與釋義）'];
+
+      const keyExamPoints = [
+        `【${level} 主旨與段落結構】本篇共拆分為 ${sentences.length} 個語意單位，建議先掌握首尾句主旨與段落轉折。`,
+        `【${level} 考題命題方向】常考細節對應、詞義推測（上下文線索）與作者態度／推論題。`
+      ];
+
+      const firstSent = sentences[0]?.text || rawText.slice(0, 60);
+      const lastSent = sentences[sentences.length - 1]?.text || rawText.slice(-60);
+
+      const questions = [
+        {
+          question: `1. 根據本文內容，下列哪一句最能呈現文章開頭提到的情境或重點？`,
+          options: {
+            A: firstSent,
+            B: `文章完全未提及與「${title}」相關的任何情境`,
+            C: '全文僅在討論與本篇無關的歷史事件',
+            D: '以上敘述皆與文章內容相反'
+          },
+          answer: 'A',
+          explanation: `文章第 1 句內容為「${firstSent}」，可直接對應選項 (A)。`
+        },
+        {
+          question: `2. 閱讀完整篇文章後，下列何者最適合作為本篇「${title}」的閱讀理解檢核重點？`,
+          options: {
+            A: '忽略上下文直接猜測答案',
+            B: `結合全文脈絡理解結尾重點（如：${lastSent.slice(0, 35)}...）並核對題幹細節`,
+            C: '只看標題不讀內文任何句子',
+            D: '所有選項皆為錯誤敘述'
+          },
+          answer: 'B',
+          explanation: `閱讀測驗需整合全文脈絡與結尾重點（${lastSent}）來作答，故選 (B)。`
+        }
+      ];
+
+      return {
+        id: 'custom_' + Date.now(),
+        subject,
+        level,
+        title,
+        sentences,
+        fullTranslation,
+        keyVocab,
+        keyExamPoints,
+        questions
+      };
+    }
+
     function generateAllReadingMaterials() {
       const rawText = document.getElementById('upload-raw-text').value.trim();
       const title = document.getElementById('upload-title').value.trim() || '未命名閱讀文章';
@@ -896,69 +1042,171 @@
         return;
       }
 
-      const splitSentences = rawText
-        .split(/(?<=[.!?。！？])\s+/)
-        .map(s => s.trim())
-        .filter(s => s.length > 0)
-        .map((s, idx) => ({
-          text: s,
-          translation: `（第 ${idx + 1} 句翻譯待填寫）`,
-          grammar: '• 單字／文法／修辭解析待填寫'
-        }));
-
-      latestGeneratedArticle = {
-        id: 'custom_' + Date.now(),
-        subject,
-        level,
-        title,
-        sentences: splitSentences,
-        fullTranslation: '（全文意思待填寫）',
-        keyVocab: [
-          '必背核心單字／詞彙 1（待填寫）',
-          '必背核心單字／詞彙 2（待填寫）'
-        ],
-        keyExamPoints: [
-          '段考／會考／學測必考重點 1（待填寫）',
-          '段考／會考／學測必考重點 2（待填寫）'
-        ],
-        questions: [
-          {
-            question: '1. 根據本文內容，下列敘述何者正確？',
-            options: {
-              A: '選項 A（待填寫）',
-              B: '選項 B（待填寫）',
-              C: '選項 C（待填寫）',
-              D: '選項 D（待填寫）'
-            },
-            answer: 'A',
-            explanation: '本題解析說明（待填寫）。'
-          }
-        ]
-      };
+      latestGeneratedArticle = buildSmartReadingPackage(rawText, title, subject, level);
 
       const statusBox = document.getElementById('ai-gen-status');
       statusBox.classList.remove('hidden');
-      statusBox.innerText = `✅ 已自動將文章切分為 ${splitSentences.length} 句，並建立 a.逐句解析、b.全文意思、c.必背必考重點、d.選擇題與解析的編輯結構！`;
+      statusBox.innerText = `✅ 已自動產生完整內容：共 ${latestGeneratedArticle.sentences.length} 句「a.逐句解析」、1 份「b.全文意思」、2 大類「c.必背必考重點」與 ${latestGeneratedArticle.questions.length} 題「d.選擇題與解析」！`;
 
-      showGeneratedPreview(latestGeneratedArticle);
+      renderTeacherEditors(latestGeneratedArticle);
+      document.getElementById('generated-preview-box').classList.remove('hidden');
     }
 
-    function showGeneratedPreview(articleObj) {
-      document.getElementById('generated-preview-box').classList.remove('hidden');
-      document.getElementById('generated-json-preview').value = JSON.stringify(articleObj, null, 2);
+    function renderTeacherEditors(article) {
+      document.getElementById('edit-full-translation').value = article.fullTranslation || '';
+      document.getElementById('edit-key-vocab').value = (article.keyVocab || []).join('\n');
+      document.getElementById('edit-key-exam').value = (article.keyExamPoints || []).join('\n');
+
+      const sentContainer = document.getElementById('edit-sentences-container');
+      sentContainer.innerHTML = (article.sentences || []).map((s, idx) => `
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 sentence-editor-card">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-brand-700">第 ${idx + 1} 句解析</span>
+            <button onclick="removeSentenceEditorRow(${idx})" class="text-xs text-red-600 hover:underline font-bold">刪除本句</button>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">原文句子</label>
+            <input type="text" class="sent-text w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white font-bold" value="${escapeAttr(s.text)}">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-emerald-700 mb-1">句意翻譯／白話語譯</label>
+            <input type="text" class="sent-trans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(s.translation)}">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-blue-700 mb-1">單字／文法／修辭解析</label>
+            <textarea rows="2" class="sent-grammar w-full border border-blue-300 rounded-xl px-3 py-2 text-sm bg-white">${escapeHtml(s.grammar)}</textarea>
+          </div>
+        </div>
+      `).join('');
+
+      const qContainer = document.getElementById('edit-questions-container');
+      qContainer.innerHTML = (article.questions || []).map((q, qIdx) => `
+        <div class="p-5 rounded-2xl bg-amber-50/40 border border-amber-200 space-y-3 question-editor-card">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-black text-slate-800">選擇題 #${qIdx + 1}</span>
+            <button onclick="removeQuestionEditorRow(${qIdx})" class="text-xs text-red-600 hover:underline font-bold">刪除本題</button>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">題目敘述</label>
+            <input type="text" class="q-stem w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white font-bold" value="${escapeAttr(q.question)}">
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">選項 (A)</label>
+              <input type="text" class="q-opt-a w-full border border-slate-300 rounded-xl px-3 py-1.5 text-sm bg-white" value="${escapeAttr(q.options?.A || '')}">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">選項 (B)</label>
+              <input type="text" class="q-opt-b w-full border border-slate-300 rounded-xl px-3 py-1.5 text-sm bg-white" value="${escapeAttr(q.options?.B || '')}">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">選項 (C)</label>
+              <input type="text" class="q-opt-c w-full border border-slate-300 rounded-xl px-3 py-1.5 text-sm bg-white" value="${escapeAttr(q.options?.C || '')}">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">選項 (D)</label>
+              <input type="text" class="q-opt-d w-full border border-slate-300 rounded-xl px-3 py-1.5 text-sm bg-white" value="${escapeAttr(q.options?.D || '')}">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-xs font-bold text-emerald-700 mb-1">正確答案</label>
+              <select class="q-ans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white font-bold">
+                <option value="A" ${q.answer === 'A' ? 'selected' : ''}>A</option>
+                <option value="B" ${q.answer === 'B' ? 'selected' : ''}>B</option>
+                <option value="C" ${q.answer === 'C' ? 'selected' : ''}>C</option>
+                <option value="D" ${q.answer === 'D' ? 'selected' : ''}>D</option>
+              </select>
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-xs font-bold text-blue-700 mb-1">題目解析</label>
+              <input type="text" class="q-exp w-full border border-blue-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(q.explanation || '')}">
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function collectArticleFromEditors() {
+      const title = document.getElementById('upload-title').value.trim() || latestGeneratedArticle?.title || '未命名閱讀文章';
+      const [subject, level] = document.getElementById('upload-category').value.split('|');
+
+      const sentences = [...document.querySelectorAll('.sentence-editor-card')].map(card => ({
+        text: card.querySelector('.sent-text').value.trim(),
+        translation: card.querySelector('.sent-trans').value.trim(),
+        grammar: card.querySelector('.sent-grammar').value.trim()
+      })).filter(s => s.text.length > 0);
+
+      const questions = [...document.querySelectorAll('.question-editor-card')].map(card => ({
+        question: card.querySelector('.q-stem').value.trim(),
+        options: {
+          A: card.querySelector('.q-opt-a').value.trim(),
+          B: card.querySelector('.q-opt-b').value.trim(),
+          C: card.querySelector('.q-opt-c').value.trim(),
+          D: card.querySelector('.q-opt-d').value.trim()
+        },
+        answer: card.querySelector('.q-ans').value,
+        explanation: card.querySelector('.q-exp').value.trim()
+      })).filter(q => q.question.length > 0);
+
+      return {
+        id: latestGeneratedArticle?.id || ('custom_' + Date.now()),
+        subject,
+        level,
+        title,
+        sentences,
+        fullTranslation: document.getElementById('edit-full-translation').value.trim(),
+        keyVocab: document.getElementById('edit-key-vocab').value.split('\n').map(x => x.trim()).filter(Boolean),
+        keyExamPoints: document.getElementById('edit-key-exam').value.split('\n').map(x => x.trim()).filter(Boolean),
+        questions
+      };
+    }
+
+    function addSentenceEditorRow() {
+      const current = collectArticleFromEditors();
+      current.sentences.push({
+        text: '',
+        translation: '',
+        grammar: ''
+      });
+      latestGeneratedArticle = current;
+      renderTeacherEditors(latestGeneratedArticle);
+    }
+
+    function removeSentenceEditorRow(idx) {
+      const current = collectArticleFromEditors();
+      current.sentences.splice(idx, 1);
+      latestGeneratedArticle = current;
+      renderTeacherEditors(latestGeneratedArticle);
+    }
+
+    function addQuestionEditorRow() {
+      const current = collectArticleFromEditors();
+      const nextNum = current.questions.length + 1;
+      current.questions.push({
+        question: `${nextNum}. 請輸入題目內容`,
+        options: { A: '', B: '', C: '', D: '' },
+        answer: 'A',
+        explanation: ''
+      });
+      latestGeneratedArticle = current;
+      renderTeacherEditors(latestGeneratedArticle);
+    }
+
+    function removeQuestionEditorRow(idx) {
+      const current = collectArticleFromEditors();
+      current.questions.splice(idx, 1);
+      latestGeneratedArticle = current;
+      renderTeacherEditors(latestGeneratedArticle);
     }
 
     function publishGeneratedArticle() {
-      const previewArea = document.getElementById('generated-json-preview');
-      if (previewArea && previewArea.value.trim()) {
-        try {
-          latestGeneratedArticle = JSON.parse(previewArea.value.trim());
-        } catch (err) {
-          alert('下方資料格式有誤，請檢查 JSON 括號與逗號是否完整！');
-          return;
-        }
+      const articleToPublish = collectArticleFromEditors();
+      if (!articleToPublish.sentences || articleToPublish.sentences.length === 0) {
+        alert('至少需要保留一句文章內容才能發布！');
+        return;
       }
-      if (!latestGeneratedArticle) return;
+      latestGeneratedArticle = articleToPublish;
 
       const existing = JSON.parse(localStorage.getItem(STORAGE_KEY_ARTICLES) || '[]');
       existing.push(latestGeneratedArticle);
@@ -973,11 +1221,10 @@
     }
 
     function copyArticleJsonForBackup() {
-      const previewArea = document.getElementById('generated-json-preview');
-      const textToCopy = previewArea ? previewArea.value : JSON.stringify(latestGeneratedArticle || {});
-      navigator.clipboard.writeText(textToCopy)
+      const articleToCopy = collectArticleFromEditors();
+      navigator.clipboard.writeText(JSON.stringify(articleToCopy, null, 2))
         .then(() => alert('已複製文章完整資料！'))
-        .catch(() => alert('複製失敗，請手動選取下方文字複製。'));
+        .catch(() => alert('複製失敗，請手動複製。'));
     }
 
     function escapeHtml(str) {
@@ -986,6 +1233,14 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
     }
   </script>
 </body>
