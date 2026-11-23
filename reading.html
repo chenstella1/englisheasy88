@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>長篇閱讀精讀與測驗專區｜優華數位刷題網</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
   <!-- 前端解析 PDF 與 Word 套件 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="[https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js)"></script>
+  <script src="[https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js](https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js)"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -25,7 +25,7 @@
       }
     }
     if (window.pdfjsLib) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '[https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js](https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js)';
     }
   </script>
   <style>
@@ -54,7 +54,7 @@
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans">
 
-  <!-- 頂部導覽列 (與 index.html 品牌一致) -->
+  <!-- 頂部導覽列 -->
   <header class="bg-brand-600 text-white shadow-md sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
@@ -133,14 +133,11 @@
           </div>
         </div>
 
-        <div id="interactive-passage-box" class="text-lg leading-loose text-slate-800 space-y-3 select-text">
-          <!-- 動態產生可點擊的句子 -->
-        </div>
+        <div id="interactive-passage-box" class="text-lg leading-loose text-slate-800 space-y-3 select-text"></div>
       </section>
 
       <!-- 右側：三大精讀解析面板 a / b / c (佔 5 欄) -->
       <aside class="lg:col-span-5 bg-white p-6 rounded-3xl shadow-sm border-2 border-brand-200 space-y-4 lg:sticky lg:top-20">
-        <!-- 分頁切換按鈕：a.逐句解析 / b.全文意思 / c.必背必考重點 -->
         <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-2xl text-xs sm:text-sm font-bold">
           <button onclick="switchStudyTab('sentence')" id="tab-btn-sentence" class="study-tab-btn py-2 px-2 rounded-xl bg-white text-brand-700 shadow transition-all">
             a. 逐句解析
@@ -204,7 +201,7 @@
       </aside>
     </div>
 
-    <!-- 3. 底部互動測驗區：d. 閱讀理解選擇題（點選後出現解答及 {{解析}}） -->
+    <!-- 3. 底部互動測驗區：d. 閱讀理解選擇題 -->
     <section class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
@@ -214,14 +211,12 @@
         <button onclick="resetQuizAnswers()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl">🔄 重新作答本篇題目</button>
       </div>
 
-      <div id="reading-quiz-list" class="space-y-5">
-        <!-- 動態渲染選擇題 -->
-      </div>
+      <div id="reading-quiz-list" class="space-y-5"></div>
     </section>
 
   </main>
 
-  <!-- ==================== 老師出題與上傳 PDF/Word 後台 (僅管理者可見) ==================== -->
+  <!-- ==================== 老師出題與上傳 PDF/Word 後台 ==================== -->
   <section id="teacher-upload-view" class="hidden max-w-5xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
     <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-6">
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
@@ -232,15 +227,18 @@
       </div>
 
       <!-- API Key 設定區 -->
-      <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 flex flex-wrap items-center justify-between gap-3">
-        <div class="text-sm text-amber-900">
-          <strong>🔑 Gemini AI 自動解析金鑰：</strong>
-          <span class="text-xs text-amber-700 block sm:inline">貼上一次即可永久儲存在您的瀏覽器，讓系統自動完成翻譯、重點整理與出題。</span>
+      <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 space-y-2">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="text-sm text-amber-900">
+            <strong>🔑 Gemini AI API Key（需為 AIzaSy 開頭）：</strong>
+            <span class="text-xs text-amber-700 block sm:inline">貼上後會儲存在您的瀏覽器中；若格式非 AIzaSy 開頭，Google API 會拒絕驗證。</span>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="text" id="gemini-api-key-input" placeholder="請輸入 AIzaSy 開頭的 Gemini API Key" class="border border-amber-300 rounded-xl px-3 py-2 text-sm w-full sm:w-80 bg-white">
+            <button onclick="saveGeminiApiKey()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl whitespace-nowrap">儲存金鑰</button>
+          </div>
         </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <input type="password" id="gemini-api-key-input" placeholder="貼上 AIzaSy 開頭的 Gemini API Key" class="border border-amber-300 rounded-xl px-3 py-2 text-sm w-full sm:w-72 bg-white">
-          <button onclick="saveGeminiApiKey()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl whitespace-nowrap">儲存金鑰</button>
-        </div>
+        <div id="api-key-format-hint" class="text-xs text-red-700 font-semibold hidden"></div>
       </div>
 
       <!-- 步驟 1：選擇分類與上傳 PDF / Word -->
@@ -287,7 +285,7 @@
       </div>
 
       <!-- 生成狀態提示 -->
-      <div id="ai-gen-status" class="hidden p-4 rounded-2xl text-sm font-bold bg-blue-50 text-blue-800 border border-blue-200"></div>
+      <div id="ai-gen-status" class="hidden p-4 rounded-2xl text-sm font-bold bg-blue-50 text-blue-800 border border-blue-200 whitespace-pre-line"></div>
 
       <!-- 生成結果預覽與發布 -->
       <div id="generated-preview-box" class="hidden space-y-4 pt-4 border-t border-slate-200">
@@ -311,8 +309,8 @@
     const ADMIN_EMAIL = 'yhstella2@gmail.com';
     const STORAGE_KEY_ARTICLES = 'yh_reading_articles_v1';
     const STORAGE_KEY_GEMINI = 'yh_gemini_api_key';
+    const PROVIDED_KEY_FALLBACK = 'AQ.Ab8RN6LieNDObchLOzZiMpNTnAO1B9Ywt2gCS1jmfHM-4YJtdw';
 
-    // 內建示範題庫：涵蓋 國小英文、國中英文、高中英文、文言文閱讀
     const DEFAULT_ARTICLES = [
       {
         id: 'en_elem_1',
@@ -585,12 +583,26 @@
     let isPlayingAll = false;
     let latestGeneratedArticle = null;
 
-    // 初始化載入
     window.addEventListener('DOMContentLoaded', () => {
       checkLoginStatus();
       loadArticlesFromStorage();
       selectCategory('english', '國小英文');
     });
+
+    function validateKeyFormat(key) {
+      const hintEl = document.getElementById('api-key-format-hint');
+      if (!key) {
+        hintEl.classList.add('hidden');
+        return false;
+      }
+      if (!key.startsWith('AIzaSy')) {
+        hintEl.innerText = '⚠️ 您目前輸入的金鑰不是 AIzaSy 開頭的 Gemini API Key（目前為 AQ. 開頭），呼叫 Google Gemini API 時可能會被拒絕，請確認是否從 Google AI Studio 複製了正確的 Gemini API Key。';
+        hintEl.classList.remove('hidden');
+        return false;
+      }
+      hintEl.classList.add('hidden');
+      return true;
+    }
 
     function checkLoginStatus() {
       try {
@@ -606,10 +618,11 @@
         }
       } catch (e) {}
 
-      const savedKey = localStorage.getItem(STORAGE_KEY_GEMINI);
-      if (savedKey) {
-        const keyInput = document.getElementById('gemini-api-key-input');
-        if (keyInput) keyInput.value = savedKey;
+      const savedKey = localStorage.getItem(STORAGE_KEY_GEMINI) || PROVIDED_KEY_FALLBACK;
+      const keyInput = document.getElementById('gemini-api-key-input');
+      if (keyInput) {
+        keyInput.value = savedKey;
+        validateKeyFormat(savedKey);
       }
     }
 
@@ -646,7 +659,6 @@
       currentSubject = subject;
       currentLevel = level;
 
-      // 更新按鈕樣式
       document.querySelectorAll('.cat-btn').forEach(btn => {
         btn.className = 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200';
       });
@@ -665,7 +677,6 @@
 
       document.getElementById('article-badge').innerText = level;
 
-      // 篩選該分類底下的文章
       const filtered = allArticles.filter(a => a.subject === subject && a.level === level);
       const selector = document.getElementById('article-selector');
       selector.innerHTML = '';
@@ -696,10 +707,9 @@
 
       document.getElementById('display-article-title').innerText = found.title;
 
-      // 渲染左側可點擊的句子
       const passageBox = document.getElementById('interactive-passage-box');
       passageBox.innerHTML = '';
-      found.sentences.forEach((s, idx) => {
+      (found.sentences || []).forEach((s, idx) => {
         const span = document.createElement('span');
         span.id = `sent_span_${idx}`;
         span.className = `sentence-span inline ${idx === 0 ? 'sentence-active' : ''}`;
@@ -708,20 +718,15 @@
         passageBox.appendChild(span);
       });
 
-      // 填入 b. 全文意思
       document.getElementById('detail-full-translation').innerText = found.fullTranslation || '無全文翻譯資料';
 
-      // 填入 c. 必背必考重點
       const vocabUl = document.getElementById('detail-key-vocab');
       vocabUl.innerHTML = (found.keyVocab || []).map(v => `<li>${escapeHtml(v)}</li>`).join('') || '<li>無重點單字</li>';
 
       const examUl = document.getElementById('detail-key-exam');
       examUl.innerHTML = (found.keyExamPoints || []).map(p => `<li>${escapeHtml(p)}</li>`).join('') || '<li>無考點整理</li>';
 
-      // 更新第一句詳細解析
       updateSentenceDetailPanel(0);
-
-      // 渲染 d. 隨堂閱讀理解測驗
       renderQuizList(found.questions || []);
     }
 
@@ -776,7 +781,6 @@
       });
     }
 
-    // 語音朗讀功能
     function speakText(text, lang = 'en-US', onEndCallback = null) {
       if (!('speechSynthesis' in window)) {
         alert('您的瀏覽器不支援語音朗讀功能。');
@@ -830,7 +834,6 @@
       }
     }
 
-    // 渲染 d. 選擇題與即時解析
     function renderQuizList(questions) {
       const container = document.getElementById('reading-quiz-list');
       if (!questions || questions.length === 0) {
@@ -883,7 +886,6 @@
       }
     }
 
-    // ==================== 老師上傳 PDF / Word 與 AI 生成 ====================
     function saveGeminiApiKey() {
       const val = document.getElementById('gemini-api-key-input').value.trim();
       if (!val) {
@@ -891,7 +893,8 @@
         return;
       }
       localStorage.setItem(STORAGE_KEY_GEMINI, val);
-      alert('Gemini API Key 已儲存成功！');
+      validateKeyFormat(val);
+      alert('金鑰已儲存至瀏覽器！');
     }
 
     async function handleFileUpload(event) {
@@ -933,29 +936,39 @@
       }
     }
 
+    function extractJsonBlock(text) {
+      const cleaned = String(text || '')
+        .replace(/^```json\s*/i, '')
+        .replace(/^```\s*/i, '')
+        .replace(/\s*```$/i, '')
+        .trim();
+      return JSON.parse(cleaned);
+    }
+
     async function generateAllReadingMaterials() {
       const rawText = document.getElementById('upload-raw-text').value.trim();
       const title = document.getElementById('upload-title').value.trim() || '未命名閱讀文章';
       const [subject, level] = document.getElementById('upload-category').value.split('|');
-      const apiKey = document.getElementById('gemini-api-key-input').value.trim() || localStorage.getItem(STORAGE_KEY_GEMINI);
+      const apiKey = document.getElementById('gemini-api-key-input').value.trim() || localStorage.getItem(STORAGE_KEY_GEMINI) || '';
 
       if (!rawText) {
         alert('請先上傳 PDF/Word 檔案，或在文字框貼上文章內容！');
         return;
       }
 
+      validateKeyFormat(apiKey);
+
       const statusBox = document.getElementById('ai-gen-status');
       statusBox.classList.remove('hidden');
 
       if (!apiKey) {
-        // 若尚未填入 API Key，先以基礎斷句模板建立結構
-        statusBox.innerText = '⚠️ 偵測到尚未設定 Gemini API Key，已先為您自動斷句並建立模板（填入 API Key 即可全自動翻譯與出題）。';
+        statusBox.innerText = '⚠️ 尚未輸入 Gemini API Key，已先為您自動斷句並建立模板。';
         const splitSentences = rawText
           .split(/(?<=[.!?。！？])\s+/)
           .filter(s => s.trim().length > 0)
           .map(s => ({
             text: s.trim(),
-            translation: '（請填入 Gemini API Key 以自動生成翻譯，或手動編輯）',
+            translation: '（請填入 AIzaSy 開頭的 Gemini API Key 以自動生成翻譯）',
             grammar: '• 可在此補充單字、句型或修辭解析'
           }));
 
@@ -965,7 +978,7 @@
           level,
           title,
           sentences: splitSentences,
-          fullTranslation: '（尚未設定 API Key，請補充全文譯文）',
+          fullTranslation: '（尚未設定 Gemini API Key）',
           keyVocab: ['請填入重點單字'],
           keyExamPoints: ['請填入必考重點'],
           questions: [
@@ -981,7 +994,7 @@
         return;
       }
 
-      statusBox.innerText = '⏳ AI 正在深度分析文章，生成「逐句解析、全文意思、必背必考重點、閱讀選擇題與詳解」，請稍候約 10~15 秒...';
+      statusBox.innerText = '⏳ 正在呼叫 Gemini AI 生成「逐句解析、全文意思、必背必考重點、閱讀選擇題與詳解」，請稍候...';
 
       const prompt = `
 你是一位台灣資深${level}老師。請針對以下文章進行完整教學拆解，並嚴格只回傳合法的 JSON 格式（不要加 markdown 標記 \`\`\`json）：
@@ -1022,9 +1035,6 @@ ${rawText}
     }
   ]
 }
-要求：
-1. sentences 必須完整涵蓋原文每一句，不可遺漏。
-2. questions 請出 3 到 4 題高品質閱讀測驗單選題（含細節題、推論題或主旨題）。
 `;
 
       try {
@@ -1038,8 +1048,14 @@ ${rawText}
         });
 
         const data = await response.json();
+
+        if (!response.ok || data.error) {
+          const apiErrMsg = data?.error?.message || `HTTP ${response.status}`;
+          throw new Error(`API 回應錯誤：${apiErrMsg}`);
+        }
+
         const rawJsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const parsed = JSON.parse(rawJsonText);
+        const parsed = extractJsonBlock(rawJsonText);
 
         latestGeneratedArticle = {
           id: 'custom_' + Date.now(),
@@ -1057,7 +1073,7 @@ ${rawText}
         showGeneratedPreview(latestGeneratedArticle);
       } catch (err) {
         console.error(err);
-        statusBox.innerText = '❌ AI 生成時發生錯誤，請檢查 API Key 是否正確或稍後再試。';
+        statusBox.innerText = `❌ AI 生成時發生錯誤：\n${err.message || '請檢查 API Key 是否為 AIzaSy 開頭的有效金鑰或稍後再試。'}`;
       }
     }
 
