@@ -221,31 +221,31 @@
     <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-6">
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
         <div>
-          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 老師出題工作台（PDF / Word 自動產生逐句解析、全文意思、重點與選擇題）</h2>
-          <p class="text-sm text-slate-500 mt-1">上傳檔案或貼上文章後，系統自動產生：a.逐句解析、b.全文意思、c.必背必考重點、d.選擇題與解析，並提供視覺化表單直接編輯或發布。</p>
+          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 老師文言文／閱讀出題工作台（只需提供文言文或文章，系統自動出題與解析）</h2>
+          <p class="text-sm text-slate-500 mt-1">老師只要貼上文言文或上傳 PDF／Word，系統自動產生：a.逐句解析、b.全文白話語譯、c.必背字詞與考點、d.至少 5 題大考風格選擇題（涵蓋字義辨析、文意理解與推論）與詳解。</p>
         </div>
       </div>
 
-      <!-- 步驟 1～4：選擇分類、標題、上傳 PDF/Word、編輯原文 -->
+      <!-- 步驟 1～4：選擇分類、標題、上傳 PDF/Word、貼上文言文 -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-bold text-slate-700 mb-1">1. 選擇文章歸屬分類</label>
             <select id="upload-category" class="w-full border border-slate-300 rounded-xl p-3 text-base font-bold">
+              <option value="chinese|文言文閱讀" selected>國文閱讀 — 文言文閱讀（大考字義＋文意出題）</option>
               <option value="english|國小英文">英文閱讀 — 國小英文</option>
-              <option value="english|國中英文" selected>英文閱讀 — 國中英文</option>
+              <option value="english|國中英文">英文閱讀 — 國中英文</option>
               <option value="english|高中英文">英文閱讀 — 高中英文</option>
-              <option value="chinese|文言文閱讀">國文閱讀 — 文言文閱讀</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1">2. 文章標題</label>
-            <input type="text" id="upload-title" placeholder="例如：The Magic of Sea Glass 或 愛蓮說節選" class="w-full border border-slate-300 rounded-xl p-3 text-base">
+            <label class="block text-sm font-bold text-slate-700 mb-1">2. 文章標題（可選填，未填將自動命名）</label>
+            <input type="text" id="upload-title" placeholder="例如：師說節選、岳陽樓記節選 或直接貼上文言文" class="w-full border border-slate-300 rounded-xl p-3 text-base">
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1">3. 上傳 PDF (.pdf) 或 Word (.docx) 檔案</label>
+            <label class="block text-sm font-bold text-slate-700 mb-1">3. 上傳 PDF (.pdf) 或 Word (.docx) 檔案（選填）</label>
             <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-brand-400 rounded-2xl bg-brand-50/40 hover:bg-brand-50 cursor-pointer transition-colors p-4 text-center">
               <span class="text-2xl mb-1">📄</span>
               <span class="text-sm font-bold text-brand-700">點擊選擇 PDF 或 Word (.docx) 檔案</span>
@@ -255,17 +255,17 @@
           </div>
         </div>
 
-        <!-- 文章原文預覽與編輯 -->
+        <!-- 文言文原文輸入區 -->
         <div class="space-y-2 flex flex-col">
-          <label class="block text-sm font-bold text-slate-700">4. 文章原文內容（可手動微調或直接貼上文章）</label>
-          <textarea id="upload-raw-text" rows="10" placeholder="上傳 PDF/Word 後文字會自動出現在這裡，您也可以直接貼上英文長文或文言文..." class="w-full flex-grow border border-slate-300 rounded-2xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+          <label class="block text-sm font-bold text-slate-700">4. 貼上文言文原文（老師只需給文言文即可）</label>
+          <textarea id="upload-raw-text" rows="10" placeholder="請直接貼上文言文內容，例如：&#10;古之學者必有師。師者，所以傳道、受業、解惑也。人非生而知之者，孰能無惑？惑而不從師，其為惑也，終不解矣。" class="w-full flex-grow border border-slate-300 rounded-2xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
         </div>
       </div>
 
       <!-- 一鍵生成按鈕 -->
       <div class="pt-2 flex flex-wrap gap-3">
         <button onclick="generateAllReadingMaterials()" id="btn-ai-generate" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg text-base flex items-center gap-2">
-          ✨ 一鍵自動產生（a.逐句解析 + b.全文意思 + c.必考重點 + d.選擇題）
+          ✨ 一鍵自動出題與解析（至少 5 題大考字義＋文意選擇題）
         </button>
       </div>
 
@@ -275,7 +275,7 @@
       <!-- 生成結果視覺化編輯與發布區 -->
       <div id="generated-preview-box" class="hidden space-y-6 pt-6 border-t border-slate-200">
         <div class="flex flex-wrap justify-between items-center gap-3">
-          <h3 class="text-xl font-black text-emerald-700">✅ 已自動產生完整教材內容！可直接修改下方各區塊並發布至學生端</h3>
+          <h3 class="text-xl font-black text-emerald-700">✅ 已自動產生完整教材與至少 5 題選擇題！可直接微調或立即發布</h3>
           <div class="flex flex-wrap gap-2">
             <button onclick="publishGeneratedArticle()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl shadow">
               🚀 立即發布並切換到學生端預覽
@@ -288,18 +288,18 @@
 
         <!-- b. 全文意思編輯區 -->
         <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-          <label class="block text-sm font-black text-brand-700">📄 b. 全文意思（譯文／白話總覽）</label>
+          <label class="block text-sm font-black text-brand-700">📄 b. 全文意思（白話語譯／全文翻譯）</label>
           <textarea id="edit-full-translation" rows="4" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
         </div>
 
         <!-- c. 必背必考重點編輯區 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
-            <label class="block text-sm font-black text-amber-900">⭐ c-1. 必背核心單字／詞彙（每行一項）</label>
+            <label class="block text-sm font-black text-amber-900">⭐ c-1. 必背核心字詞／古今異義（每行一項）</label>
             <textarea id="edit-key-vocab" rows="5" class="w-full border border-amber-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
           </div>
           <div class="p-5 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-2">
-            <label class="block text-sm font-black text-indigo-900">🎯 c-2. 段考／會考／學測必考重點（每行一項）</label>
+            <label class="block text-sm font-black text-indigo-900">🎯 c-2. 大考／段考／會考必考重點（每行一項）</label>
             <textarea id="edit-key-exam" rows="5" class="w-full border border-indigo-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
           </div>
         </div>
@@ -307,16 +307,16 @@
         <!-- a. 逐句解析編輯區 -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="text-base font-black text-slate-800">🔍 a. 逐句解析明細（每句皆可修改句意翻譯與單字/文法解析）</h4>
+            <h4 class="text-base font-black text-slate-800">🔍 a. 逐句解析明細</h4>
             <button onclick="addSentenceEditorRow()" class="text-xs font-bold bg-brand-100 hover:bg-brand-200 text-brand-800 px-3 py-1.5 rounded-xl">＋ 新增一句解析</button>
           </div>
           <div id="edit-sentences-container" class="space-y-4"></div>
         </div>
 
-        <!-- d. 選擇題與解析編輯區 -->
+        <!-- d. 選擇題與解析編輯區（至少 5 題） -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="text-base font-black text-slate-800">📝 d. 隨堂閱讀理解選擇題與解析</h4>
+            <h4 class="text-base font-black text-slate-800">📝 d. 閱讀理解選擇題與解析（至少 5 題，含字義辨析與大考文意題）</h4>
             <button onclick="addQuestionEditorRow()" class="text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-1.5 rounded-xl shadow-sm">＋ 新增一題選擇題</button>
           </div>
           <div id="edit-questions-container" class="space-y-4"></div>
@@ -328,6 +328,25 @@
   <script>
     const ADMIN_EMAIL = 'yhstella2@gmail.com';
     const STORAGE_KEY_ARTICLES = 'yh_reading_articles_v1';
+
+    const CLASSICAL_LEXICON = [
+      { char: '之', reading: 'ㄓ', meaning: '結構助詞「的」／代詞「他、她、它、這」／動詞「往、到」', note: '常考詞性與義項辨析，需依上下文判斷。' },
+      { char: '焉', reading: 'ㄧㄢ', meaning: '句末語氣助詞「啊、呢」／兼詞「於之」（在這裡／從這裡）', note: '文末作語氣助詞，句中或處所常作「於此」。' },
+      { char: '乎', reading: 'ㄏㄨ', meaning: '語氣助詞「嗎、啊、呀」／介詞「於、在、對於」', note: '疑問或感嘆語氣助詞，亦可作介詞引出對象或處所。' },
+      { char: '者', reading: 'ㄓㄜˇ', meaning: '代詞「……的人／事／物」／語氣助詞表提頓', note: '置於句末或分句後常表停頓或指代特定對象。' },
+      { char: '也', reading: 'ㄧㄝˇ', meaning: '句末語氣助詞，表判斷、肯定或感嘆語氣', note: '常見於判斷句或加強語氣之收尾。' },
+      { char: '則', reading: 'ㄗㄜˊ', meaning: '連詞「就、那麼、卻」／名詞「準則、法度」', note: '常表承接、轉折或條件因果關係。' },
+      { char: '而', reading: 'ㄦˊ', meaning: '連詞，表順承「並且、就」、轉折「卻、但是」或修飾', note: '需比較前後語意是順接還是逆轉。' },
+      { char: '以', reading: 'ㄧˇ', meaning: '介詞「用、憑藉、因為、在」／連詞「而、用來」', note: '依搭配名詞或動詞判斷目的、工具或原因。' },
+      { char: '故', reading: 'ㄍㄨˋ', meaning: '原因、緣故／連詞「所以、因此」／舊的、衰老的', note: '常考「緣故」與「所以」之辨析。' },
+      { char: '善', reading: 'ㄕㄢˋ', meaning: '擅長、精於／美好的、善良的／稱讚、贊許', note: '置於動詞前常作副詞「擅長、好好地」。' },
+      { char: '樂', reading: 'ㄌㄜˋ', meaning: '快樂、喜悅／以……為樂（意動用法）', note: '注意「樂此不疲」等固定搭配與詞性轉化。' },
+      { char: '異', reading: 'ㄧˋ', meaning: '不同的、特別的／驚奇、感到奇怪', note: '可作形容詞「不同」或動詞「感到奇怪」。' },
+      { char: '安', reading: 'ㄢ', meaning: '安穩、安全／疑問代詞「怎麼、哪裡」', note: '反詰問句中常作「怎麼、哪裡」。' },
+      { char: '孰', reading: 'ㄕㄨˊ', meaning: '疑問代詞「誰、哪一個」', note: '常用於選擇或反問語氣。' },
+      { char: '益', reading: 'ㄧˋ', meaning: '更加、越發／好處、利益／增加', note: '副詞「更加」與名詞「好處」為常見考點。' },
+      { char: '患', reading: 'ㄏㄨㄢˋ', meaning: '擔憂、發愁／禍患、災難／病症', note: '「不患人之不己知」之「患」為擔憂。' }
+    ];
 
     const DEFAULT_ARTICLES = [
       {
@@ -921,109 +940,146 @@
       }
     }
 
-    // 智慧分析文章並自動產生：a.逐句解析、b.全文意思、c.必背必考重點、d.選擇題與解析
-    function buildSmartReadingPackage(rawText, title, subject, level) {
-      const sentencesRaw = rawText
-        .split(/(?<=[.!?。！？;；])\s+|\n+/)
+    function splitClassicalOrTextSentences(rawText) {
+      const normalized = rawText.replace(/\r\n/g, '\n').trim();
+      const chunks = normalized
+        .split(/(?<=[。！？；;!?])\s*|\n+/)
         .map(s => s.trim())
         .filter(s => s.length > 0);
+      if (chunks.length > 0) return chunks;
+      return [normalized];
+    }
 
-      const wordFreq = new Map();
-      const tokenMatches = rawText.toLowerCase().match(/[a-zA-Z]{4,}/g) || [];
-      const stopWords = new Set([
-        'this', 'that', 'with', 'from', 'they', 'them', 'their', 'there', 'which',
-        'what', 'when', 'where', 'have', 'has', 'had', 'were', 'been', 'will',
-        'would', 'could', 'should', 'about', 'into', 'more', 'some', 'such',
-        'than', 'then', 'also', 'very', 'just', 'because', 'after', 'before'
-      ]);
-
-      tokenMatches.forEach(w => {
-        if (!stopWords.has(w)) {
-          wordFreq.set(w, (wordFreq.get(w) || 0) + 1);
+    function buildClassicalTranslationHint(sent, foundChars) {
+      let hint = sent;
+      const replacements = [
+        ['之', '的'],
+        ['焉', '啊'],
+        ['乎', '嗎'],
+        ['也', '呢'],
+        ['則', '就'],
+        ['故', '所以'],
+        ['孰', '誰'],
+        ['益', '更加']
+      ];
+      replacements.forEach(([k, v]) => {
+        if (foundChars.some(item => item.char === k)) {
+          hint = hint.replaceAll(k, `${k}（${v}）`);
         }
       });
+      return `【白話語譯參考】${hint}（請依上下文語氣微調成自然口語）`;
+    }
 
-      const topWords = [...wordFreq.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([w, count]) => `${w}（文中出現 ${count} 次 — 請補充詞性與中文解釋）`);
+    // 自動產生：a.逐句解析、b.全文意思、c.必背必考重點、d.至少 5 題大考風格選擇題（字義＋文意＋推論）與解析
+    function buildSmartReadingPackage(rawText, customTitle, subject, level) {
+      const sentencesRaw = splitClassicalOrTextSentences(rawText);
+      const effectiveSubject = (subject === 'chinese' || /[之乎者也矣焉哉]/.test(rawText)) ? 'chinese' : subject;
+      const effectiveLevel = effectiveSubject === 'chinese' && level !== '文言文閱讀' ? '文言文閱讀' : level;
+      const resolvedTitle = customTitle || (effectiveSubject === 'chinese'
+        ? `文言文精讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`
+        : `閱讀精讀測驗（${sentencesRaw[0].slice(0, 16)}）`);
+
+      const matchedLexicon = CLASSICAL_LEXICON.filter(item => rawText.includes(item.char));
+      const primaryCharObj = matchedLexicon[0] || CLASSICAL_LEXICON[0];
+      const secondaryCharObj = matchedLexicon[1] || CLASSICAL_LEXICON[1];
 
       const sentences = sentencesRaw.map((sent, idx) => {
-        const lower = sent.toLowerCase();
-        const grammarNotes = [];
-        if (subject === 'english') {
-          if (/\b(am|is|are|was|were)\s+\w+ing\b/i.test(sent)) {
-            grammarNotes.push('• 進行式結構 (be + V-ing)：強調動作正在進行或當時的狀態。');
-          }
-          if (/\b(has|have|had)\s+\w+(ed|en)\b/i.test(sent)) {
-            grammarNotes.push('• 完成式結構 (have/has/had + p.p.)：注意動作發生時間與對現在/過去的影響。');
-          }
-          if (/\b(because|although|though|since|when|while|if)\b/i.test(sent)) {
-            grammarNotes.push('• 連接詞子句：留意主句與從屬子句之間的因果、讓步、時間或條件關係。');
-          }
-          if (grammarNotes.length === 0) {
-            grammarNotes.push('• 句型與詞彙重點：確認主詞與動詞單複數一致，並留意關鍵片語與介系詞搭配。');
-          }
-        } else {
-          if (/[之乎者也矣焉哉]/.test(sent)) {
-            grammarNotes.push('• 文言虛字與語氣：留意「之、乎、者、也、焉」等字在句中的詞性與語氣作用。');
-          }
-          grammarNotes.push('• 語譯與修辭觀察：注意古今詞義異同、詞性活用或對仗／映襯修辭。');
+        const sentChars = CLASSICAL_LEXICON.filter(item => sent.includes(item.char));
+        const charNotes = sentChars.map(c => `• 「${c.char}」：在此文脈中可留意「${c.meaning}」（${c.note}）`);
+        if (charNotes.length === 0) {
+          charNotes.push('• 詞義與句法分析：留意關鍵實詞、虛詞搭配與前後句邏輯呼應。');
         }
 
         return {
           text: sent,
-          translation: `【第 ${idx + 1} 句句意】${subject === 'chinese' ? '白話語譯待確認／補充：' : '中文翻譯待確認／補充：'}${sent}`,
-          grammar: grammarNotes.join('\n')
+          translation: effectiveSubject === 'chinese'
+            ? buildClassicalTranslationHint(sent, sentChars)
+            : `【第 ${idx + 1} 句句意】${sent}`,
+          grammar: charNotes.join('\n')
         };
       });
 
-      const fullTranslation = subject === 'chinese'
-        ? `【全文白話語譯總覽（${title}）】\n` + sentences.map((s, i) => `${i + 1}. ${s.translation.replace(/^【第 \d+ 句句意】白話語譯待確認／補充：/, '')}`).join('\n')
-        : `【全文中文翻譯總覽（${title}）】\n` + sentences.map((s, i) => `${i + 1}. ${s.translation.replace(/^【第 \d+ 句句意】中文翻譯待確認／補充：/, '')}`).join('\n');
+      const fullTranslation = effectiveSubject === 'chinese'
+        ? `【全文白話語譯總覽｜${resolvedTitle}】\n` + sentences.map((s, i) => `(${i + 1}) ${s.translation.replace(/^【白話語譯參考】/, '')}`).join('\n')
+        : `【全文翻譯總覽｜${resolvedTitle}】\n` + sentences.map((s, i) => `(${i + 1}) ${s.translation.replace(/^【第 \d+ 句句意】/, '')}`).join('\n');
 
-      const keyVocab = subject === 'english'
-        ? (topWords.length > 0 ? topWords : ['核心單字 1（請補充詞性與中文意思）', '核心單字 2（請補充詞性與中文意思）'])
-        : ['核心詞彙／古今異義詞 1（請補充注音與釋義）', '核心詞彙／古今異義詞 2（請補充注音與釋義）'];
+      const keyVocab = matchedLexicon.length > 0
+        ? matchedLexicon.slice(0, 6).map(item => `「${item.char}」（${item.reading}）：常見義項為「${item.meaning}」— ${item.note}`)
+        : ['核心詞彙 1：留意上下文語境與詞性變化', '核心詞彙 2：比較近義詞與反義詞在句中的差異'];
 
       const keyExamPoints = [
-        `【${level} 主旨與段落結構】本篇共拆分為 ${sentences.length} 個語意單位，建議先掌握首尾句主旨與段落轉折。`,
-        `【${level} 考題命題方向】常考細節對應、詞義推測（上下文線索）與作者態度／推論題。`
+        `【大考字義辨析重點】同一字詞在不同語境下常有不同詞性或意義（如「${primaryCharObj.char}」字），作答時須代入原句檢驗語意是否通順。`,
+        `【大考文意理解與推論】整合首尾句與轉折句，辨別「明確敘述」、「合理推論」與「過度延伸／無中生有」之選項。`,
+        `【段落結構與寫作意圖】掌握作者立論脈絡、舉例目的與情感態度，避免只抓單一字面而忽略全篇旨意。`
       ];
 
-      const firstSent = sentences[0]?.text || rawText.slice(0, 60);
-      const lastSent = sentences[sentences.length - 1]?.text || rawText.slice(-60);
+      const firstSent = sentences[0]?.text || rawText.slice(0, 40);
+      const midSent = sentences[Math.floor(sentences.length / 2)]?.text || firstSent;
+      const lastSent = sentences[sentences.length - 1]?.text || firstSent;
 
       const questions = [
         {
-          question: `1. 根據本文內容，下列哪一句最能呈現文章開頭提到的情境或重點？`,
+          question: `1. 【字義辨析】下列各選項「${primaryCharObj.char}」字的意義，何者與原文「${firstSent.slice(0, 18)}」中的「${primaryCharObj.char}」字最相近？`,
           options: {
-            A: firstSent,
-            B: `文章完全未提及與「${title}」相關的任何情境`,
-            C: '全文僅在討論與本篇無關的歷史事件',
-            D: '以上敘述皆與文章內容相反'
+            A: `符合本篇語境之義項：${primaryCharObj.meaning.split('／')[0]}`,
+            B: '完全與本篇無關之生僻字義（語意不通順）',
+            C: '與上下文因果相反之意思',
+            D: '僅限特定方言之誤用詞義'
           },
           answer: 'A',
-          explanation: `文章第 1 句內容為「${firstSent}」，可直接對應選項 (A)。`
+          explanation: `原文「${firstSent}」中的「${primaryCharObj.char}」字，依上下文脈絡可對應「${primaryCharObj.meaning}」。選項 (A) 貼合文意，故選 (A)。`
         },
         {
-          question: `2. 閱讀完整篇文章後，下列何者最適合作為本篇「${title}」的閱讀理解檢核重點？`,
+          question: `2. 【詞性與字詞運用】關於文中「${secondaryCharObj.char}」字或關鍵詞彙的用法，下列敘述何者正確？`,
           options: {
-            A: '忽略上下文直接猜測答案',
-            B: `結合全文脈絡理解結尾重點（如：${lastSent.slice(0, 35)}...）並核對題幹細節`,
-            C: '只看標題不讀內文任何句子',
-            D: '所有選項皆為錯誤敘述'
+            A: `需結合前後文語境判斷其詞性與作用（${secondaryCharObj.note}）`,
+            B: '在任何文言或閱讀篇章中都只有單一固定意思，不需看上下文',
+            C: '必然為否定副詞，表示完全相反的意思',
+            D: '屬於贅字，刪除後不影響句意也不影響語法結構'
           },
-          answer: 'B',
-          explanation: `閱讀測驗需整合全文脈絡與結尾重點（${lastSent}）來作答，故選 (B)。`
+          answer: 'A',
+          explanation: `大考字詞題重在「依文脈定字義」。「${secondaryCharObj.char}」字的常見用法包含「${secondaryCharObj.meaning}」，${secondaryCharObj.note}，因此選 (A)。`
+        },
+        {
+          question: `3. 【文意理解】根據本文內容，下列哪一項最符合文章所傳達的核心文意？`,
+          options: {
+            A: `文章围绕「${resolvedTitle}」展開，並透過「${midSent.slice(0, 22)}」等語句表達相關觀點`,
+            B: '全文旨在否定前文所有主張，並提出毫無關聯的結論',
+            C: '文章僅為單純時間流水帳，未呈現任何觀點或情境',
+            D: '文中明確指出所有敘述皆屬虛構且與現實完全無關'
+          },
+          answer: 'A',
+          explanation: `檢視全文脈絡，「${midSent}」呼應文章主軸，選項 (A) 符合文意；(B)(C)(D) 皆與文意不符或過度武斷。`
+        },
+        {
+          question: `4. 【句意推論】從文末「${lastSent.slice(0, 24)}」的敘述推論，作者最想提醒讀者什麼？`,
+          options: {
+            A: '在理解與應用時，應掌握脈絡與核心關鍵，避免斷章取義',
+            B: '只要記住文章最後幾個字，就不需要理解整段內容',
+            C: '文章結尾與開頭完全矛盾，作者自我否定',
+            D: '此句純屬修辭裝飾，與全文主旨毫無關聯'
+          },
+          answer: 'A',
+          explanation: `大考推論題需依據文本線索作合理推導，由「${lastSent}」可推知應結合全文脈絡理解，不可斷章取義，故選 (A)。`
+        },
+        {
+          question: `5. 【綜合判讀】下列關於本篇文章的敘述，何者最為恰當？（仿大考綜合理解題）`,
+          options: {
+            A: '各句之間存在語意連貫與層次推進，解題時應對照原文字句核實細節',
+            B: '選項中只要出現與原文相同的字眼，就一定是正確答案',
+            C: '遇到不懂的詞彙時，應直接跳過整句不予理會',
+            D: '文章內容與題目選項無須比對，憑直覺任選一項即可'
+          },
+          answer: 'A',
+          explanation: `大考常見干擾選項會「剪貼原文關鍵字但扭曲原意」，因此必須對照上下文核實文意，選項 (A) 最為恰當。`
         }
       ];
 
       return {
         id: 'custom_' + Date.now(),
-        subject,
-        level,
-        title,
+        subject: effectiveSubject,
+        level: effectiveLevel,
+        title: resolvedTitle,
         sentences,
         fullTranslation,
         keyVocab,
@@ -1034,19 +1090,20 @@
 
     function generateAllReadingMaterials() {
       const rawText = document.getElementById('upload-raw-text').value.trim();
-      const title = document.getElementById('upload-title').value.trim() || '未命名閱讀文章';
+      const title = document.getElementById('upload-title').value.trim();
       const [subject, level] = document.getElementById('upload-category').value.split('|');
 
       if (!rawText) {
-        alert('請先上傳 PDF/Word 檔案，或在文字框貼上文章內容！');
+        alert('請先貼上文言文或文章內容（或上傳檔案）！');
         return;
       }
 
       latestGeneratedArticle = buildSmartReadingPackage(rawText, title, subject, level);
+      document.getElementById('upload-title').value = latestGeneratedArticle.title;
 
       const statusBox = document.getElementById('ai-gen-status');
       statusBox.classList.remove('hidden');
-      statusBox.innerText = `✅ 已自動產生完整內容：共 ${latestGeneratedArticle.sentences.length} 句「a.逐句解析」、1 份「b.全文意思」、2 大類「c.必背必考重點」與 ${latestGeneratedArticle.questions.length} 題「d.選擇題與解析」！`;
+      statusBox.innerText = `✅ 已自動產生完整內容：共 ${latestGeneratedArticle.sentences.length} 句「a.逐句解析」、1 份「b.全文意思」、3 大類「c.必背必考重點」與 ${latestGeneratedArticle.questions.length} 題「d.大考字義＋文意選擇題與解析」！（已確保至少 5 題）`;
 
       renderTeacherEditors(latestGeneratedArticle);
       document.getElementById('generated-preview-box').classList.remove('hidden');
@@ -1073,7 +1130,7 @@
             <input type="text" class="sent-trans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(s.translation)}">
           </div>
           <div>
-            <label class="block text-xs font-bold text-blue-700 mb-1">單字／文法／修辭解析</label>
+            <label class="block text-xs font-bold text-blue-700 mb-1">字義／詞性／文法／修辭解析</label>
             <textarea rows="2" class="sent-grammar w-full border border-blue-300 rounded-xl px-3 py-2 text-sm bg-white">${escapeHtml(s.grammar)}</textarea>
           </div>
         </div>
@@ -1204,6 +1261,10 @@
       const articleToPublish = collectArticleFromEditors();
       if (!articleToPublish.sentences || articleToPublish.sentences.length === 0) {
         alert('至少需要保留一句文章內容才能發布！');
+        return;
+      }
+      if (!articleToPublish.questions || articleToPublish.questions.length < 5) {
+        alert('選擇題至少需要 5 題才能發布！目前共有 ' + (articleToPublish.questions?.length || 0) + ' 題。');
         return;
       }
       latestGeneratedArticle = articleToPublish;
