@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>線上自主學習與測驗中心</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans TC', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between text-slate-800">
+
+  <!-- 頂部導覽列 -->
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-lg text-sm">學習平台</span>
+        <h1 class="text-xl font-bold text-slate-800 tracking-tight">線上題庫與雙科閱讀測驗中心</h1>
+      </div>
+      <span class="text-xs text-slate-400 hidden sm:inline">國小 · 國中 · 高中 自主練習系統</span>
+    </div>
+  </header>
+
+  <!-- 主要入口卡片區 -->
+  <main class="max-w-5xl mx-auto px-6 py-12 w-full">
+    <div class="text-center mb-12">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-3">請選擇今天要練習的學習模組</h2>
+      <p class="text-slate-500 text-sm sm:text-base">支援跨裝置線上刷題、逐句語音朗讀與 AI 文本解析</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      
+      <!-- 入口一：原本的 Google Sheet 綜合題庫 -->
+      <a href="quiz.html" class="group bg-white rounded-2xl border-2 border-slate-200 hover:border-blue-500 p-8 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-6">
+            <span class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+              📝
+            </span>
+            <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+              多科題庫練習
+            </span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors">
+            歷屆與綜合題庫測驗系統
+          </h3>
+          <p class="text-slate-500 text-sm leading-relaxed mb-6">
+            包含英文、生物、歷史等豐富題庫，可依科目與條件篩選題目進行線上刷題與即時對答案。
+          </p>
+        </div>
+        <div class="flex items-center text-blue-600 font-bold text-sm">
+          <span>進入題庫系統</span>
+          <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+        </div>
+      </a>
+
+      <!-- 入口二：全新的國英雙科閱讀測驗 -->
+      <a href="reading.html" class="group bg-white rounded-2xl border-2 border-slate-200 hover:border-emerald-500 p-8 shadow-sm hover:shadow-xl transition-all duration-200 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-6">
+            <span class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+              📖
+            </span>
+            <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">
+              全新上線 · 語音逐句解說
+            </span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">
+            國文／英文 智慧閱讀測驗系統
+          </h3>
+          <p class="text-slate-500 text-sm leading-relaxed mb-6">
+            涵蓋國小、國中、高中文章，點擊句子即可聽真人發音、查看逐句翻譯與單字文法解析，並進行隨堂閱讀測驗。
+          </p>
+        </div>
+        <div class="flex items-center text-emerald-600 font-bold text-sm">
+          <span>進入閱讀測驗</span>
+          <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+        </div>
+      </a>
+
+    </div>
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+    © 2026 線上自主學習平台 · 雙系統整合入口
+  </footer>
+
+</body>
+</html>
