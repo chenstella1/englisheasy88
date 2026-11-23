@@ -1,10 +1,324 @@
-with open("reading-v3.html", "r", encoding="utf-8") as f:
-    code = f.read()
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>長篇閱讀精讀與測驗專區｜優華數位刷題網</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 前端解析 PDF 與 Word 套件 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    }
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+  <style>
+    body {
+      font-size: 17px;
+      line-height: 1.9;
+    }
+    .sentence-block {
+      display: inline;
+      padding: 3px 4px;
+      border-radius: 8px;
+      transition: background-color 0.15s ease;
+    }
+    .sentence-block:hover {
+      background-color: #f0fdf4;
+    }
+    .sentence-active {
+      background-color: #fef3c7 !important;
+      box-shadow: 0 0 0 1px #fcd34d;
+    }
+    .word-token {
+      cursor: pointer;
+      padding: 1px 2px;
+      border-radius: 5px;
+      border-bottom: 1.5px dashed transparent;
+      transition: all 0.15s ease;
+    }
+    .word-token:hover {
+      background-color: #dcfce7;
+      border-bottom-color: #059669;
+      color: #065f46;
+      font-weight: 700;
+    }
+    .sentence-btn-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: #92400e;
+      background-color: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 999px;
+      padding: 0 7px;
+      margin: 0 5px 0 2px;
+      vertical-align: middle;
+      line-height: 1.5;
+      transition: all 0.15s ease;
+    }
+    .sentence-btn-trigger:hover {
+      background-color: #f59e0b;
+      color: #ffffff;
+      border-color: #d97706;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col font-sans">
 
-# 1. 在「出題工作台」上方或下方新增「已發布文章管理（可刪除不要的文章）」區塊
-old_marker = """      <!-- 生成狀態提示 -->"""
+  <!-- 頂部導覽列 -->
+  <header class="bg-brand-600 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="bg-brand-700 hover:bg-brand-800 text-white text-sm font-bold px-3.5 py-1.5 rounded-xl transition-colors flex items-center gap-1">
+          ← 返回刷題主頁
+        </a>
+        <h1 class="text-xl sm:text-2xl font-black tracking-wide">📖 長篇閱讀精讀與測驗專區</h1>
+      </div>
 
-manage_section_html = """      <!-- 既有／已發布文章管理區（支援刪除自訂文章或還原預設文章） -->
+      <div class="flex items-center gap-3">
+        <span id="reading-user-badge" class="text-xs sm:text-sm bg-brand-700 px-3 py-1 rounded-full">訪客模式</span>
+        <!-- 管理者專用切換按鈕 -->
+        <div id="admin-mode-switch" class="hidden flex bg-brand-800 p-1 rounded-xl">
+          <button id="btn-view-student" onclick="switchReadingMode('student')" class="px-3 py-1 rounded-lg text-xs sm:text-sm font-bold bg-white text-brand-700 shadow">👨‍🎓 學生精讀端</button>
+          <button id="btn-view-teacher" onclick="switchReadingMode('teacher')" class="px-3 py-1 rounded-lg text-xs sm:text-sm font-bold text-brand-100 hover:text-white">👩‍🏫 上傳 PDF/Word 出題</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 學生練習與精讀端 ==================== -->
+  <main id="student-reading-view" class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+
+    <!-- 1. 科目與學制分類導覽列 -->
+    <section class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <div class="flex flex-wrap gap-2">
+          <button onclick="selectCategory('english', '國小英文')" id="cat-en-elem" class="cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-brand-600 text-white shadow">
+            🔤 英文閱讀｜國小
+          </button>
+          <button onclick="selectCategory('english', '國中英文')" id="cat-en-junior" class="cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200">
+            🔤 英文閱讀｜國中
+          </button>
+          <button onclick="selectCategory('english', '高中英文')" id="cat-en-senior" class="cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200">
+            🔤 英文閱讀｜高中
+          </button>
+          <button onclick="selectCategory('chinese', '文言文閱讀')" id="cat-zh-classical" class="cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">
+            📜 國文閱讀｜文言文專區
+          </button>
+        </div>
+
+        <!-- 語音速度與連播控制 -->
+        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+          <span class="text-xs font-bold text-slate-500">語速：</span>
+          <select id="speech-rate" class="text-xs font-bold bg-transparent text-slate-700 focus:outline-none">
+            <option value="0.75">0.75x 慢速</option>
+            <option value="0.95" selected>1.0x 正常</option>
+            <option value="1.15">1.15x 稍快</option>
+          </select>
+          <button onclick="playFullPassage()" id="btn-play-all" class="ml-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-sm">
+            🔊 全文連播
+          </button>
+          <button onclick="stopSpeech()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-lg">
+            ⏹ 停止
+          </button>
+        </div>
+      </div>
+
+      <!-- 文章選擇下拉選單 -->
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="text-sm font-bold text-slate-700">📚 選擇文章：</label>
+        <select id="article-selector" onchange="loadSelectedArticle()" class="flex-grow max-w-xl border border-slate-300 rounded-xl px-4 py-2 text-base font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none"></select>
+        <span id="article-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-brand-100 text-brand-700">國小英文</span>
+      </div>
+    </section>
+
+    <!-- 2. 互動精讀文章區（點單字查該段語境字義；點句末「💬 句解」跳出整句視窗） -->
+    <section class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+      <div class="border-b border-slate-100 pb-3 flex flex-wrap justify-between items-center gap-2">
+        <div>
+          <h2 id="display-article-title" class="text-2xl font-black text-slate-800">文章標題</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            💡 <span class="font-bold text-emerald-700">點任一單字／字詞</span>：依該段上下文顯示字義與發音；
+            <span class="font-bold text-amber-700">點句尾「💬 句解」</span>：跳出整句翻譯與解析視窗！
+          </p>
+        </div>
+      </div>
+
+      <div id="interactive-passage-box" class="text-lg sm:text-xl leading-loose text-slate-800 space-y-3 select-text"></div>
+    </section>
+
+    <!-- 3. 全文意思對照區（上方原文、下方翻譯） -->
+    <section class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-xl font-black text-slate-800">📄 全文意思對照（上：原文／下：翻譯）</h3>
+          <p class="text-xs text-slate-500 mt-0.5">上方為完整原文，下方為對應白話語譯／中文翻譯，方便上下對照閱讀。</p>
+        </div>
+        <button onclick="speakChineseSummary()" class="text-xs bg-brand-100 hover:bg-brand-200 text-brand-800 font-bold px-3.5 py-2 rounded-xl">
+          🔊 語音唸出下方翻譯
+        </button>
+      </div>
+
+      <!-- 上方：原文 -->
+      <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+        <div class="text-xs font-black text-slate-500 tracking-wider">【上方｜原文】</div>
+        <div id="full-original-display" class="text-base sm:text-lg text-slate-900 leading-loose whitespace-pre-line font-medium"></div>
+      </div>
+
+      <!-- 下方：翻譯 -->
+      <div class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+        <div class="text-xs font-black text-emerald-700 tracking-wider">【下方｜全文翻譯／白話語譯】</div>
+        <div id="detail-full-translation" class="text-base sm:text-lg text-slate-800 leading-loose whitespace-pre-line"></div>
+      </div>
+    </section>
+
+    <!-- 4. 隨堂閱讀理解測驗（直接出題，點選答案直接顯示正解與解析） -->
+    <section class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h3 class="text-xl font-black text-slate-800">📝 隨堂閱讀理解測驗（點選選項直接顯示正解與解析）</h3>
+          <p class="text-xs text-slate-500 mt-1">直接點選任一選項，系統立即公布正確答案與詳細解析。</p>
+        </div>
+        <button onclick="resetQuizAnswers()" class="text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl">🔄 重新作答本篇題目</button>
+      </div>
+
+      <div id="reading-quiz-list" class="space-y-5"></div>
+    </section>
+
+  </main>
+
+  <!-- ==================== 跳出視窗 1：點單字／字詞依段落語境顯示字義 ==================== -->
+  <div id="word-popup-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4" onclick="closeWordModal(event)">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-emerald-200 p-6 space-y-4 animate-fade-in" onclick="event.stopPropagation()">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+        <div>
+          <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">依段落語境查字義</span>
+          <h4 id="word-modal-token" class="text-2xl font-black text-slate-900 mt-1.5">字詞</h4>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="speakModalWord()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm">🔊 發音</button>
+          <button onclick="hideWordModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">✕ 關閉</button>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
+        <div class="text-xs font-black text-emerald-800">【本段語境字義】</div>
+        <div id="word-modal-meaning" class="text-base font-bold text-slate-900 leading-relaxed"></div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+        <div class="text-xs font-black text-slate-500">【所在段落／句子上下文】</div>
+        <div id="word-modal-context" class="text-sm text-slate-700 leading-relaxed"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 跳出視窗 2：點句子顯示整句翻譯與解析 ==================== -->
+  <div id="sentence-popup-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4" onclick="closeSentenceModal(event)">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border-2 border-amber-300 p-6 space-y-4" onclick="event.stopPropagation()">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span id="sent-modal-badge" class="text-xs font-black px-3 py-1 rounded-full bg-amber-100 text-amber-900">第 1 句整句解析</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="stepModalSentence(-1)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700">← 上一句</button>
+          <button onclick="speakModalSentence()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm">🔊 朗讀整句</button>
+          <button onclick="stepModalSentence(1)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700">下一句 →</button>
+          <button onclick="hideSentenceModal()" class="ml-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold">✕ 關閉</button>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+        <div class="text-xs font-bold text-slate-400">【原文整句】</div>
+        <div id="sent-modal-original" class="text-base sm:text-lg font-bold text-slate-900 leading-relaxed"></div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1">
+        <div class="text-xs font-bold text-emerald-700">【整句中文翻譯／白話語譯】</div>
+        <div id="sent-modal-translation" class="text-base font-medium text-slate-800 leading-relaxed"></div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-1">
+        <div class="text-xs font-bold text-blue-700">【句法／字詞補充說明】</div>
+        <div id="sent-modal-grammar" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 老師出題與上傳 PDF/Word 後台 ==================== -->
+  <section id="teacher-upload-view" class="hidden max-w-6xl mx-auto px-4 py-8 flex-grow w-full space-y-6">
+    <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-6">
+      <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 老師文言文／閱讀出題工作台（只需提供文言文或文章，系統自動出題與解析）</h2>
+          <p class="text-sm text-slate-500 mt-1">老師只要貼上文言文或上傳 PDF／Word，系統自動產生：逐句解釋、全文翻譯，以及至少 5 題大考風格選擇題（涵蓋字義辨析、文意理解與推論）與詳解。</p>
+        </div>
+      </div>
+
+      <!-- 步驟 1～4：選擇分類、標題、上傳 PDF/Word、貼上文言文 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">1. 選擇文章歸屬分類</label>
+            <select id="upload-category" class="w-full border border-slate-300 rounded-xl p-3 text-base font-bold">
+              <option value="chinese|文言文閱讀" selected>國文閱讀 — 文言文閱讀（大考字義＋文意出題）</option>
+              <option value="english|國小英文">英文閱讀 — 國小英文</option>
+              <option value="english|國中英文">英文閱讀 — 國中英文</option>
+              <option value="english|高中英文">英文閱讀 — 高中英文</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">2. 文章標題（可選填，未填將自動命名）</label>
+            <input type="text" id="upload-title" placeholder="例如：師說節選、岳陽樓記節選 或直接貼上文言文" class="w-full border border-slate-300 rounded-xl p-3 text-base">
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1">3. 上傳 PDF (.pdf) 或 Word (.docx) 檔案（選填）</label>
+            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-brand-400 rounded-2xl bg-brand-50/40 hover:bg-brand-50 cursor-pointer transition-colors p-4 text-center">
+              <span class="text-2xl mb-1">📄</span>
+              <span class="text-sm font-bold text-brand-700">點擊選擇 PDF 或 Word (.docx) 檔案</span>
+              <span id="file-upload-status" class="text-xs text-slate-500 mt-1">支援自動擷取內文文字</span>
+              <input type="file" accept=".pdf,.docx,.txt" onchange="handleFileUpload(event)" class="hidden">
+            </label>
+          </div>
+        </div>
+
+        <!-- 文言文原文輸入區 -->
+        <div class="space-y-2 flex flex-col">
+          <label class="block text-sm font-bold text-slate-700">4. 貼上文言文原文（老師只需給文言文即可）</label>
+          <textarea id="upload-raw-text" rows="10" placeholder="請直接貼上文言文內容，例如：&#10;古之學者必有師。師者，所以傳道、受業、解惑也。人非生而知之者，孰能無惑？惑而不從師，其為惑也，終不解矣。" class="w-full flex-grow border border-slate-300 rounded-2xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+        </div>
+      </div>
+
+      <!-- 一鍵生成按鈕 -->
+      <div class="pt-2 flex flex-wrap gap-3">
+        <button onclick="generateAllReadingMaterials()" id="btn-ai-generate" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg text-base flex items-center gap-2">
+          ✨ 一鍵自動出題與解析（至少 5 題大考字義＋文意選擇題）
+        </button>
+      </div>
+
+      <!-- 既有／已發布文章管理區（支援刪除自訂文章或還原預設文章） -->
       <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -18,28 +332,526 @@ manage_section_html = """      <!-- 既有／已發布文章管理區（支援�
         <div id="teacher-article-manage-list" class="divide-y divide-slate-200 bg-white rounded-xl border border-slate-200"></div>
       </div>
 
-      <!-- 生成狀態提示 -->"""
+      <!-- 生成狀態提示 -->
+      <div id="ai-gen-status" class="hidden p-4 rounded-2xl text-sm font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 whitespace-pre-line"></div>
 
-assert old_marker in code, "old_marker not found"
-code = code.replace(old_marker, manage_section_html, 1)
+      <!-- 生成結果視覺化編輯與發布區 -->
+      <div id="generated-preview-box" class="hidden space-y-6 pt-6 border-t border-slate-200">
+        <div class="flex flex-wrap justify-between items-center gap-3">
+          <h3 class="text-xl font-black text-emerald-700">✅ 已自動產生完整教材與至少 5 題選擇題！可直接微調或立即發布</h3>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="publishGeneratedArticle()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl shadow">
+              🚀 立即發布並切換到學生端預覽
+            </button>
+            <button onclick="copyArticleJsonForBackup()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-sm">
+              📋 複製資料備份
+            </button>
+          </div>
+        </div>
 
-# 2. 更新 STORAGE_KEY_DELETED 與 loadArticlesFromStorage / deleteArticle / restoreDefaultArticles / renderTeacherArticleManageList
-old_storage_block = """    const STORAGE_KEY_ARTICLES = 'yh_reading_articles_v1';"""
-new_storage_block = """    const STORAGE_KEY_ARTICLES = 'yh_reading_articles_v1';
-    const STORAGE_KEY_DELETED_IDS = 'yh_reading_deleted_ids_v1';"""
-assert old_storage_block in code, "old_storage_block not found"
-code = code.replace(old_storage_block, new_storage_block, 1)
+        <!-- 全文意思編輯區 -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+          <label class="block text-sm font-black text-brand-700">📄 全文意思（白話語譯／全文翻譯）</label>
+          <textarea id="edit-full-translation" rows="4" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
+        </div>
 
-old_load_storage = """    function loadArticlesFromStorage() {
-      try {
-        const custom = JSON.parse(localStorage.getItem(STORAGE_KEY_ARTICLES) || '[]');
-        allArticles = [...DEFAULT_ARTICLES, ...custom];
-      } catch (e) {
-        allArticles = [...DEFAULT_ARTICLES];
+        <!-- 逐句解析編輯區 -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-base font-black text-slate-800">🔍 逐句解釋明細（學生點句尾「💬 句解」時跳出顯示）</h4>
+            <button onclick="addSentenceEditorRow()" class="text-xs font-bold bg-brand-100 hover:bg-brand-200 text-brand-800 px-3 py-1.5 rounded-xl">＋ 新增一句解釋</button>
+          </div>
+          <div id="edit-sentences-container" class="space-y-4"></div>
+        </div>
+
+        <!-- 選擇題與解析編輯區（至少 5 題） -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-base font-black text-slate-800">📝 閱讀理解選擇題與解析（至少 5 題，含字義辨析與大考文意題）</h4>
+            <button onclick="addQuestionEditorRow()" class="text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-1.5 rounded-xl shadow-sm">＋ 新增一題選擇題</button>
+          </div>
+          <div id="edit-questions-container" class="space-y-4"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const ADMIN_EMAIL = 'yhstella2@gmail.com';
+    const STORAGE_KEY_ARTICLES = 'yh_reading_articles_v1';
+    const STORAGE_KEY_DELETED_IDS = 'yh_reading_deleted_ids_v1';
+
+    const CLASSICAL_LEXICON = [
+      { char: '之', reading: 'ㄓ', meaning: '結構助詞「的」／代詞「他、她、它、這」／動詞「往、到」', note: '常考詞性與義項辨析，需依上下文判斷。' },
+      { char: '焉', reading: 'ㄧㄢ', meaning: '句末語氣助詞「啊、呢」／兼詞「於之」（在這裡／從這裡）', note: '文末作語氣助詞，句中或處所常作「於此」。' },
+      { char: '乎', reading: 'ㄏㄨ', meaning: '語氣助詞「嗎、啊、呀」／介詞「於、在、對於」', note: '疑問或感嘆語氣助詞，亦可作介詞引出對象或處所。' },
+      { char: '者', reading: 'ㄓㄜˇ', meaning: '代詞「……的人／事／物」／語氣助詞表提頓', note: '置於句末或分句後常表停頓或指代特定對象。' },
+      { char: '也', reading: 'ㄧㄝˇ', meaning: '句末語氣助詞，表判斷、肯定或感嘆語氣', note: '常見於判斷句或加強語氣之收尾。' },
+      { char: '則', reading: 'ㄗㄜˊ', meaning: '連詞「就、那麼、卻」／名詞「準則、法度」', note: '常表承接、轉折或條件因果關係。' },
+      { char: '而', reading: 'ㄦˊ', meaning: '連詞，表順承「並且、就」、轉折「卻、但是」或修飾', note: '需比較前後語意是順接還是逆轉。' },
+      { char: '以', reading: 'ㄧˇ', meaning: '介詞「用、憑藉、因為、在」／連詞「而、用來」', note: '依搭配名詞或動詞判斷目的、工具或原因。' },
+      { char: '故', reading: 'ㄍㄨˋ', meaning: '原因、緣故／連詞「所以、因此」／舊的、衰老的', note: '常考「緣故」與「所以」之辨析。' },
+      { char: '善', reading: 'ㄕㄢˋ', meaning: '擅長、精於／美好的、善良的／稱讚、贊許', note: '置於動詞前常作副詞「擅長、好好地」。' },
+      { char: '樂', reading: 'ㄌㄜˋ', meaning: '快樂、喜悅／以……為樂（意動用法）', note: '注意「樂此不疲」等固定搭配與詞性轉化。' },
+      { char: '異', reading: 'ㄧˋ', meaning: '不同的、特別的／驚奇、感到奇怪', note: '可作形容詞「不同」或動詞「感到奇怪」。' },
+      { char: '安', reading: 'ㄢ', meaning: '安穩、安全／疑問代詞「怎麼、哪裡」', note: '反詰問句中常作「怎麼、哪裡」。' },
+      { char: '孰', reading: 'ㄕㄨˊ', meaning: '疑問代詞「誰、哪一個」', note: '常用於選擇或反問語氣。' },
+      { char: '益', reading: 'ㄧˋ', meaning: '更加、越發／好處、利益／增加', note: '副詞「更加」與名詞「好處」為常見考點。' },
+      { char: '患', reading: 'ㄏㄨㄢˋ', meaning: '擔憂、發愁／禍患、災難／病症', note: '「不患人之不己知」之「患」為擔憂。' },
+      { char: '蕃', reading: 'ㄈㄢˊ', meaning: '通「繁」，繁多、茂盛', note: '形容種類或數量極多。' },
+      { char: '獨', reading: 'ㄉㄨˊ', meaning: '唯獨、只／孤單、獨自', note: '文中多作副詞「唯獨」。' },
+      { char: '盛', reading: 'ㄕㄥˋ', meaning: '非常、極／興盛、茂盛', note: '置於動詞前作副詞「非常、盛行」。' },
+      { char: '予', reading: 'ㄩˊ', meaning: '第一人稱代詞，「我」', note: '通「余」，古文中常見自稱。' },
+      { char: '染', reading: 'ㄖㄢˇ', meaning: '沾染（污穢）、受到影響', note: '「出淤泥而不染」指不沾染世俗污濁。' },
+      { char: '濯', reading: 'ㄓㄨㄛˊ', meaning: '洗滌、沖洗', note: '指清水洗淨。' },
+      { char: '妖', reading: 'ㄧㄠ', meaning: '妖媚、艷麗而不端莊', note: '形容過分艷麗、不莊重。' },
+      { char: '蔓', reading: 'ㄇㄢˋ', meaning: '名詞轉品為動詞，生出藤蔓、牽連', note: '比喻不牽連攀附權貴。' },
+      { char: '枝', reading: 'ㄓ', meaning: '名詞轉品為動詞，長出旁枝', note: '比喻行為端正不生枝節。' },
+      { char: '清', reading: 'ㄑㄧㄥ', meaning: '清芬、清香／清澈、高潔', note: '「香遠益清」指香氣傳得越遠越清芬。' },
+      { char: '植', reading: 'ㄓˊ', meaning: '挺立、豎立／種植', note: '「亭亭淨植」指筆直潔淨地挺立水中。' },
+      { char: '褻', reading: 'ㄒㄧㄝˋ', meaning: '輕慢、親近而不莊重', note: '「褻玩」即輕慢玩弄。' },
+      { char: '師', reading: 'ㄕ', meaning: '名詞「老師」／動詞「學習、效法」', note: '「必有師」為老師；「不恥相師」為學習。' },
+      { char: '惑', reading: 'ㄏㄨㄛˋ', meaning: '名詞「疑惑、難題」／動詞「迷惑、糊塗」', note: '「解惑」為疑惑；「惑而不從師」為有疑惑。' }
+    ];
+
+    const ENGLISH_LEXICON = {
+      'today': '(adv./n.) 今天',
+      'sunday': '(n.) 星期天',
+      'weather': '(n.) 天氣（不可數名詞）',
+      'warm': '(adj.) 溫暖的',
+      'sunny': '(adj.) 晴朗的',
+      'little': '(adj.) 年幼的、小的（little sister 妹妹）',
+      'sister': '(n.) 姊姊；妹妹',
+      'park': '(n.) 公園',
+      'with': '(prep.) 和……一起；帶著',
+      'their': '(pron.) 他們的（所有格）',
+      'many': '(adj.) 許多的（修飾可數名詞複數）',
+      'children': '(n.) 孩子們（child 的複數形）',
+      'playing': '(v.) 玩耍（play 的現在分詞）',
+      'grass': '(n.) 草地（不可數名詞）',
+      'flying': '(v.) 飛、放（風箏）（fly 的現在分詞）',
+      'kites': '(n.) 風箏（fly kites 放風箏）',
+      'sky': '(n.) 天空',
+      'throws': '(v.) 丟、投擲（第三人稱單數現在式）',
+      'runs': '(v.) 跑（第三人稱單數現在式）',
+      'fast': '(adv./adj.) 快速地；快的',
+      'catch': '(v.) 接住；抓住',
+      'eat': '(v.) 吃',
+      'sweet': '(adj.) 甜美的；香甜的',
+      'apples': '(n.) 蘋果',
+      'under': '(prep.) 在……下方',
+      'tree': '(n.) 樹木',
+      'feel': '(v.) 感覺（連綴動詞，後接形容詞）',
+      'happy': '(adj.) 開心的、快樂的',
+      'watched': '(v.) 觀看、觀察（watch 的過去分詞）',
+      'honeybees': '(n.) 蜜蜂',
+      'moving': '(v.) 移動（move 的現在分詞）',
+      'circles': '(n.) 圓圈（in circles 繞圈圈）',
+      'inside': '(prep.) 在……裡面',
+      'hive': '(n.) 蜂巢',
+      'just': '(adv.) 只是、僅僅',
+      'actually': '(adv.) 事實上；其實',
+      'sharing': '(v.) 分享（share A with B 與 B 分享 A）',
+      'important': '(adj.) 重要的',
+      'news': '(n.) 消息；新聞（不可數名詞）',
+      'family': '(n.) 家人；家庭',
+      'scout': '(n./adj.) 偵察（蜂）；童軍',
+      'finds': '(v.) 找到、發現',
+      'flowers': '(n.) 花朵',
+      'performs': '(v.) 表演；執行',
+      'special': '(adj.) 特別的',
+      'waggle': '(v./n.) 搖擺（waggle dance 搖擺舞）',
+      'dance': '(n./v.) 舞蹈；跳舞',
+      'angle': '(n.) 角度',
+      'direction': '(n.) 方向',
+      'toward': '(prep.) 朝向、向著',
+      'sun': '(n.) 太陽',
+      'longer': '(adv./adj.) 更長久地（long 的比較級）',
+      'shakes': '(v.) 搖動、晃動',
+      'body': '(n.) 身體',
+      'farther': '(adv./adj.) 更遠地（距離上，far 的比較級）',
+      'food': '(n.) 食物',
+      'fail': '(v.) 未能做到；失敗（fail to + V）',
+      'keep': '(v.) 維持、遵守（keep resolutions 堅持決心）',
+      'resolutions': '(n.) 決心；新年新希望',
+      'because': '(conj.) 因為',
+      'overly': '(adv.) 過度地、太過',
+      'ambitious': '(adj.) 野心勃勃的；宏大的',
+      'goals': '(n.) 目標',
+      'instead': '(adv.) 反而（instead of 而不是……）',
+      'radically': '(adv.) 徹底地、劇烈地',
+      'changing': '(v.) 改變',
+      'routine': '(n.) 日常作息、例行公事',
+      'overnight': '(adv.) 一夜之間；突然地',
+      'behavioral': '(adj.) 行為的',
+      'scientists': '(n.) 科學家',
+      'recommend': '(v.) 建議（recommend + V-ing）',
+      'starting': '(v.) 開始',
+      'micro-habits': '(n.) 微習慣（極小且容易執行的習慣）',
+      'action': '(n.) 行動、行為',
+      'requires': '(v.) 需要',
+      'almost': '(adv.) 幾乎',
+      'zero': '(num./adj.) 零',
+      'willpower': '(n.) 意志力',
+      'complete': '(v.) 完成',
+      'pages': '(n.) 頁數',
+      'once': '(conj.) 一旦……',
+      'behavior': '(n.) 行為舉止',
+      'becomes': '(v.) 變成',
+      'automatic': '(adj.) 自動化的、不假思索的',
+      'consistency': '(n.) 持續性、一致性',
+      'naturally': '(adv.) 自然而然地',
+      'builds': '(v.) 建立、累積',
+      'momentum': '(n.) 動力、推進力',
+      'time': '(n.) 時間（over time 隨著時間推移）'
+    };
+
+    const DEFAULT_ARTICLES = [
+      {
+        id: 'en_elem_1',
+        subject: 'english',
+        level: '國小英文',
+        title: 'A Sunny Day at the Park (公園裡的晴天)',
+        sentences: [
+          {
+            text: 'Today is Sunday, and the weather is warm and sunny.',
+            translation: '今天是星期天，天氣溫暖又晴朗。',
+            grammar: '• weather (n.) 天氣（不可數名詞，搭配單數動詞 is）。\n• warm (adj.) 溫暖的；sunny (adj.) 晴朗的。',
+            wordNotes: {
+              'today': '在此句作時間名詞「今天」，引出故事發生的時間背景。',
+              'weather': '不可數名詞「天氣」，後面搭配單數 be 動詞 is。',
+              'warm': '形容詞「溫暖的」，與 sunny 並列描述晴朗舒適的天氣。',
+              'sunny': '形容詞「晴朗的、陽光充足的」。'
+            }
+          },
+          {
+            text: 'Tom and his little sister, Amy, go to the park with their dog, Lucky.',
+            translation: '湯姆和他的妹妹艾美帶著他們的小狗「幸運」一起去公園。',
+            grammar: '• little sister 妹妹。\n• with (prep.) 和……一起；their (所有格) 他們的。',
+            wordNotes: {
+              'little': '在此搭配 sister（little sister）表示「年紀較小的妹妹」。',
+              'with': '介系詞，在此表示「帶著、和……一起」前往公園。',
+              'their': '所有格代名詞「他們的」，指湯姆和艾美兩人的小狗。'
+            }
+          },
+          {
+            text: 'Many children are playing on the grass and flying kites in the sky.',
+            translation: '許多小朋友正在草地上玩耍，並在天空中放風箏。',
+            grammar: '• 現在進行式 (be + V-ing)：are playing / (are) flying 表示正在進行的動作。\n• fly kites 放風箏。',
+            wordNotes: {
+              'children': 'child 的不規則複數形「孩子們」，搭配複數動詞 are。',
+              'playing': '現在分詞，與 are 構成現在進行式「正在玩耍」。',
+              'flying': '在此搭配 kites（flying kites）表示「正在放風箏」。'
+            }
+          },
+          {
+            text: 'Tom throws a red ball, and Lucky runs fast to catch it.',
+            translation: '湯姆丟出一顆紅球，幸運跑得很快去接住它。',
+            grammar: '• 第三人稱單數現在式動詞字尾加 s：throws / runs。\n• fast (adv.) 快速地，修飾動詞 runs。',
+            wordNotes: {
+              'throws': '動詞「丟、拋」，主詞 Tom 為第三人稱單數，字尾加 -s。',
+              'fast': '在此作副詞「快速地」，修飾前面的動詞 runs。',
+              'catch': '動詞「接住、抓住」，受詞 it 指前面丟出的紅球。'
+            }
+          },
+          {
+            text: 'They eat sweet apples under a big tree and feel very happy.',
+            translation: '他們在一棵大樹下吃著甜美的蘋果，感到非常開心。',
+            grammar: '• under (prep.) 在……下面。\n• feel + 形容詞 (happy)：感官連綴動詞用法，表示「感覺……」。',
+            wordNotes: {
+              'sweet': '形容詞「香甜的」，用來修飾後面的名詞 apples。',
+              'under': '地方介系詞「在……下方」，指在樹蔭底下乘涼吃水果。',
+              'feel': '連綴動詞「感到、覺得」，後面直接接形容詞 happy。'
+            }
+          }
+        ],
+        fullTranslation: '今天是星期天，天氣溫暖又晴朗。湯姆和他的妹妹艾美帶著他們的小狗「幸運」一起去公園。許多小朋友正在草地上玩耍，並在天空中放風箏。湯姆丟出一顆紅球，幸運跑得很快去接住它。他們在一棵大樹下吃著甜美的蘋果，感到非常開心。',
+        questions: [
+          {
+            question: '1. Who goes to the park with Tom and Amy?',
+            options: { A: 'Their cat', B: 'Their dog, Lucky', C: 'Their teacher', D: 'Their grandma' },
+            answer: 'B',
+            explanation: '文章第二句提到 "go to the park with their dog, Lucky"，因此他們是帶著小狗 Lucky 一起去公園。'
+          },
+          {
+            question: '2. What are the children doing in the sky?',
+            options: { A: 'Throwing balls', B: 'Eating apples', C: 'Flying kites', D: 'Sleeping under a tree' },
+            answer: 'C',
+            explanation: '第三句明確指出 "flying kites in the sky"（在天空中放風箏）。'
+          },
+          {
+            question: '3. Where do Tom and Amy eat apples?',
+            options: { A: 'In the classroom', B: 'Under a big tree', C: 'At home', D: 'Near the river' },
+            answer: 'B',
+            explanation: '最後一句提到 "eat sweet apples under a big tree"（在一棵大樹下吃甜蘋果）。'
+          }
+        ]
+      },
+      {
+        id: 'en_junior_1',
+        subject: 'english',
+        level: '國中英文',
+        title: 'Why Do Bees Dance? (蜜蜂為什麼要跳舞？)',
+        sentences: [
+          {
+            text: 'Have you ever watched honeybees moving in circles inside a hive?',
+            translation: '你曾經觀察過蜜蜂在蜂巢裡面繞圈圈移動嗎？',
+            grammar: '• 現在完成式問句：Have + 主詞 + ever + p.p.，表示「曾經……過嗎？」。\n• watch + 受詞 + V-ing：感官動詞用法，表示「看到某人/物正在做某事」。',
+            wordNotes: {
+              'watched': '感官動詞「觀察、觀看」，此處用現在完成式詢問經驗。',
+              'moving': '接在感官動詞 watched 後面，強調「正在繞圈移動」的畫面。',
+              'hive': '名詞「蜂巢」，即蜜蜂居住與築巢的地方。'
+            }
+          },
+          {
+            text: 'They are not just playing; they are actually sharing important news with their family.',
+            translation: '牠們不只是在玩耍；牠們其實正在與家人分享重要消息。',
+            grammar: '• share A with B：與 B 分享 A。\n• actually (adv.) 事實上；其實。',
+            wordNotes: {
+              'just': '副詞「只是、僅僅」，用來澄清蜜蜂並非單純在玩樂。',
+              'actually': '副詞「事實上、其實」，引出蜜蜂行為背後的真正目的。',
+              'sharing': '搭配介系詞 with（share ... with ...）表示「與同伴分享情報」。'
+            }
+          },
+          {
+            text: 'When a scout bee finds sweet flowers, it flies back and performs a special "waggle dance."',
+            translation: '當一隻偵察蜂找到甜美的花朵時，牠會飛回來並表演一段特別的「搖擺舞」。',
+            grammar: '• When 引導時間副詞子句，主從句皆用現在簡單式表達「科學事實與習慣」。\n• perform (v.) 表演；執行。',
+            wordNotes: {
+              'scout': '名詞作形容詞用，「偵察（蜂）」，負責外出尋找花蜜來源。',
+              'performs': '動詞「表演、做出（特定動作）」。',
+              'waggle': '動詞／名詞「搖擺」，指蜜蜂透過擺動腹部傳遞訊號的舞步。'
+            }
+          },
+          {
+            text: 'The angle of the dance tells other bees which direction to fly toward the sun.',
+            translation: '舞蹈的角度會告訴其他蜜蜂要朝太陽的哪個方向飛行。',
+            grammar: '• 疑問詞 + 不定詞 (which direction to fly) 當作 tells 的直接受詞。\n• angle (n.) 角度；direction (n.) 方向。',
+            wordNotes: {
+              'angle': '名詞「角度」，舞蹈傾斜的角度對應太陽與花叢之間的夾角。',
+              'direction': '名詞「方向」，指飛行前往花源的方位。',
+              'toward': '介系詞「朝向、向著」。'
+            }
+          },
+          {
+            text: 'Even better, the longer the bee shakes its body, the farther away the food is.',
+            translation: '更厲害的是，蜜蜂搖動身體的時間越長，代表食物距離越遠。',
+            grammar: '• 【會考必考句型】The + 比較級 ..., the + 比較級 ...（越……，就越……）。\n• farther (adj./adv.) 更遠的（far 的比較級）。',
+            wordNotes: {
+              'longer': 'long 的比較級「更長久地」，指搖擺動作持續的時間越久。',
+              'shakes': '動詞「搖動、晃動」。',
+              'farther': 'far 的比較級「（距離上）更遠的」，說明花蜜位置離蜂巢更遠。'
+            }
+          }
+        ],
+        fullTranslation: '你曾經觀察過蜜蜂在蜂巢裡面繞圈圈移動嗎？牠們不只是在玩耍；牠們其實正在與家人分享重要消息。當一隻偵察蜂找到甜美的花朵時，牠會飛回來並表演一段特別的「搖擺舞」。舞蹈的角度會告訴其他蜜蜂要朝太陽的哪個方向飛行。更厲害的是，蜜蜂搖動身體的時間越長，代表食物距離越遠。',
+        questions: [
+          {
+            question: '1. Why does a scout bee do the "waggle dance"?',
+            options: {
+              A: 'To exercise its wings before sleeping',
+              B: 'To tell other bees where to find food',
+              C: 'To scare away dangerous animals',
+              D: 'To celebrate the sunny weather'
+            },
+            answer: 'B',
+            explanation: '文章第二、三句說明蜜蜂跳舞是為了與同伴分享找到花蜜（食物）的重要消息與方向。'
+          },
+          {
+            question: '2. According to the reading, if a bee shakes its body for a very long time, what does it mean?',
+            options: {
+              A: 'The flowers are very close to the hive.',
+              B: 'The bee is tired and needs water.',
+              C: 'The food is far away from the hive.',
+              D: 'It is going to rain soon.'
+            },
+            answer: 'C',
+            explanation: '最後一句提到 "the longer the bee shakes its body, the farther away the food is"（搖動越久，代表食物越遠）。'
+          }
+        ]
+      },
+      {
+        id: 'en_senior_1',
+        subject: 'english',
+        level: '高中英文',
+        title: 'The Hidden Power of Micro-Habits (微習慣的隱藏力量)',
+        sentences: [
+          {
+            text: 'Many people fail to keep their New Year resolutions because they set overly ambitious goals.',
+            translation: '許多人無法堅持新年新希望，是因為他們設定了過於龐大的目標。',
+            grammar: '• fail to + V：未能做到……。\n• overly ambitious 過於野心勃勃的、好高騖遠的。',
+            wordNotes: {
+              'fail': '搭配不定詞（fail to + V）表示「未能做到、無法實現」。',
+              'resolutions': '名詞「決心、新年新希望」，指年初立下的自我期許。',
+              'ambitious': '形容詞「野心勃勃的、過於龐大的」，在此指難以負荷的高難度目標。'
+            }
+          },
+          {
+            text: 'Instead of radically changing your routine overnight, behavioral scientists recommend starting with micro-habits.',
+            translation: '行為科學家建議，與其一夜之間徹底改變生活作息，不如從「微習慣」開始著手。',
+            grammar: '• Instead of + V-ing：與其……；而不是……。\n• recommend + V-ing：建議做某事（recommend 後接動名詞）。',
+            wordNotes: {
+              'radically': '副詞「徹底地、劇烈地」，指大幅度顛覆原本的生活模式。',
+              'routine': '名詞「日常作息、固定習慣」。',
+              'recommend': '動詞「建議」，後面直接接動名詞（starting）作受詞。'
+            }
+          },
+          {
+            text: 'A micro-habit is an action so small that it requires almost zero willpower to complete, such as reading two pages a day.',
+            translation: '微習慣是一個小到幾乎不需要任何意志力就能完成的行動，例如每天只讀兩頁書。',
+            grammar: '• 【學測核心句型】so + adj. + that + 子句（如此……以至於……）。\n• require (v.) 需要；willpower (n.) 意志力。',
+            wordNotes: {
+              'requires': '動詞「需要、仰賴」。',
+              'willpower': '名詞「意志力、自制力」。',
+              'complete': '動詞「完成」，指輕鬆達成每日微小任務。'
+            }
+          },
+          {
+            text: 'Once the behavior becomes automatic, consistency naturally builds momentum over time.',
+            translation: '一旦這個行為變得自動化，持續性便會隨著時間自然累積出前進的動力。',
+            grammar: '• Once (conj.) 一旦……。\n• consistency (n.) 持續性、一致性；momentum (n.) 動力、衝力。',
+            wordNotes: {
+              'once': '連接詞「一旦……」，引出習慣養成後的正向循環。',
+              'automatic': '形容詞「自動化的、自然而然的」，指不須刻意逼迫就能執行。',
+              'consistency': '名詞「持續性、一致性」，長期不間斷累積的關鍵。',
+              'momentum': '名詞「動力、推進力」，指行為越做越順暢的慣性力量。'
+            }
+          }
+        ],
+        fullTranslation: '許多人無法堅持新年新希望，是因為他們設定了過於龐大的目標。行為科學家建議，與其一夜之間徹底改變生活作息，不如從「微習慣」開始著手。微習慣是一個小到幾乎不需要任何意志力就能完成的行動，例如每天只讀兩頁書。一旦這個行為變得自動化，持續性便會隨著時間自然累積出前進的動力。',
+        questions: [
+          {
+            question: '1. What is the main purpose of this passage?',
+            options: {
+              A: 'To explain why New Year holidays are celebrated worldwide',
+              B: 'To introduce how small, effortless habits lead to lasting change',
+              C: 'To criticize people who lack strong willpower',
+              D: 'To compare different branches of behavioral science'
+            },
+            answer: 'B',
+            explanation: '全文主旨在於說明微習慣（micro-habits）因為門檻低、不耗費意志力，能透過持續性累積動力，進而帶來長遠改變。'
+          },
+          {
+            question: '2. Which of the following is closest in meaning to "radically" in the second sentence?',
+            options: { A: 'Slightly', B: 'Dramatically', C: 'Accidentally', D: 'Temporarily' },
+            answer: 'B',
+            explanation: 'radically 意為「徹底地、劇烈地」，與 dramatically（劇烈地、顯著地）語意最為接近。'
+          }
+        ]
+      },
+      {
+        id: 'zh_classical_1',
+        subject: 'chinese',
+        level: '文言文閱讀',
+        title: '愛蓮說（節選）— 周敦頤',
+        sentences: [
+          {
+            text: '水陸草木之花，可愛者甚蕃。',
+            translation: '水上和陸地上各種草木的花朵，值得喜愛的非常多。',
+            grammar: '• 之：結構助詞，相當於「的」。\n• 蕃：音 ㄈㄢˊ，通「繁」，繁多之意。',
+            wordNotes: {
+              '之': '在此句作結構助詞，相當於白話的「的」（草木的花）。',
+              '者': '代詞，指代「……的花朵」（值得喜愛的花朵）。',
+              '蕃': '音 ㄈㄢˊ，通「繁」，在此形容值得喜愛的花朵種類「繁多」。'
+            }
+          },
+          {
+            text: '晉陶淵明獨愛菊；自李唐來，世人盛愛牡丹。',
+            translation: '晉朝的陶淵明唯獨喜愛菊花；自從唐朝以來，世上的人們非常喜愛牡丹。',
+            grammar: '• 獨：唯獨、只。\n• 盛愛：非常喜愛。「盛」在此作副詞，極、甚之意。',
+            wordNotes: {
+              '獨': '副詞，在此作「唯獨、只」解，凸顯陶淵明與世俗不同的志趣。',
+              '盛': '副詞，在此作「非常、極為」解，形容世人對牡丹的狂熱喜愛。'
+            }
+          },
+          {
+            text: '予獨愛蓮之出淤泥而不染，濯清漣而不妖。',
+            translation: '我唯獨喜愛蓮花從積存的污泥中長出來卻不沾染污穢，經過清水的洗滌卻不顯得妖媚。',
+            grammar: '• 予：第一人稱代詞，「我」。\n• 濯：音 ㄓㄨㄛˊ，洗滌。\n• 清漣：清澈的水波。\n• 【修辭】映襯法（淤泥 vs. 不染；清漣 vs. 不妖）。',
+            wordNotes: {
+              '予': '第一人稱代詞，「我」，指作者周敦頤。',
+              '之': '助詞，置於主謂之間取消句子獨立性（無實義，不必譯出）。',
+              '而': '轉折連詞，「卻、但是」，強調環境雖污濁卻不受影響。',
+              '染': '動詞，「沾染（污穢）」，比喻不同流合污。',
+              '濯': '音 ㄓㄨㄛˊ，動詞「洗滌」。',
+              '妖': '形容詞，「妖媚、過分艷麗而不端莊」。'
+            }
+          },
+          {
+            text: '中通外直，不蔓不枝，香遠益清，亭亭淨植，可遠觀而不可褻玩焉。',
+            translation: '（蓮花的莖）內部貫通、外部筆直，不生藤蔓也不長旁枝，香氣傳得越遠越顯得清芬，筆直潔淨地挺立在水中，只可以遠遠地觀賞，卻不可以靠近輕慢地玩弄啊。',
+            grammar: '• 不蔓不枝：名詞轉品為動詞，意為「不生藤蔓、不長旁枝」。\n• 益：更加。\n• 褻玩：音 ㄒㄧㄝˋ ㄨㄢˊ，親近而不莊重地玩弄。',
+            wordNotes: {
+              '蔓': '名詞轉品為動詞，在此作「生出藤蔓」解，比喻不攀附牽連。',
+              '枝': '名詞轉品為動詞，在此作「長出旁枝」解，比喻行為正直不生枝節。',
+              '益': '副詞，「更加、越發」，指香氣傳得越遠越顯清芬。',
+              '清': '形容詞，「清芬、清香」。',
+              '植': '動詞，「挺立、豎立」。',
+              '褻': '音 ㄒㄧㄝˋ，副詞「輕慢、親近而不莊重」。',
+              '焉': '句末語氣助詞，表感嘆或肯定語氣，相當於「啊」。'
+            }
+          }
+        ],
+        fullTranslation: '水上和陸地上各種草木的花朵，值得喜愛的非常多。晉朝的陶淵明唯獨喜愛菊花；自從唐朝以來，世上的人們非常喜愛牡丹。我唯獨喜愛蓮花從積存的污泥中長出來卻不沾染污穢，經過清水的洗滌卻不顯得妖媚。（蓮花的莖）內部貫通、外部筆直，不生藤蔓也不長旁枝，香氣傳得越遠越顯得清芬，筆直潔淨地挺立在水中，只可以遠遠地觀賞，卻不可以靠近輕慢地玩弄啊。',
+        questions: [
+          {
+            question: '1. 下列「 」中的字，何者詞性與「不蔓不枝」的「蔓」字相同（皆為名詞轉動詞）？',
+            options: {
+              A: '可遠觀而不可「褻」玩焉',
+              B: '世人「盛」愛牡丹',
+              C: '春風又「綠」江南岸',
+              D: '可愛者甚「蕃」'
+            },
+            answer: 'C',
+            explanation: '「不蔓不枝」的「蔓」由名詞轉品為動詞（生出藤蔓）；(C)「綠」原為形容詞，在此轉品為動詞（吹綠了），同為轉品修辭。(A)(B)為副詞，(D)為形容詞。'
+          },
+          {
+            question: '2. 周敦頤以「出淤泥而不染」來讚美蓮花，主要是比喻君子具備何種品格？',
+            options: {
+              A: '隱居山林、不問世事的淡泊態度',
+              B: '處於污濁環境中仍能保持高潔、不同流合污',
+              C: '追求功名利祿與富貴榮華的積極精神',
+              D: '善於交際、廣結善緣的圓融處世之道'
+            },
+            answer: 'B',
+            explanation: '「淤泥」比喻污濁的世俗環境，「不染」則比喻君子潔身自愛、不隨波逐流的節操。'
+          }
+        ]
       }
-    }"""
+    ];
 
-new_load_storage = """    function loadArticlesFromStorage() {
+    let allArticles = [];
+    let currentSubject = 'english';
+    let currentLevel = '國小英文';
+    let currentArticle = null;
+    let activeSentenceIdx = 0;
+    let modalSentenceIdx = 0;
+    let modalWordText = '';
+    let isPlayingAll = false;
+    let latestGeneratedArticle = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkLoginStatus();
+      loadArticlesFromStorage();
+      selectCategory('english', '國小英文');
+    });
+
+    function checkLoginStatus() {
+      try {
+        const saved = localStorage.getItem('yh_user_v16');
+        if (saved) {
+          const user = JSON.parse(saved);
+          if (user && user.email) {
+            document.getElementById('reading-user-badge').innerText = `👤 ${user.email}`;
+            if (user.email.toLowerCase() === ADMIN_EMAIL) {
+              document.getElementById('admin-mode-switch').classList.remove('hidden');
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    function loadArticlesFromStorage() {
       let custom = [];
       let deletedIds = [];
       try {
@@ -122,12 +934,784 @@ new_load_storage = """    function loadArticlesFromStorage() {
       loadArticlesFromStorage();
       selectCategory(currentSubject, currentLevel);
       alert('已還原系統預設範例文章！');
-    }"""
+    }
 
-assert old_load_storage in code, "old_load_storage not found"
-code = code.replace(old_load_storage, new_load_storage, 1)
+    function switchReadingMode(mode) {
+      const studentView = document.getElementById('student-reading-view');
+      const teacherView = document.getElementById('teacher-upload-view');
+      const btnS = document.getElementById('btn-view-student');
+      const btnT = document.getElementById('btn-view-teacher');
 
-with open("reading-v3.html", "w", encoding="utf-8") as f:
-    f.write(code)
+      if (mode === 'teacher') {
+        studentView.classList.add('hidden');
+        teacherView.classList.remove('hidden');
+        btnT.className = 'px-3 py-1 rounded-lg text-xs sm:text-sm font-bold bg-white text-brand-700 shadow';
+        btnS.className = 'px-3 py-1 rounded-lg text-xs sm:text-sm font-bold text-brand-100 hover:text-white';
+      } else {
+        teacherView.classList.add('hidden');
+        studentView.classList.remove('hidden');
+        btnS.className = 'px-3 py-1 rounded-lg text-xs sm:text-sm font-bold bg-white text-brand-700 shadow';
+        btnT.className = 'px-3 py-1 rounded-lg text-xs sm:text-sm font-bold text-brand-100 hover:text-white';
+      }
+    }
 
-print("Updated reading-v3.html with delete article feature successfully.")
+    function selectCategory(subject, level) {
+      stopSpeech();
+      currentSubject = subject;
+      currentLevel = level;
+
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.className = 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200';
+      });
+      const activeBtnMap = {
+        '國小英文': 'cat-en-elem',
+        '國中英文': 'cat-en-junior',
+        '高中英文': 'cat-en-senior',
+        '文言文閱讀': 'cat-zh-classical'
+      };
+      const targetBtn = document.getElementById(activeBtnMap[level]);
+      if (targetBtn) {
+        targetBtn.className = subject === 'chinese'
+          ? 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-amber-600 text-white shadow'
+          : 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-brand-600 text-white shadow';
+      }
+
+      document.getElementById('article-badge').innerText = level;
+
+      const filtered = allArticles.filter(a => a.subject === subject && a.level === level);
+      const selector = document.getElementById('article-selector');
+      selector.innerHTML = '';
+
+      if (filtered.length === 0) {
+        selector.innerHTML = '<option value="">目前此分類尚無文章</option>';
+        return;
+      }
+
+      filtered.forEach(art => {
+        const opt = document.createElement('option');
+        opt.value = art.id;
+        opt.textContent = art.title;
+        selector.appendChild(opt);
+      });
+
+      loadSelectedArticle();
+    }
+
+    function renderTokenizedSentence(sentObj, sentIdx, subject) {
+      const container = document.createElement('span');
+      container.id = `sent_span_${sentIdx}`;
+      container.className = 'sentence-block';
+
+      if (subject === 'english') {
+        // 英文依單字切分，保留標點與空白
+        const parts = sentObj.text.split(/([A-Za-z]+(?:[-'][A-Za-z]+)*)/);
+        parts.forEach(part => {
+          if (/^[A-Za-z]+(?:[-'][A-Za-z]+)*$/.test(part)) {
+            const wSpan = document.createElement('span');
+            wSpan.className = 'word-token';
+            wSpan.innerText = part;
+            wSpan.title = '點擊查看此單字在本段的意思';
+            wSpan.onclick = (e) => {
+              e.stopPropagation();
+              openWordContextModal(part, sentIdx);
+            };
+            container.appendChild(wSpan);
+          } else if (part.length > 0) {
+            container.appendChild(document.createTextNode(part));
+          }
+        });
+      } else {
+        // 中文／文言文逐字可點，依該段落句子語境顯示字義
+        for (const ch of sentObj.text) {
+          if (/[\u4e00-\u9fff]/.test(ch)) {
+            const cSpan = document.createElement('span');
+            cSpan.className = 'word-token';
+            cSpan.innerText = ch;
+            cSpan.title = `點擊查看「${ch}」字在本段的意思`;
+            cSpan.onclick = (e) => {
+              e.stopPropagation();
+              openWordContextModal(ch, sentIdx);
+            };
+            container.appendChild(cSpan);
+          } else {
+            container.appendChild(document.createTextNode(ch));
+          }
+        }
+      }
+
+      // 句末加上「💬 句解」按鈕，點擊直接跳出整句視窗
+      const sentBtn = document.createElement('button');
+      sentBtn.type = 'button';
+      sentBtn.className = 'sentence-btn-trigger';
+      sentBtn.innerText = '💬 句解';
+      sentBtn.title = '點擊跳出整句翻譯與解析視窗';
+      sentBtn.onclick = (e) => {
+        e.stopPropagation();
+        openSentenceModal(sentIdx, true);
+      };
+      container.appendChild(sentBtn);
+
+      return container;
+    }
+
+    function loadSelectedArticle() {
+      stopSpeech();
+      const artId = document.getElementById('article-selector').value;
+      const found = allArticles.find(a => a.id === artId);
+      if (!found) return;
+
+      currentArticle = found;
+      activeSentenceIdx = 0;
+
+      document.getElementById('display-article-title').innerText = found.title;
+
+      const passageBox = document.getElementById('interactive-passage-box');
+      passageBox.innerHTML = '';
+      (found.sentences || []).forEach((s, idx) => {
+        const block = renderTokenizedSentence(s, idx, found.subject);
+        passageBox.appendChild(block);
+      });
+
+      // 全文意思對照區：上方原文、下方翻譯
+      const rawOriginalCombined = (found.sentences || [])
+        .map(s => s.text)
+        .join(found.subject === 'english' ? ' ' : '');
+      document.getElementById('full-original-display').innerText = rawOriginalCombined;
+      document.getElementById('detail-full-translation').innerText = found.fullTranslation || '無全文翻譯資料';
+
+      renderQuizList(found.questions || []);
+    }
+
+    // ==================== 跳出視窗 1：點單字／字詞依該段落顯示意思 ====================
+    function resolveWordContextualMeaning(word, sentIdx) {
+      const sentObj = currentArticle.sentences[sentIdx];
+      const lowerWord = word.toLowerCase();
+
+      // 1. 先比對該句專屬 wordNotes（最貼近該段落語境）
+      if (sentObj && sentObj.wordNotes) {
+        if (sentObj.wordNotes[word]) return sentObj.wordNotes[word];
+        if (sentObj.wordNotes[lowerWord]) return sentObj.wordNotes[lowerWord];
+      }
+
+      // 2. 中文／文言文比對常見字義庫，並結合所在段落說明
+      if (currentArticle.subject === 'chinese') {
+        const lex = CLASSICAL_LEXICON.find(item => item.char === word);
+        if (lex) {
+          return `讀音【${lex.reading}】｜常見義項：${lex.meaning}\n※ 本段語境提示：請代入本句「${sentObj.text}」與白話語譯「${sentObj.translation.replace(/^【白話語譯參考】/, '')}」對照最貼切之詞義（${lex.note}）。`;
+        }
+        return `本段語境中的「${word}」字，請對照本句白話語譯理解：\n「${sentObj.translation.replace(/^【白話語譯參考】/, '')}」`;
+      }
+
+      // 3. 英文比對基礎字義庫並結合該句語境
+      if (ENGLISH_LEXICON[lowerWord]) {
+        return `${ENGLISH_LEXICON[lowerWord]}\n※ 本段句意對照：${sentObj.translation}`;
+      }
+
+      return `本段語境中的「${word}」，請參考整句中文翻譯對照：\n「${sentObj.translation}」`;
+    }
+
+    function openWordContextModal(word, sentIdx) {
+      if (!currentArticle || !currentArticle.sentences[sentIdx]) return;
+      const sentObj = currentArticle.sentences[sentIdx];
+      modalWordText = word;
+
+      highlightSentence(sentIdx);
+
+      document.getElementById('word-modal-token').innerText = currentArticle.subject === 'chinese'
+        ? `「${word}」字（第 ${sentIdx + 1} 句）`
+        : `${word}（第 ${sentIdx + 1} 句）`;
+      document.getElementById('word-modal-meaning').innerText = resolveWordContextualMeaning(word, sentIdx);
+      document.getElementById('word-modal-context').innerHTML = `
+        <div class="font-bold text-slate-900 mb-1">原文：${escapeHtml(sentObj.text)}</div>
+        <div class="text-emerald-800">譯文：${escapeHtml(sentObj.translation.replace(/^【白話語譯參考】/, ''))}</div>
+      `;
+
+      document.getElementById('word-popup-modal').classList.remove('hidden');
+      speakText(word, currentArticle.subject === 'english' ? 'en-US' : 'zh-TW');
+    }
+
+    function speakModalWord() {
+      if (!modalWordText || !currentArticle) return;
+      speakText(modalWordText, currentArticle.subject === 'english' ? 'en-US' : 'zh-TW');
+    }
+
+    function hideWordModal() {
+      document.getElementById('word-popup-modal').classList.add('hidden');
+    }
+
+    function closeWordModal(event) {
+      if (event.target.id === 'word-popup-modal') {
+        hideWordModal();
+      }
+    }
+
+    // ==================== 跳出視窗 2：點句子直接跳出整句翻譯與解析 ====================
+    function highlightSentence(idx) {
+      activeSentenceIdx = idx;
+      document.querySelectorAll('.sentence-block').forEach((el, i) => {
+        if (i === idx) {
+          el.classList.add('sentence-active');
+        } else {
+          el.classList.remove('sentence-active');
+        }
+      });
+    }
+
+    function openSentenceModal(idx, shouldSpeak = false) {
+      if (!currentArticle || !currentArticle.sentences[idx]) return;
+      modalSentenceIdx = idx;
+      highlightSentence(idx);
+
+      const s = currentArticle.sentences[idx];
+      document.getElementById('sent-modal-badge').innerText = `第 ${idx + 1} / ${currentArticle.sentences.length} 句整句解析`;
+      document.getElementById('sent-modal-original').innerText = s.text;
+      document.getElementById('sent-modal-translation').innerText = s.translation || '無翻譯';
+      document.getElementById('sent-modal-grammar').innerText = s.grammar || '無補充解析';
+
+      document.getElementById('sentence-popup-modal').classList.remove('hidden');
+
+      if (shouldSpeak) {
+        speakText(s.text, currentArticle.subject === 'english' ? 'en-US' : 'zh-TW');
+      }
+    }
+
+    function stepModalSentence(delta) {
+      if (!currentArticle) return;
+      const nextIdx = modalSentenceIdx + delta;
+      if (nextIdx >= 0 && nextIdx < currentArticle.sentences.length) {
+        openSentenceModal(nextIdx, true);
+      }
+    }
+
+    function speakModalSentence() {
+      if (!currentArticle || !currentArticle.sentences[modalSentenceIdx]) return;
+      const s = currentArticle.sentences[modalSentenceIdx];
+      speakText(s.text, currentArticle.subject === 'english' ? 'en-US' : 'zh-TW');
+    }
+
+    function hideSentenceModal() {
+      document.getElementById('sentence-popup-modal').classList.add('hidden');
+    }
+
+    function closeSentenceModal(event) {
+      if (event.target.id === 'sentence-popup-modal') {
+        hideSentenceModal();
+      }
+    }
+
+    // 按 ESC 鍵可快速關閉任何跳出視窗
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        hideWordModal();
+        hideSentenceModal();
+      }
+    });
+
+    // ==================== 語音朗讀 ====================
+    function speakText(text, lang = 'en-US', onEndCallback = null) {
+      if (!('speechSynthesis' in window)) {
+        alert('您的瀏覽器不支援語音朗讀功能。');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = lang;
+      utter.rate = parseFloat(document.getElementById('speech-rate').value) || 0.95;
+      if (onEndCallback) {
+        utter.onend = onEndCallback;
+      }
+      window.speechSynthesis.speak(utter);
+    }
+
+    function speakChineseSummary() {
+      if (!currentArticle || !currentArticle.fullTranslation) return;
+      speakText(currentArticle.fullTranslation, 'zh-TW');
+    }
+
+    function playFullPassage() {
+      if (!currentArticle || !currentArticle.sentences.length) return;
+      isPlayingAll = true;
+      const lang = currentArticle.subject === 'english' ? 'en-US' : 'zh-TW';
+
+      function playNext(idx) {
+        if (!isPlayingAll || idx >= currentArticle.sentences.length) {
+          isPlayingAll = false;
+          return;
+        }
+        highlightSentence(idx);
+        speakText(currentArticle.sentences[idx].text, lang, () => {
+          if (isPlayingAll) playNext(idx + 1);
+        });
+      }
+      playNext(activeSentenceIdx);
+    }
+
+    function stopSpeech() {
+      isPlayingAll = false;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    // ==================== 隨堂測驗（點選項直接出現正解及解析） ====================
+    function renderQuizList(questions) {
+      const container = document.getElementById('reading-quiz-list');
+      if (!questions || questions.length === 0) {
+        container.innerHTML = '<div class="text-slate-400 text-sm">本篇文章尚未建立隨堂選擇題。</div>';
+        return;
+      }
+
+      container.innerHTML = questions.map((q, qIdx) => {
+        const optsHtml = ['A', 'B', 'C', 'D'].map(key => {
+          if (!q.options || !q.options[key]) return '';
+          return `
+            <label id="rq_opt_label_${qIdx}_${key}" class="flex items-start gap-3 p-3.5 rounded-2xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors">
+              <input type="radio" name="rq_${qIdx}" value="${key}" onclick="checkReadingAnswer(${qIdx}, '${key}')" class="mt-1.5 text-brand-600 focus:ring-brand-500">
+              <span class="font-medium text-slate-800">(${key}) ${escapeHtml(q.options[key])}</span>
+            </label>
+          `;
+        }).join('');
+
+        return `
+          <div id="rq_card_${qIdx}" class="p-5 sm:p-6 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-3">
+            <div class="text-base sm:text-lg font-bold text-slate-900">${escapeHtml(q.question)}</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">${optsHtml}</div>
+            <div id="rq_feedback_${qIdx}" class="hidden p-4 rounded-2xl text-sm font-semibold mt-2"></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function checkReadingAnswer(qIdx, selectedKey) {
+      const q = currentArticle.questions[qIdx];
+      if (!q) return;
+      const correct = String(q.answer || '').trim().toUpperCase();
+      const fb = document.getElementById(`rq_feedback_${qIdx}`);
+
+      document.querySelectorAll(`input[name="rq_${qIdx}"]`).forEach(r => r.disabled = true);
+
+      // 標示正確選項為綠色框，若答錯也標示所選為紅色框
+      const correctLabel = document.getElementById(`rq_opt_label_${qIdx}_${correct}`);
+      if (correctLabel) {
+        correctLabel.classList.add('bg-emerald-50', 'border-emerald-500', 'ring-1', 'ring-emerald-500');
+      }
+      if (selectedKey !== correct) {
+        const wrongLabel = document.getElementById(`rq_opt_label_${qIdx}_${selectedKey}`);
+        if (wrongLabel) {
+          wrongLabel.classList.add('bg-red-50', 'border-red-400');
+        }
+      }
+
+      if (selectedKey === correct) {
+        fb.className = 'p-4 rounded-2xl text-sm font-semibold mt-2 bg-emerald-50 text-emerald-900 border border-emerald-300';
+        fb.innerHTML = `✅ 答對了！正確答案：(${correct})<div class="font-normal mt-1.5 text-emerald-900">{{解析}} ${escapeHtml(q.explanation || '無提供解析')}</div>`;
+      } else {
+        fb.className = 'p-4 rounded-2xl text-sm font-semibold mt-2 bg-red-50 text-red-900 border border-red-300';
+        fb.innerHTML = `❌ 答錯了！正確答案：(${correct})<div class="font-normal mt-1.5 text-red-900">{{解析}} ${escapeHtml(q.explanation || '無提供解析')}</div>`;
+      }
+      fb.classList.remove('hidden');
+    }
+
+    function resetQuizAnswers() {
+      if (currentArticle) {
+        renderQuizList(currentArticle.questions || []);
+      }
+    }
+
+    // ==================== 老師上傳與自動出題邏輯 ====================
+    async function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusEl = document.getElementById('file-upload-status');
+      statusEl.innerText = `正在讀取檔案：${file.name}...`;
+
+      const titleInput = document.getElementById('upload-title');
+      if (!titleInput.value.trim()) {
+        titleInput.value = file.name.replace(/\.[^/.]+$/, '');
+      }
+
+      try {
+        let extractedText = '';
+        if (file.name.toLowerCase().endsWith('.pdf')) {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            const pageText = content.items.map(item => item.str).join(' ');
+            extractedText += pageText + '\n\n';
+          }
+        } else if (file.name.toLowerCase().endsWith('.docx')) {
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          extractedText = result.value;
+        } else {
+          extractedText = await file.text();
+        }
+
+        document.getElementById('upload-raw-text').value = extractedText.trim();
+        statusEl.innerText = `✅ 已成功讀取「${file.name}」（共 ${extractedText.trim().length} 字）`;
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = '❌ 檔案讀取失敗，請確認檔案未加密或改為直接貼上文字。';
+      }
+    }
+
+    function splitClassicalOrTextSentences(rawText) {
+      const normalized = rawText.replace(/\r\n/g, '\n').trim();
+      const chunks = normalized
+        .split(/(?<=[。！？；;!?])\s*|\n+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+      if (chunks.length > 0) return chunks;
+      return [normalized];
+    }
+
+    function buildClassicalTranslationHint(sent, foundChars) {
+      let hint = sent;
+      const replacements = [
+        ['之', '的'],
+        ['焉', '啊'],
+        ['乎', '嗎'],
+        ['也', '呢'],
+        ['則', '就'],
+        ['故', '所以'],
+        ['孰', '誰'],
+        ['益', '更加']
+      ];
+      replacements.forEach(([k, v]) => {
+        if (foundChars.some(item => item.char === k)) {
+          hint = hint.replaceAll(k, `${k}（${v}）`);
+        }
+      });
+      return `【白話語譯參考】${hint}（請依上下文語氣微調成自然口語）`;
+    }
+
+    function buildSmartReadingPackage(rawText, customTitle, subject, level) {
+      const sentencesRaw = splitClassicalOrTextSentences(rawText);
+      const effectiveSubject = (subject === 'chinese' || /[之乎者也矣焉哉]/.test(rawText)) ? 'chinese' : subject;
+      const effectiveLevel = effectiveSubject === 'chinese' && level !== '文言文閱讀' ? '文言文閱讀' : level;
+      const resolvedTitle = customTitle || (effectiveSubject === 'chinese'
+        ? `文言文精讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`
+        : `閱讀精讀測驗（${sentencesRaw[0].slice(0, 16)}）`);
+
+      const matchedLexicon = CLASSICAL_LEXICON.filter(item => rawText.includes(item.char));
+      const primaryCharObj = matchedLexicon[0] || CLASSICAL_LEXICON[0];
+      const secondaryCharObj = matchedLexicon[1] || CLASSICAL_LEXICON[1];
+
+      const sentences = sentencesRaw.map((sent, idx) => {
+        const sentChars = CLASSICAL_LEXICON.filter(item => sent.includes(item.char));
+        const charNotes = sentChars.map(c => `• 「${c.char}」：在此文脈中可留意「${c.meaning}」（${c.note}）`);
+        if (charNotes.length === 0) {
+          charNotes.push('• 詞義與句法分析：留意關鍵實詞、虛詞搭配與前後句邏輯呼應。');
+        }
+
+        const wordNotes = {};
+        sentChars.forEach(c => {
+          wordNotes[c.char] = `讀音【${c.reading}】｜本段語境可理解為「${c.meaning}」（${c.note}）`;
+        });
+
+        return {
+          text: sent,
+          translation: effectiveSubject === 'chinese'
+            ? buildClassicalTranslationHint(sent, sentChars)
+            : `【第 ${idx + 1} 句句意】${sent}`,
+          grammar: charNotes.join('\n'),
+          wordNotes
+        };
+      });
+
+      const fullTranslation = effectiveSubject === 'chinese'
+        ? sentences.map((s, i) => `(${i + 1}) ${s.translation.replace(/^【白話語譯參考】/, '')}`).join('\n')
+        : sentences.map((s, i) => `(${i + 1}) ${s.translation.replace(/^【第 \d+ 句句意】/, '')}`).join('\n');
+
+      const firstSent = sentences[0]?.text || rawText.slice(0, 40);
+      const midSent = sentences[Math.floor(sentences.length / 2)]?.text || firstSent;
+      const lastSent = sentences[sentences.length - 1]?.text || firstSent;
+
+      const questions = [
+        {
+          question: `1. 【字義辨析】下列各選項「${primaryCharObj.char}」字的意義，何者與原文「${firstSent.slice(0, 18)}」中的「${primaryCharObj.char}」字最相近？`,
+          options: {
+            A: `符合本篇語境之義項：${primaryCharObj.meaning.split('／')[0]}`,
+            B: '完全與本篇無關之生僻字義（語意不通順）',
+            C: '與上下文因果相反之意思',
+            D: '僅限特定方言之誤用詞義'
+          },
+          answer: 'A',
+          explanation: `原文「${firstSent}」中的「${primaryCharObj.char}」字，依上下文脈絡可對應「${primaryCharObj.meaning}」。選項 (A) 貼合文意，故選 (A)。`
+        },
+        {
+          question: `2. 【詞性與字詞運用】關於文中「${secondaryCharObj.char}」字或關鍵詞彙的用法，下列敘述何者正確？`,
+          options: {
+            A: `需結合前後文語境判斷其詞性與作用（${secondaryCharObj.note}）`,
+            B: '在任何文言或閱讀篇章中都只有單一固定意思，不需看上下文',
+            C: '必然為否定副詞，表示完全相反的意思',
+            D: '屬於贅字，刪除後不影響句意也不影響語法結構'
+          },
+          answer: 'A',
+          explanation: `大考字詞題重在「依文脈定字義」。「${secondaryCharObj.char}」字的常見用法包含「${secondaryCharObj.meaning}」，${secondaryCharObj.note}，因此選 (A)。`
+        },
+        {
+          question: `3. 【文意理解】根據本文內容，下列哪一項最符合文章所傳達的核心文意？`,
+          options: {
+            A: `文章圍繞「${resolvedTitle}」展開，並透過「${midSent.slice(0, 22)}」等語句表達相關觀點`,
+            B: '全文旨在否定前文所有主張，並提出毫無關聯的結論',
+            C: '文章僅為單純時間流水帳，未呈現任何觀點或情境',
+            D: '文中明確指出所有敘述皆屬虛構且與現實完全無關'
+          },
+          answer: 'A',
+          explanation: `檢視全文脈絡，「${midSent}」呼應文章主軸，選項 (A) 符合文意；(B)(C)(D) 皆與文意不符或過度武斷。`
+        },
+        {
+          question: `4. 【句意推論】從文末「${lastSent.slice(0, 24)}」的敘述推論，作者最想提醒讀者什麼？`,
+          options: {
+            A: '在理解與應用時，應掌握脈絡與核心關鍵，避免斷章取義',
+            B: '只要記住文章最後幾個字，就不需要理解整段內容',
+            C: '文章結尾與開頭完全矛盾，作者自我否定',
+            D: '此句純屬修辭裝飾，與全文主旨毫無關聯'
+          },
+          answer: 'A',
+          explanation: `大考推論題需依據文本線索作合理推導，由「${lastSent}」可推知應結合全文脈絡理解，不可斷章取義，故選 (A)。`
+        },
+        {
+          question: `5. 【綜合判讀】下列關於本篇文章的敘述，何者最為恰當？（仿大考綜合理解題）`,
+          options: {
+            A: '各句之間存在語意連貫與層次推進，解題時應對照原文字句核實細節',
+            B: '選項中只要出現與原文相同的字眼，就一定是正確答案',
+            C: '遇到不懂的詞彙時，應直接跳過整句不予理會',
+            D: '文章內容與題目選項無須比對，憑直覺任選一項即可'
+          },
+          answer: 'A',
+          explanation: `大考常見干擾選項會「剪貼原文關鍵字但扭曲原意」，因此必須對照上下文核實文意，選項 (A) 最為恰當。`
+        }
+      ];
+
+      return {
+        id: 'custom_' + Date.now(),
+        subject: effectiveSubject,
+        level: effectiveLevel,
+        title: resolvedTitle,
+        sentences,
+        fullTranslation,
+        questions
+      };
+    }
+
+    function generateAllReadingMaterials() {
+      const rawText = document.getElementById('upload-raw-text').value.trim();
+      const title = document.getElementById('upload-title').value.trim();
+      const [subject, level] = document.getElementById('upload-category').value.split('|');
+
+      if (!rawText) {
+        alert('請先貼上文言文或文章內容（或上傳檔案）！');
+        return;
+      }
+
+      latestGeneratedArticle = buildSmartReadingPackage(rawText, title, subject, level);
+      document.getElementById('upload-title').value = latestGeneratedArticle.title;
+
+      const statusBox = document.getElementById('ai-gen-status');
+      statusBox.classList.remove('hidden');
+      statusBox.innerText = `✅ 已自動產生完整內容：共 ${latestGeneratedArticle.sentences.length} 句「整句跳出視窗解釋」、1 份「上下對照全文意思」與 ${latestGeneratedArticle.questions.length} 題「大考字義＋文意選擇題與解析」！`;
+
+      renderTeacherEditors(latestGeneratedArticle);
+      document.getElementById('generated-preview-box').classList.remove('hidden');
+    }
+
+    function renderTeacherEditors(article) {
+      document.getElementById('edit-full-translation').value = article.fullTranslation || '';
+
+      const sentContainer = document.getElementById('edit-sentences-container');
+      sentContainer.innerHTML = (article.sentences || []).map((s, idx) => `
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 sentence-editor-card">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-brand-700">第 ${idx + 1} 句解釋</span>
+            <button onclick="removeSentenceEditorRow(${idx})" class="text-xs text-red-600 hover:underline font-bold">刪除本句</button>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">原文句子</label>
+            <input type="text" class="sent-text w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white font-bold" value="${escapeAttr(s.text)}">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-emerald-700 mb-1">整句翻譯／白話語譯</label>
+            <input type="text" class="sent-trans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(s.translation)}">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-blue-700 mb-1">補充字詞／句法解析</label>
+            <textarea rows="2" class="sent-grammar w-full border border-blue-300 rounded-xl px-3 py-2 text-sm bg-white">${escapeHtml(s.grammar)}</textarea>
+          </div>
+        </div>
+      `).join('');
+
+      const qContainer = document.getElementById('edit-questions-container');
+      qContainer.innerHTML = (article.questions || []).map((q, qIdx) => `
+        <div class="p-5 rounded-2xl bg-amber-50/40 border border-amber-200 space-y-3 question-editor-card">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-black text-slate-800">選擇題 #${qIdx + 1}</span>
+            <button onclick="removeQuestionEditorRow(${qIdx})" class="text-xs text-red-600 hover:underline font-bold">刪除本題</button>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">題目敘述</label>
+            <input type="text" class="q-stem w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white font-bold" value="${escapeAttr(q.question)}">
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">選項 (A)</label>
+              <input type="text" class="q-opt-a w-full border border-slate-300 rounded-xl px-3 py-1.5 text-sm bg-white" value="${escapeAttr(q.options?.A || '')}">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">選項 (B)</label>
+              <input type="text" class="q-opt-b w-full border border-slate-300 rounded-xl px-3 py-1.5 text-sm bg-white" value="${escapeAttr(q.options?.B || '')}">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">選項 (C)</label>
+              <input type="text" class="q-opt-c w-full border border-slate-300 rounded-xl px-3 py-1.5 text-sm bg-white" value="${escapeAttr(q.options?.C || '')}">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">選項 (D)</label>
+              <input type="text" class="q-opt-d w-full border border-slate-300 rounded-xl px-3 py-1.5 text-sm bg-white" value="${escapeAttr(q.options?.D || '')}">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block text-xs font-bold text-emerald-700 mb-1">正確答案</label>
+              <select class="q-ans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white font-bold">
+                <option value="A" ${q.answer === 'A' ? 'selected' : ''}>A</option>
+                <option value="B" ${q.answer === 'B' ? 'selected' : ''}>B</option>
+                <option value="C" ${q.answer === 'C' ? 'selected' : ''}>C</option>
+                <option value="D" ${q.answer === 'D' ? 'selected' : ''}>D</option>
+              </select>
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-xs font-bold text-blue-700 mb-1">題目解析</label>
+              <input type="text" class="q-exp w-full border border-blue-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(q.explanation || '')}">
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function collectArticleFromEditors() {
+      const title = document.getElementById('upload-title').value.trim() || latestGeneratedArticle?.title || '未命名閱讀文章';
+      const [subject, level] = document.getElementById('upload-category').value.split('|');
+
+      const sentences = [...document.querySelectorAll('.sentence-editor-card')].map((card, i) => ({
+        text: card.querySelector('.sent-text').value.trim(),
+        translation: card.querySelector('.sent-trans').value.trim(),
+        grammar: card.querySelector('.sent-grammar').value.trim(),
+        wordNotes: latestGeneratedArticle?.sentences?.[i]?.wordNotes || {}
+      })).filter(s => s.text.length > 0);
+
+      const questions = [...document.querySelectorAll('.question-editor-card')].map(card => ({
+        question: card.querySelector('.q-stem').value.trim(),
+        options: {
+          A: card.querySelector('.q-opt-a').value.trim(),
+          B: card.querySelector('.q-opt-b').value.trim(),
+          C: card.querySelector('.q-opt-c').value.trim(),
+          D: card.querySelector('.q-opt-d').value.trim()
+        },
+        answer: card.querySelector('.q-ans').value,
+        explanation: card.querySelector('.q-exp').value.trim()
+      })).filter(q => q.question.length > 0);
+
+      return {
+        id: latestGeneratedArticle?.id || ('custom_' + Date.now()),
+        subject,
+        level,
+        title,
+        sentences,
+        fullTranslation: document.getElementById('edit-full-translation').value.trim(),
+        questions
+      };
+    }
+
+    function addSentenceEditorRow() {
+      const current = collectArticleFromEditors();
+      current.sentences.push({
+        text: '',
+        translation: '',
+        grammar: '',
+        wordNotes: {}
+      });
+      latestGeneratedArticle = current;
+      renderTeacherEditors(latestGeneratedArticle);
+    }
+
+    function removeSentenceEditorRow(idx) {
+      const current = collectArticleFromEditors();
+      current.sentences.splice(idx, 1);
+      latestGeneratedArticle = current;
+      renderTeacherEditors(latestGeneratedArticle);
+    }
+
+    function addQuestionEditorRow() {
+      const current = collectArticleFromEditors();
+      const nextNum = current.questions.length + 1;
+      current.questions.push({
+        question: `${nextNum}. 請輸入題目內容`,
+        options: { A: '', B: '', C: '', D: '' },
+        answer: 'A',
+        explanation: ''
+      });
+      latestGeneratedArticle = current;
+      renderTeacherEditors(latestGeneratedArticle);
+    }
+
+    function removeQuestionEditorRow(idx) {
+      const current = collectArticleFromEditors();
+      current.questions.splice(idx, 1);
+      latestGeneratedArticle = current;
+      renderTeacherEditors(latestGeneratedArticle);
+    }
+
+    function publishGeneratedArticle() {
+      const articleToPublish = collectArticleFromEditors();
+      if (!articleToPublish.sentences || articleToPublish.sentences.length === 0) {
+        alert('至少需要保留一句文章內容才能發布！');
+        return;
+      }
+      if (!articleToPublish.questions || articleToPublish.questions.length < 5) {
+        alert('選擇題至少需要 5 題才能發布！目前共有 ' + (articleToPublish.questions?.length || 0) + ' 題。');
+        return;
+      }
+      latestGeneratedArticle = articleToPublish;
+
+      const existing = JSON.parse(localStorage.getItem(STORAGE_KEY_ARTICLES) || '[]');
+      existing.push(latestGeneratedArticle);
+      localStorage.setItem(STORAGE_KEY_ARTICLES, JSON.stringify(existing));
+
+      loadArticlesFromStorage();
+      switchReadingMode('student');
+      selectCategory(latestGeneratedArticle.subject, latestGeneratedArticle.level);
+      document.getElementById('article-selector').value = latestGeneratedArticle.id;
+      loadSelectedArticle();
+      alert('已成功發布！現在您看到的就是學生端實際操作畫面。');
+    }
+
+    function copyArticleJsonForBackup() {
+      const articleToCopy = collectArticleFromEditors();
+      navigator.clipboard.writeText(JSON.stringify(articleToCopy, null, 2))
+        .then(() => alert('已複製文章完整資料！'))
+        .catch(() => alert('複製失敗，請手動複製。'));
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+  </script>
+</body>
+</html>
