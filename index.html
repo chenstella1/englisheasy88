@@ -100,13 +100,16 @@
 
   <!-- 頂部導覽列 -->
   <header class="bg-brand-600 text-white shadow-md no-print">
-    <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
         <span class="text-3xl font-black tracking-wider drop-shadow-sm">優華數位刷題網</span>
       </div>
-      <div class="flex items-center gap-4">
+      <div class="flex flex-wrap items-center gap-4">
         <span id="user-status" class="text-sm bg-brand-700 px-3.5 py-1.5 rounded-full font-medium">未登入</span>
         <button id="nav-home-btn" onclick="switchTab('quiz')" class="text-sm font-bold hover:underline">主頁測驗</button>
+        <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1 rounded-full shadow-sm transition-colors">
+          互動閱讀練習
+        </a>
         <button id="nav-vocab-btn" onclick="switchTab('vocab-bank')" class="text-sm font-bold hover:underline">我的單字庫 <span id="vocab-count-badge" class="bg-amber-400 text-slate-900 px-1.5 py-0.2 rounded-full text-xs">0</span></button>
         <button onclick="logout()" class="text-sm text-brand-100 hover:text-white underline">登出</button>
       </div>
@@ -118,14 +121,30 @@
 
     <!-- 管理者介面 (Admin Dashboard) -->
     <div id="tab-admin" class="hidden space-y-6">
-      <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3">
-        <div class="text-4xl">📊</div>
-        <h2 class="text-xl font-bold text-slate-800">管理者雲端成績總覽</h2>
-        <p class="text-sm text-slate-500">學生的所有刷題紀錄已自動連結至您的 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
-        <div class="pt-2">
-          <a href="https://docs.google.com/spreadsheets/d/1RkmaR4D_JgSlDirq6ayIKILnbrIKGqLfHasZu0TOdNs/edit?gid=0#gid=0" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
-            📂 直接打開 Google 成績試算表
-          </a>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3">
+          <div class="text-4xl">📊</div>
+          <h2 class="text-xl font-bold text-slate-800">管理者雲端成績總覽</h2>
+          <p class="text-sm text-slate-500">學生的所有刷題紀錄已自動連結至您的 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
+          <div class="pt-2">
+            <a href="https://docs.google.com/spreadsheets/d/1RkmaR4D_JgSlDirq6ayIKILnbrIKGqLfHasZu0TOdNs/edit?gid=0#gid=0" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
+              📂 直接打開 Google 成績試算表
+            </a>
+          </div>
+        </div>
+
+        <!-- 互動閱讀練習管理介面卡片 -->
+        <div class="bg-white p-7 rounded-3xl shadow-sm border-2 border-amber-300 text-center space-y-3 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="text-4xl">📘</div>
+            <h2 class="text-xl font-bold text-slate-800">互動閱讀練習管理介面</h2>
+            <p class="text-sm text-slate-500">上傳 PDF、Word (.docx) 或 JPG/PNG 圖片辨識，快速生成點字句查小字典、上原文下翻譯與自動選擇題練習頁。</p>
+          </div>
+          <div class="pt-2 flex flex-wrap justify-center gap-2">
+            <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
+              🚀 開啟互動閱讀練習管理介面
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -203,10 +222,15 @@
 
       <!-- 條件設定面板 -->
       <section class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 no-print">
-        <h2 class="text-lg font-bold text-slate-800 mb-5 border-l-4 border-brand-500 pl-3 flex items-center justify-between">
-          <span>題目選擇與過濾條件</span>
-          <button onclick="loadQuestions()" class="text-sm font-normal text-brand-600 hover:underline">🔄 重新同步 Google Sheet 題庫</button>
-        </h2>
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <h2 class="text-lg font-bold text-slate-800 border-l-4 border-brand-500 pl-3 flex items-center gap-3">
+            <span>題目選擇與過濾條件</span>
+            <button onclick="loadQuestions()" class="text-sm font-normal text-brand-600 hover:underline">🔄 重新同步 Google Sheet 題庫</button>
+          </h2>
+          <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3.5 py-1.5 rounded-xl transition-colors">
+            📘 互動閱讀練習
+          </a>
+        </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
           <div id="subject-filter-container" class="md:col-span-12 border-b border-slate-100 pb-4 hidden">
@@ -248,6 +272,9 @@
           <button onclick="startQuiz('print')" class="bg-slate-800 hover:bg-slate-900 text-white text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
             🖨️ 生成可列印試卷及答案解析 (列印/Word/JPG)
           </button>
+          <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
+            📘 互動閱讀練習
+          </a>
         </div>
       </section>
 
@@ -671,7 +698,7 @@
 
     let currentUser = null;
     let rawQuestions = [];
-    let questionUnits = []; // 1 個題組（閱讀或克漏字，含文章與所有子題）皆算 1 題（unitCount = 1）
+    let questionUnits = [];
     let wrongQuestions = [];
     let vocabBank = [];
     let userLogs = [];
@@ -1348,7 +1375,6 @@
       location.reload();
     }
 
-    // 判斷是否為克漏字／閱讀文章本體（含 ___1___ 等空格或無 A-D 選項的長文/標題列）
     function isPassageRow(q) {
       const text = String(q?.questionText || '').trim();
       const hasBlankPattern = /_{2,}\s*\d+\s*_{2,}|【\s*\d+\s*】|\(\s*\d+\s*\)\s*_{2,}/.test(text);
@@ -1360,7 +1386,6 @@
       return false;
     }
 
-    // 擷取子題的格號／題號（如「請選出第 (1) 格最適合的答案：」-> 1）
     function extractSubQuestionNumber(q, fallbackOrder = Number.MAX_SAFE_INTEGER) {
       const text = String(q?.questionText || '').trim();
       const id = String(q?.id || '').trim();
@@ -1392,14 +1417,12 @@
       return 'reading_group';
     }
 
-    // 建立題組單位：1 個題組（含文章與所有子題）固定算 1 題（unitCount = 1），子題嚴格依序排列
     function buildQuestionUnits(questions) {
       const passageById = new Map();
       const childrenByParentId = new Map();
       const consumedIds = new Set();
       const units = [];
 
-      // 第一步：處理明確有「主編號-子編號」（如 798-1、798_1）的題組
       questions.forEach((q, rowIndex) => {
         const cleanId = String(q.id || '').trim();
         const dashMatch = cleanId.match(/^(.+?)[-_](\d+)$/);
@@ -1421,7 +1444,6 @@
 
       const parentIdsWithDash = new Set(childrenByParentId.keys());
 
-      // 第二步：依原始試算表列順序掃描，把「文章列 + 緊隨的同類子題」打包成 1 個題組（算 1 題）
       let i = 0;
       while (i < questions.length) {
         const q = questions[i];
@@ -1431,7 +1453,6 @@
           continue;
         }
 
-        // 情況 A：主編號底下有 dash 子題（例如 798 與 798-1, 798-2...）
         if (parentIdsWithDash.has(cleanId)) {
           const childEntries = childrenByParentId.get(cleanId) || [];
           childEntries.sort(compareSubQuestionOrder);
@@ -1445,7 +1466,7 @@
           const groupKind = detectGroupKind(q, firstSub, q.unit || firstSub.unit || '');
           units.push({
             unitType: groupKind,
-            unitCount: 1, // 1 個題組算 1 題
+            unitCount: 1,
             id: cleanId,
             subject: q.subject || firstSub.subject || '',
             grade: q.grade || firstSub.grade || '',
@@ -1457,7 +1478,6 @@
           continue;
         }
 
-        // 情況 B：文章／克漏字列（例如 SEA GLASS ... ___1___ ... ___10___），後面跟著「第 (1) 格…」、「第 (9) 格…」等子題
         if (isPassageRow(q)) {
           const groupSubs = [];
           let j = i + 1;
@@ -1496,7 +1516,7 @@
 
           units.push({
             unitType: groupKind,
-            unitCount: 1, // 1 個題組（含文章與全部子題）算 1 題
+            unitCount: 1,
             id: cleanId,
             subject: q.subject || firstSub.subject || '',
             grade: q.grade || firstSub.grade || '',
@@ -1509,11 +1529,10 @@
           continue;
         }
 
-        // 情況 C：一般單題
         consumedIds.add(cleanId);
         units.push({
           unitType: 'single',
-          unitCount: 1, // 1 題單題算 1 題
+          unitCount: 1,
           id: cleanId,
           subject: q.subject || '',
           grade: q.grade || '',
@@ -1523,7 +1542,6 @@
         i++;
       }
 
-      // 處理沒有對應主列但有 dash 子題的孤兒題組
       childrenByParentId.forEach((childrenList, parentId) => {
         if (!passageById.has(parentId)) {
           childrenList.sort(compareSubQuestionOrder);
@@ -1536,7 +1554,7 @@
             const groupKind = detectGroupKind(firstSub, firstSub, firstSub.unit || '');
             units.push({
               unitType: groupKind,
-              unitCount: 1, // 1 個題組算 1 題
+              unitCount: 1,
               id: parentId,
               subject: firstSub.subject || '',
               grade: firstSub.grade || '',
@@ -1591,7 +1609,7 @@
 
           const answer = cols[12] || '';
           const explanation = cols[13] || '';
-          const subject = cols[14] || ''; // O 欄：科目
+          const subject = cols[14] || '';
 
           if (questionText) {
             rawQuestions.push({
@@ -1758,7 +1776,6 @@
       for (const unitItem of shuffled) {
         const weight = Number(unitItem.unitCount) || 1;
         if (accumulatedQuestionCount + weight <= targetUnitCount || selectedUnitsList.length === 0) {
-          // 子題保持嚴格排序（1, 2, 3...），不打亂
           const sortedSubs = Array.isArray(unitItem.subQuestions)
             ? [...unitItem.subQuestions].sort((a, b) => extractSubQuestionNumber(a) - extractSubQuestionNumber(b))
             : [];
