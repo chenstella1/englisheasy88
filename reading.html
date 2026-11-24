@@ -154,22 +154,22 @@
       <div id="interactive-passage-box" class="text-lg sm:text-xl leading-loose text-slate-800 space-y-3 select-text"></div>
     </section>
 
-    <!-- 3. 全文意思對照區（上方原文、下方白話翻譯；國文白話文則翻譯區保持空白） -->
+    <!-- 3. 全文原文與翻譯區（僅文言文顯示下方系統白話翻譯；中、英文不顯示翻譯區） -->
     <section class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-5">
       <div class="border-b border-slate-100 pb-3">
-        <h3 class="text-xl font-black text-slate-800">📄 全文意思對照（上：原文／下：白話翻譯）</h3>
-        <p id="translation-section-hint" class="text-xs text-slate-500 mt-0.5">上方為完整原文，下方為白話翻譯（國文白話文無須翻譯，下方翻譯區維持空白）。</p>
+        <h3 class="text-xl font-black text-slate-800">📄 全文原文對照</h3>
+        <p id="translation-section-hint" class="text-xs text-slate-500 mt-0.5">文言文閱讀將自動顯示系統產生的白話翻譯；白話文與英文直接閱讀原文與作答選擇題。</p>
       </div>
 
-      <!-- 上方：原文 -->
+      <!-- 原文 -->
       <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-        <div class="text-xs font-black text-slate-500 tracking-wider">【上方｜原文】</div>
+        <div class="text-xs font-black text-slate-500 tracking-wider">【文章原文】</div>
         <div id="full-original-display" class="text-base sm:text-lg text-slate-900 leading-loose whitespace-pre-line font-medium"></div>
       </div>
 
-      <!-- 下方：白話翻譯 -->
-      <div class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-        <div class="text-xs font-black text-emerald-700 tracking-wider">【下方｜白話翻譯】</div>
+      <!-- 文言文專用：系統整篇白話翻譯 -->
+      <div id="student-translation-box" class="hidden p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+        <div class="text-xs font-black text-emerald-700 tracking-wider">【文言文整篇白話翻譯】</div>
         <div id="detail-full-translation" class="text-base sm:text-lg text-slate-800 leading-loose whitespace-pre-line min-h-[2.5rem]"></div>
       </div>
     </section>
@@ -250,8 +250,8 @@
     <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-6">
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
         <div>
-          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 老師閱讀出題工作台（上傳 PDF / Word 或貼上文章自動出題）</h2>
-          <p class="text-sm text-slate-500 mt-1">支援「文言文、英文（自動產生白話翻譯）」與「國文白話文（翻譯區自動留白）」，並自動產生至少 5 題大考風格選擇題與詳解。</p>
+          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 管理者閱讀出題與建題工作台</h2>
+          <p class="text-sm text-slate-500 mt-1">中、英文由管理者直接編好文章與選擇題（含選項、答案與解析）；若選擇「文言文閱讀」，系統會自動幫忙產生逐句翻譯與整篇白話翻譯。</p>
         </div>
       </div>
 
@@ -295,7 +295,7 @@
       <!-- 一鍵生成按鈕 -->
       <div class="pt-2 flex flex-wrap gap-3">
         <button onclick="generateAllReadingMaterials()" id="btn-ai-generate" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg text-base flex items-center gap-2">
-          ✨ 一鍵自動出題與解析（至少 5 題選擇題）
+          ✨ 載入文章與題目編輯區（文言文自動產出逐句＆整篇翻譯）
         </button>
       </div>
 
@@ -330,17 +330,17 @@
           </div>
         </div>
 
-        <!-- 全文白話翻譯編輯區（國文白話文預設為空白） -->
-        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-          <label class="block text-sm font-black text-brand-700">📄 全文白話翻譯（文言文／英文有白話翻譯；國文白話文保持空白）</label>
-          <textarea id="edit-full-translation" rows="4" placeholder="（國文白話文此欄保持空白即可）" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
+        <!-- 文言文整篇白話翻譯編輯區（僅文言文閱讀時顯示） -->
+        <div id="teacher-full-translation-section" class="hidden p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+          <label class="block text-sm font-black text-brand-700">📄 文言文整篇白話翻譯（系統自動產生，可微調）</label>
+          <textarea id="edit-full-translation" rows="4" placeholder="系統將自動產生整篇白話翻譯" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
         </div>
 
-        <!-- 逐句解析編輯區（國文白話文時自動隱藏） -->
-        <div id="teacher-sentences-section" class="space-y-3">
+        <!-- 逐句翻譯明細（僅文言文閱讀時由系統自動產生並顯示） -->
+        <div id="teacher-sentences-section" class="hidden space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="text-base font-black text-slate-800">🔍 逐句解釋明細（學生點句尾「💬 句解」時跳出顯示）</h4>
-            <button onclick="addSentenceEditorRow()" class="text-xs font-bold bg-brand-100 hover:bg-brand-200 text-brand-800 px-3 py-1.5 rounded-xl">＋ 新增一句解釋</button>
+            <h4 class="text-base font-black text-slate-800">📜 文言文逐句系統翻譯（可微調）</h4>
+            <button onclick="addSentenceEditorRow()" class="text-xs font-bold bg-brand-100 hover:bg-brand-200 text-brand-800 px-3 py-1.5 rounded-xl">＋ 新增一句翻譯</button>
           </div>
           <div id="edit-sentences-container" class="space-y-4"></div>
         </div>
@@ -1084,7 +1084,7 @@
         }
       }
 
-      if (subject !== 'chinese_modern') {
+      if (subject === 'chinese') {
         const sentBtn = document.createElement('button');
         sentBtn.type = 'button';
         sentBtn.className = 'sentence-btn-trigger';
@@ -1123,16 +1123,23 @@
         .join(found.subject === 'english' ? ' ' : '');
       document.getElementById('full-original-display').innerText = rawOriginalCombined;
 
-      const isModernChinese = found.subject === 'chinese_modern' || found.level === '白話文閱讀';
+      const isClassical = found.subject === 'chinese' || found.level === '文言文閱讀';
       const hintEl = document.getElementById('passage-interaction-hint');
+      const transBoxEl = document.getElementById('student-translation-box');
       if (hintEl) {
-        hintEl.innerHTML = isModernChinese
-          ? '💡 <span class="font-bold text-emerald-700">點任一字詞</span>：依該段上下文顯示詞義與語境說明。'
-          : '💡 <span class="font-bold text-emerald-700">點任一單字／字詞</span>：依該段上下文顯示字義；<span class="font-bold text-amber-700">點句尾「💬 句解」</span>：跳出整句翻譯與解析視窗！';
+        hintEl.innerHTML = isClassical
+          ? '💡 <span class="font-bold text-emerald-700">點任一字詞</span>：依該段上下文顯示字義；<span class="font-bold text-amber-700">點句尾「💬 句解」</span>：查看系統逐句翻譯！'
+          : '💡 <span class="font-bold text-emerald-700">點任一單字／字詞</span>：依該段上下文顯示字義，並於下方作答選擇題。';
       }
-      document.getElementById('detail-full-translation').innerText = isModernChinese
-        ? ''
-        : (found.fullTranslation || '');
+      if (transBoxEl) {
+        if (isClassical) {
+          transBoxEl.classList.remove('hidden');
+          document.getElementById('detail-full-translation').innerText = found.fullTranslation || '';
+        } else {
+          transBoxEl.classList.add('hidden');
+          document.getElementById('detail-full-translation').innerText = '';
+        }
+      }
 
       renderQuizList(found.questions || []);
     }
@@ -1403,24 +1410,22 @@
       const sentencesRaw = splitClassicalOrTextSentences(rawText);
       const isModernChinese = subject === 'chinese_modern' || level === '白話文閱讀';
       const isEnglish = subject === 'english';
+      const isClassical = !isModernChinese && !isEnglish;
+
       const effectiveSubject = isModernChinese ? 'chinese_modern' : (isEnglish ? 'english' : 'chinese');
       const effectiveLevel = level || (isModernChinese ? '白話文閱讀' : (isEnglish ? '國中英文' : '文言文閱讀'));
 
       const resolvedTitle = customTitle || (isModernChinese
-        ? `白話文精讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`
+        ? `白話文閱讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`
         : isEnglish
-          ? `英文閱讀測驗（${sentencesRaw[0].slice(0, 18)}）`
-          : `文言文精讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`);
+          ? `英文閱讀測驗（${sentencesRaw[0].slice(0, 20)}）`
+          : `文言文閱讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`);
 
-      const matchedLexicon = CLASSICAL_LEXICON.filter(item => rawText.includes(item.char));
-      const primaryCharObj = matchedLexicon[0] || CLASSICAL_LEXICON[0];
-      const secondaryCharObj = matchedLexicon[1] || CLASSICAL_LEXICON[1];
-
-      const sentences = sentencesRaw.map((sent, idx) => {
+      const sentences = sentencesRaw.map((sent) => {
         const sentChars = CLASSICAL_LEXICON.filter(item => sent.includes(item.char));
         const charNotes = sentChars.map(c => `• 「${c.char}」：在此文脈中可留意「${c.meaning}」（${c.note}）`);
         if (charNotes.length === 0) {
-          charNotes.push('• 句意與脈絡分析：留意關鍵詞彙搭配與前後句邏輯呼應。');
+          charNotes.push('• 句意脈絡：請結合前後句語意理解。');
         }
 
         const wordNotes = {};
@@ -1438,169 +1443,29 @@
           });
         }
 
-        // 文言文與英文皆產生白話翻譯；國文白話文則翻譯欄保持空白
-        let sentTranslation = '';
-        if (effectiveSubject === 'chinese') {
-          sentTranslation = buildClassicalPlainTranslation(sent, sentChars);
-        } else if (effectiveSubject === 'english') {
-          sentTranslation = buildEnglishPlainTranslation(sent);
-        } else {
-          sentTranslation = '';
-        }
+        // 僅文言文由系統產生逐句翻譯；中、英文皆不產出翻譯
+        const sentTranslation = isClassical ? buildClassicalPlainTranslation(sent, sentChars) : '';
 
         return {
           text: sent,
           translation: sentTranslation,
-          grammar: charNotes.join('\n'),
+          grammar: isClassical ? charNotes.join('\n') : '',
           wordNotes
         };
       });
 
-      // 全文白話翻譯：文言文／英文有內容；國文白話文直接維持空白 ''
-      let fullTranslation = '';
-      if (effectiveSubject === 'chinese') {
-        fullTranslation = sentences.map((s, i) => `(${i + 1}) ${s.translation}`).join('\n');
-      } else if (effectiveSubject === 'english') {
-        fullTranslation = sentences.map((s, i) => `(${i + 1}) ${s.translation}`).join('\n');
-      } else {
-        fullTranslation = '';
-      }
+      // 僅文言文由系統產生整篇白話翻譯；中、英文皆為空
+      const fullTranslation = isClassical
+        ? sentences.map((s, i) => `(${i + 1}) ${s.translation}`).join('\n')
+        : '';
 
-      const firstSent = sentences[0]?.text || rawText.slice(0, 40);
-      const midSent = sentences[Math.floor(sentences.length / 2)]?.text || firstSent;
-      const lastSent = sentences[sentences.length - 1]?.text || firstSent;
-
-      const questions = isEnglish ? [
-        {
-          question: `1. What is the main idea of "${resolvedTitle}"?`,
-          options: {
-            A: `It discusses key details starting from "${firstSent.slice(0, 32)}..."`,
-            B: 'It lists unrelated historical dates without any explanation.',
-            C: 'It argues against reading any books or articles.',
-            D: 'It is a recipe for cooking traditional food.'
-          },
-          answer: 'A',
-          explanation: `依據首句「${firstSent}」與全文脈絡，文章核心圍繞該主題展開，故選 (A)。`
-        },
-        {
-          question: `2. According to the middle part of the passage, which statement is true?`,
-          options: {
-            A: `The passage mentions "${midSent.slice(0, 36)}..." to support its point.`,
-            B: 'The author states that the topic has no connection to daily life.',
-            C: 'All examples in the text are described as completely false.',
-            D: 'The passage ends without mentioning any conclusion.'
-          },
-          answer: 'A',
-          explanation: `文中明確提到「${midSent}」，與選項 (A) 敘述相符。`
-        },
-        {
-          question: `3. What can be inferred from the last sentence of the passage?`,
-          options: {
-            A: 'Understanding the whole context helps readers grasp the author’s message.',
-            B: 'Readers should ignore the ending of every paragraph.',
-            C: 'The final sentence contradicts everything written earlier.',
-            D: 'No further thought is needed after reading the first word.'
-          },
-          answer: 'A',
-          explanation: `由末句「${lastSent}」可推知需結合上下文脈絡理解作者用意，故選 (A)。`
-        },
-        {
-          question: `4. How are the sentences in this passage organized?`,
-          options: {
-            A: 'They connect logically from the opening idea to the closing thought.',
-            B: 'They are arranged in completely random order.',
-            C: 'Each sentence discusses an unrelated topic.',
-            D: 'Only the title carries meaning while the text is filler.'
-          },
-          answer: 'A',
-          explanation: '全篇從開頭引入主題到結尾收束觀點，語意連貫，故選 (A)。'
-        },
-        {
-          question: `5. Which reading strategy is best when answering questions about this text?`,
-          options: {
-            A: 'Check the exact sentence context before choosing an option.',
-            B: 'Pick any option that repeats a single word without checking meaning.',
-            C: 'Skip reading the passage and guess randomly.',
-            D: 'Assume the opposite of what the passage directly states.'
-          },
-          answer: 'A',
-          explanation: '閱讀測驗作答時必須回到原文對應段落核對上下文語意，故選 (A)。'
-        }
-      ] : [
-        {
-          question: isModernChinese
-            ? `1. 【詞語語境】關於文中「${firstSent.slice(0, 18)}」這句話的表達方式，下列敘述何者最恰當？`
-            : `1. 【字義辨析】下列各選項「${primaryCharObj.char}」字的意義，何者與原文「${firstSent.slice(0, 18)}」中的「${primaryCharObj.char}」字最相近？`,
-          options: isModernChinese ? {
-            A: '作者透過具體敘述點出文章開端的核心情境與關注焦點',
-            B: '此句與全文主旨毫無關聯，屬於誤植的段落',
-            C: '文中明確否定所有經驗與觀察的價值',
-            D: '僅在說明時間順序，未傳達任何感受或想法'
-          } : {
-            A: `符合本篇語境之義項：${primaryCharObj.meaning.split('／')[0]}`,
-            B: '完全與本篇無關之生僻字義（語意不通順）',
-            C: '與上下文因果相反之意思',
-            D: '僅限特定方言之誤用詞義'
-          },
-          answer: 'A',
-          explanation: isModernChinese
-            ? `首句「${firstSent}」開啟全文脈絡並點出重點，選項 (A) 最貼切。`
-            : `原文「${firstSent}」中的「${primaryCharObj.char}」字，依上下文脈絡可對應「${primaryCharObj.meaning}」。選項 (A) 貼合文意，故選 (A)。`
-        },
-        {
-          question: isModernChinese
-            ? `2. 【句意理解】閱讀文中「${midSent.slice(0, 22)}」這段文字，可看出作者想傳達什麼？`
-            : `2. 【詞性與字詞運用】關於文中「${secondaryCharObj.char}」字或關鍵詞彙的用法，下列敘述何者正確？`,
-          options: isModernChinese ? {
-            A: '結合前後文脈絡，進一步深化並說明前文提出的觀點',
-            B: '作者在此推翻自己前一句的所有說法',
-            C: '這段文字純屬無意義的重複，沒有任何新訊息',
-            D: '作者認為讀者不需要思考文章背後的涵義'
-          } : {
-            A: `需結合前後文語境判斷其詞性與作用（${secondaryCharObj.note}）`,
-            B: '在任何文言或閱讀篇章中都只有單一固定意思，不需看上下文',
-            C: '必然為否定副詞，表示完全相反的意思',
-            D: '屬於贅字，刪除後不影響句意也不影響語法結構'
-          },
-          answer: 'A',
-          explanation: isModernChinese
-            ? `「${midSent}」承接上文並深化主旨，選項 (A) 符合文意。`
-            : `大考字詞題重在「依文脈定字義」。「${secondaryCharObj.char}」字的常見用法包含「${secondaryCharObj.meaning}」，${secondaryCharObj.note}，因此選 (A)。`
-        },
-        {
-          question: `3. 【文意理解】根據本文內容，下列哪一項最符合文章所傳達的核心文意？`,
-          options: {
-            A: `文章圍繞「${resolvedTitle}」展開，並透過「${midSent.slice(0, 22)}」等語句表達相關觀點`,
-            B: '全文旨在否定前文所有主張，並提出毫無關聯的結論',
-            C: '文章僅為單純時間流水帳，未呈現任何觀點或情境',
-            D: '文中明確指出所有敘述皆屬虛構且與現實完全無關'
-          },
-          answer: 'A',
-          explanation: `檢視全文脈絡，「${midSent}」呼應文章主軸，選項 (A) 符合文意；(B)(C)(D) 皆與文意不符或過度武斷。`
-        },
-        {
-          question: `4. 【句意推論】從文末「${lastSent.slice(0, 24)}」的敘述推論，作者最想提醒讀者什麼？`,
-          options: {
-            A: '在理解與應用時，應掌握脈絡與核心關鍵，避免斷章取義',
-            B: '只要記住文章最後幾個字，就不需要理解整段內容',
-            C: '文章結尾與開頭完全矛盾，作者自我否定',
-            D: '此句純屬修辭裝飾，與全文主旨毫無關聯'
-          },
-          answer: 'A',
-          explanation: `大考推論題需依據文本線索作合理推導，由「${lastSent}」可推知應結合全文脈絡理解，不可斷章取義，故選 (A)。`
-        },
-        {
-          question: `5. 【綜合判讀】下列關於本篇文章的敘述，何者最為恰當？（仿大考綜合理解題）`,
-          options: {
-            A: '各句之間存在語意連貫與層次推進，解題時應對照原文字句核實細節',
-            B: '選項中只要出現與原文相同的字眼，就一定是正確答案',
-            C: '遇到不懂的詞彙時，應直接跳過整句不予理會',
-            D: '文章內容與題目選項無須比對，憑直覺任選一項即可'
-          },
-          answer: 'A',
-          explanation: `大考常見干擾選項會「剪貼原文關鍵字但扭曲原意」，因此必須對照上下文核實文意，選項 (A) 最為恰當。`
-        }
-      ];
+      // 管理者先編好文章及題目：提供 5 題選擇題欄位（含選項、答案、解析）供管理者直接填寫編修
+      const questions = Array.from({ length: 5 }, (_, idx) => ({
+        question: `${idx + 1}. `,
+        options: { A: '', B: '', C: '', D: '' },
+        answer: 'A',
+        explanation: ''
+      }));
 
       return {
         id: 'custom_' + Date.now(),
@@ -1626,51 +1491,48 @@
       latestGeneratedArticle = buildSmartReadingPackage(rawText, title, subject, level);
       document.getElementById('upload-title').value = latestGeneratedArticle.title;
 
-      const isModernChinese = latestGeneratedArticle.subject === 'chinese_modern';
+      const isClassical = latestGeneratedArticle.subject === 'chinese';
       const statusBox = document.getElementById('ai-gen-status');
       statusBox.classList.remove('hidden');
-      statusBox.innerText = isModernChinese
-        ? `✅ 已自動產生「國文白話文」教材（翻譯區依設定保持空白），共 ${latestGeneratedArticle.sentences.length} 句解釋與 ${latestGeneratedArticle.questions.length} 題選擇題！`
-        : `✅ 已自動產生「${latestGeneratedArticle.level}」教材（含白話翻譯），共 ${latestGeneratedArticle.sentences.length} 句解釋與 ${latestGeneratedArticle.questions.length} 題選擇題！`;
+      statusBox.innerText = isClassical
+        ? `✅ 已為「文言文閱讀」自動產出逐句翻譯與整篇白話翻譯（共 ${latestGeneratedArticle.sentences.length} 句）；請在下方編寫選擇題（含選項、答案與解析）後發布。`
+        : `✅ 已載入「${latestGeneratedArticle.level}」文章與選擇題編輯區；請直接編寫選擇題（含選項、答案與解析）後發布。`;
 
       renderTeacherEditors(latestGeneratedArticle);
       document.getElementById('generated-preview-box').classList.remove('hidden');
     }
 
     function renderTeacherEditors(article) {
-      const isModernChinese = article.subject === 'chinese_modern' || article.level === '白話文閱讀';
-      document.getElementById('edit-full-translation').value = isModernChinese ? '' : (article.fullTranslation || '');
-
+      const isClassical = article.subject === 'chinese' || article.level === '文言文閱讀';
+      const fullTransSection = document.getElementById('teacher-full-translation-section');
       const sentSection = document.getElementById('teacher-sentences-section');
       const sentContainer = document.getElementById('edit-sentences-container');
-      if (isModernChinese) {
-        if (sentSection) sentSection.classList.add('hidden');
-        sentContainer.innerHTML = '';
-      } else {
-        if (sentSection) sentSection.classList.remove('hidden');
-      }
-      if (!isModernChinese) {
-      sentContainer.innerHTML = (article.sentences || []).map((s, idx) => `
-        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 sentence-editor-card">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-black text-brand-700">第 ${idx + 1} 句解釋</span>
-            <button onclick="removeSentenceEditorRow(${idx})" class="text-xs text-red-600 hover:underline font-bold">刪除本句</button>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">原文句子</label>
-            <input type="text" class="sent-text w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white font-bold" value="${escapeAttr(s.text)}">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-emerald-700 mb-1">整句白話翻譯（國文白話文保持空白）</label>
-            <input type="text" class="sent-trans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(isModernChinese ? '' : (s.translation || ''))}">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-blue-700 mb-1">補充字詞／句法解析</label>
-            <textarea rows="2" class="sent-grammar w-full border border-blue-300 rounded-xl px-3 py-2 text-sm bg-white">${escapeHtml(s.grammar)}</textarea>
-          </div>
-        </div>
-      `).join('');
 
+      if (isClassical) {
+        if (fullTransSection) fullTransSection.classList.remove('hidden');
+        if (sentSection) sentSection.classList.remove('hidden');
+        document.getElementById('edit-full-translation').value = article.fullTranslation || '';
+        sentContainer.innerHTML = (article.sentences || []).map((s, idx) => `
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 sentence-editor-card">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black text-brand-700">第 ${idx + 1} 句逐句翻譯</span>
+              <button onclick="removeSentenceEditorRow(${idx})" class="text-xs text-red-600 hover:underline font-bold">刪除本句</button>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">文言原文</label>
+              <input type="text" class="sent-text w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white font-bold" value="${escapeAttr(s.text)}">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-emerald-700 mb-1">系統逐句白話翻譯</label>
+              <input type="text" class="sent-trans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(s.translation || '')}">
+            </div>
+          </div>
+        `).join('');
+      } else {
+        if (fullTransSection) fullTransSection.classList.add('hidden');
+        if (sentSection) sentSection.classList.add('hidden');
+        document.getElementById('edit-full-translation').value = '';
+        sentContainer.innerHTML = '';
       }
 
       const qContainer = document.getElementById('edit-questions-container');
@@ -1713,7 +1575,7 @@
               </select>
             </div>
             <div class="md:col-span-3">
-              <label class="block text-xs font-bold text-blue-700 mb-1">題目解析</label>
+              <label class="block text-xs font-bold text-blue-700 mb-1">答案解析</label>
               <input type="text" class="q-exp w-full border border-blue-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(q.explanation || '')}">
             </div>
           </div>
@@ -1724,22 +1586,22 @@
     function collectArticleFromEditors() {
       const title = document.getElementById('upload-title').value.trim() || latestGeneratedArticle?.title || '未命名閱讀文章';
       const [subject, level] = document.getElementById('upload-category').value.split('|');
-      const isModernChinese = subject === 'chinese_modern' || level === '白話文閱讀';
+      const isClassical = subject === 'chinese' || level === '文言文閱讀';
 
       const sentenceCards = [...document.querySelectorAll('.sentence-editor-card')];
-      const sentences = isModernChinese
-        ? (latestGeneratedArticle?.sentences || []).map(s => ({
+      const sentences = isClassical
+        ? sentenceCards.map((card, i) => ({
+            text: card.querySelector('.sent-text').value.trim(),
+            translation: card.querySelector('.sent-trans').value.trim(),
+            grammar: latestGeneratedArticle?.sentences?.[i]?.grammar || '',
+            wordNotes: latestGeneratedArticle?.sentences?.[i]?.wordNotes || {}
+          })).filter(s => s.text.length > 0)
+        : (latestGeneratedArticle?.sentences || []).map(s => ({
             text: s.text,
             translation: '',
             grammar: '',
             wordNotes: s.wordNotes || {}
-          }))
-        : sentenceCards.map((card, i) => ({
-            text: card.querySelector('.sent-text').value.trim(),
-            translation: card.querySelector('.sent-trans').value.trim(),
-            grammar: card.querySelector('.sent-grammar').value.trim(),
-            wordNotes: latestGeneratedArticle?.sentences?.[i]?.wordNotes || {}
-          })).filter(s => s.text.length > 0);
+          }));
 
       const questions = [...document.querySelectorAll('.question-editor-card')].map(card => ({
         question: card.querySelector('.q-stem').value.trim(),
@@ -1751,7 +1613,7 @@
         },
         answer: card.querySelector('.q-ans').value,
         explanation: card.querySelector('.q-exp').value.trim()
-      })).filter(q => q.question.length > 0);
+      })).filter(q => q.question.trim().length > 0 && !/^\d+\.\s*$/.test(q.question.trim()));
 
       return {
         id: latestGeneratedArticle?.id || ('custom_' + Date.now()),
@@ -1759,7 +1621,7 @@
         level,
         title,
         sentences,
-        fullTranslation: isModernChinese ? '' : document.getElementById('edit-full-translation').value.trim(),
+        fullTranslation: isClassical ? document.getElementById('edit-full-translation').value.trim() : '',
         questions
       };
     }
