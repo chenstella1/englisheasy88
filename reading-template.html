@@ -75,8 +75,9 @@
         <h1 id="header-article-title" class="text-lg sm:text-2xl font-black">Laika: The Little Dog Who Traveled to Space</h1>
       </div>
       <div class="flex items-center gap-2 flex-wrap">
+        <span id="admin-account-badge" class="text-xs font-bold bg-amber-400 text-slate-950 px-3 py-1.5 rounded-full">🔐 管理者帳號已連接</span>
         <span id="header-level-badge" class="text-xs font-bold bg-emerald-900/70 px-3 py-1.5 rounded-full">國八程度｜克漏字＋全文對照＋單字庫</span>
-        <button type="button" onclick="toggleImporterPanel()" class="bg-white text-emerald-800 hover:bg-emerald-50 font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow transition">
+        <button type="button" onclick="openAdminImporter()" class="bg-white text-emerald-800 hover:bg-emerald-50 font-black text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow transition">
           📥 套用新文章 / 上傳 PDF
         </button>
       </div>
@@ -451,7 +452,8 @@
           ? 'px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-white hover:bg-amber-600 shadow'
           : 'px-3.5 py-1.5 rounded-xl text-xs font-black bg-slate-800 text-white hover:bg-slate-900';
       }
-      renderFixedTemplate();
+      checkAdminAccountConnection();
+    renderFixedTemplate();
     }
 
     function renderFixedTemplate() {
@@ -713,6 +715,37 @@
       bank.splice(idx, 1);
       setVocabBank(bank);
       openVocabBankModal();
+    }
+
+
+    function checkAdminAccountConnection() {
+      let isAdmin = true;
+      let accountLabel = '管理者帳號已連接';
+      try {
+        const hashOrQuery = window.location.hash + window.location.search;
+        const savedUser = localStorage.getItem('yh_user_v16');
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser);
+          if (parsed && (parsed.role === 'admin' || parsed.isAdmin || /admin|englisheasy88/i.test(parsed.email || ''))) {
+            accountLabel = `🔐 管理者：${parsed.email || '已連接'}`;
+          }
+        } else if (/admin/i.test(hashOrQuery)) {
+          accountLabel = '🔐 管理者模式已連接';
+        }
+      } catch (e) {}
+      const badge = document.getElementById('admin-account-badge');
+      if (badge && isAdmin) badge.textContent = accountLabel;
+      if (/admin/i.test(window.location.hash + window.location.search)) {
+        document.getElementById('importer-panel')?.classList.remove('hidden');
+      }
+    }
+
+    function openAdminImporter() {
+      const panel = document.getElementById('importer-panel');
+      if (panel) {
+        panel.classList.remove('hidden');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     function toggleImporterPanel() {
