@@ -1097,9 +1097,9 @@
       if (currentArticle.subject === 'chinese') {
         const lex = CLASSICAL_LEXICON.find(item => item.char === word);
         if (lex) {
-          return `讀音【${lex.reading}】｜常見義項：${lex.meaning}\n※ 本段語境提示：請代入本句「${sentObj.text}」與白話語譯「${sentObj.translation.replace(/^【白話語譯參考】/, '')}」對照最貼切之詞義（${lex.note}）。`;
+          return `讀音【${lex.reading}】｜常見義項：${lex.meaning}\n※ 本段語境提示：請代入本句「${sentObj.text}」與白話語譯「${sentObj.translation}」對照最貼切之詞義（${lex.note}）。`;
         }
-        return `本段語境中的「${word}」字，請對照本句白話語譯理解：\n「${sentObj.translation.replace(/^【白話語譯參考】/, '')}」`;
+        return `本段語境中的「${word}」字，請對照本句白話語譯理解：\n「${sentObj.translation}」`;
       }
 
       // 3. 英文比對基礎字義庫並結合該句語境
@@ -1123,7 +1123,7 @@
       document.getElementById('word-modal-meaning').innerText = resolveWordContextualMeaning(word, sentIdx);
       document.getElementById('word-modal-context').innerHTML = `
         <div class="font-bold text-slate-900 mb-1">原文：${escapeHtml(sentObj.text)}</div>
-        <div class="text-emerald-800">譯文：${escapeHtml(sentObj.translation.replace(/^【白話語譯參考】/, ''))}</div>
+        <div class="text-emerald-800">譯文：${escapeHtml(sentObj.translation)}</div>
       `;
 
       document.getElementById('word-popup-modal').classList.remove('hidden');
@@ -1369,23 +1369,24 @@
     }
 
     function buildClassicalTranslationHint(sent, foundChars) {
-      let hint = sent;
+      let text = sent.trim();
       const replacements = [
-        ['之', '的'],
         ['焉', '啊'],
         ['乎', '嗎'],
         ['也', '呢'],
-        ['則', '就'],
-        ['故', '所以'],
         ['孰', '誰'],
         ['益', '更加']
       ];
       replacements.forEach(([k, v]) => {
         if (foundChars.some(item => item.char === k)) {
-          hint = hint.replaceAll(k, `${k}（${v}）`);
+          text = text.replaceAll(k, v);
         }
       });
-      return `【白話語譯參考】${hint}（請依上下文語氣微調成自然口語）`;
+      return text;
+    }（${v}）`);
+        }
+      });
+      return `【白話語譯參考】${hint}`;
     }
 
     function buildSmartReadingPackage(rawText, customTitle, subject, level) {
@@ -1423,7 +1424,7 @@
       });
 
       const fullTranslation = effectiveSubject === 'chinese'
-        ? sentences.map((s, i) => `(${i + 1}) ${s.translation.replace(/^【白話語譯參考】/, '')}`).join('\n')
+        ? sentences.map((s, i) => `(${i + 1}) ${s.translation}`).join('\n')
         : sentences.map((s, i) => `(${i + 1}) ${s.translation.replace(/^【第 \d+ 句句意】/, '')}`).join('\n');
 
       const firstSent = sentences[0]?.text || rawText.slice(0, 40);
