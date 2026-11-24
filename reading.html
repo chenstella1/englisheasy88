@@ -97,8 +97,8 @@
 
       <div class="flex items-center gap-3">
         <span id="reading-user-badge" class="text-xs sm:text-sm bg-brand-700 px-3 py-1 rounded-full">訪客模式</span>
-        <!-- 管理者專用切換按鈕 -->
-        <div id="admin-mode-switch" class="hidden flex bg-brand-800 p-1 rounded-xl">
+        <!-- 管理者／老師出題工作台切換按鈕（預設可見，無須先在別頁登入也能進入出題） -->
+        <div id="admin-mode-switch" class="flex bg-brand-800 p-1 rounded-xl">
           <button id="btn-view-student" onclick="switchReadingMode('student')" class="px-3 py-1 rounded-lg text-xs sm:text-sm font-bold bg-white text-brand-700 shadow">👨‍🎓 學生精讀端</button>
           <button id="btn-view-teacher" onclick="switchReadingMode('teacher')" class="px-3 py-1 rounded-lg text-xs sm:text-sm font-bold text-brand-100 hover:text-white">👩‍🏫 上傳 PDF/Word 出題</button>
         </div>
@@ -123,23 +123,10 @@
             🔤 英文閱讀｜高中
           </button>
           <button onclick="selectCategory('chinese', '文言文閱讀')" id="cat-zh-classical" class="cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">
-            📜 國文閱讀｜文言文專區
+            📜 國文閱讀｜文言文
           </button>
-        </div>
-
-        <!-- 語音速度與連播控制 -->
-        <div class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-          <span class="text-xs font-bold text-slate-500">語速：</span>
-          <select id="speech-rate" class="text-xs font-bold bg-transparent text-slate-700 focus:outline-none">
-            <option value="0.75">0.75x 慢速</option>
-            <option value="0.95" selected>1.0x 正常</option>
-            <option value="1.15">1.15x 稍快</option>
-          </select>
-          <button onclick="playFullPassage()" id="btn-play-all" class="ml-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-sm">
-            🔊 全文連播
-          </button>
-          <button onclick="stopSpeech()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-lg">
-            ⏹ 停止
+          <button onclick="selectCategory('chinese_modern', '白話文閱讀')" id="cat-zh-modern" class="cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100">
+            📖 國文閱讀｜白話文
           </button>
         </div>
       </div>
@@ -157,8 +144,8 @@
       <div class="border-b border-slate-100 pb-3 flex flex-wrap justify-between items-center gap-2">
         <div>
           <h2 id="display-article-title" class="text-2xl font-black text-slate-800">文章標題</h2>
-          <p class="text-xs sm:text-sm text-slate-500 mt-1">
-            💡 <span class="font-bold text-emerald-700">點任一單字／字詞</span>：依該段上下文顯示字義與發音；
+          <p id="passage-interaction-hint" class="text-xs sm:text-sm text-slate-500 mt-1">
+            💡 <span class="font-bold text-emerald-700">點任一單字／字詞</span>：依該段上下文顯示字義；
             <span class="font-bold text-amber-700">點句尾「💬 句解」</span>：跳出整句翻譯與解析視窗！
           </p>
         </div>
@@ -167,16 +154,11 @@
       <div id="interactive-passage-box" class="text-lg sm:text-xl leading-loose text-slate-800 space-y-3 select-text"></div>
     </section>
 
-    <!-- 3. 全文意思對照區（上方原文、下方翻譯） -->
+    <!-- 3. 全文意思對照區（上方原文、下方白話翻譯；國文白話文則翻譯區保持空白） -->
     <section class="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 space-y-5">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-        <div>
-          <h3 class="text-xl font-black text-slate-800">📄 全文意思對照（上：原文／下：翻譯）</h3>
-          <p class="text-xs text-slate-500 mt-0.5">上方為完整原文，下方為對應白話語譯／中文翻譯，方便上下對照閱讀。</p>
-        </div>
-        <button onclick="speakChineseSummary()" class="text-xs bg-brand-100 hover:bg-brand-200 text-brand-800 font-bold px-3.5 py-2 rounded-xl">
-          🔊 語音唸出下方翻譯
-        </button>
+      <div class="border-b border-slate-100 pb-3">
+        <h3 class="text-xl font-black text-slate-800">📄 全文意思對照（上：原文／下：白話翻譯）</h3>
+        <p id="translation-section-hint" class="text-xs text-slate-500 mt-0.5">上方為完整原文，下方為白話翻譯（國文白話文無須翻譯，下方翻譯區維持空白）。</p>
       </div>
 
       <!-- 上方：原文 -->
@@ -185,10 +167,10 @@
         <div id="full-original-display" class="text-base sm:text-lg text-slate-900 leading-loose whitespace-pre-line font-medium"></div>
       </div>
 
-      <!-- 下方：翻譯 -->
+      <!-- 下方：白話翻譯 -->
       <div class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-        <div class="text-xs font-black text-emerald-700 tracking-wider">【下方｜全文翻譯／白話語譯】</div>
-        <div id="detail-full-translation" class="text-base sm:text-lg text-slate-800 leading-loose whitespace-pre-line"></div>
+        <div class="text-xs font-black text-emerald-700 tracking-wider">【下方｜白話翻譯】</div>
+        <div id="detail-full-translation" class="text-base sm:text-lg text-slate-800 leading-loose whitespace-pre-line min-h-[2.5rem]"></div>
       </div>
     </section>
 
@@ -209,21 +191,20 @@
 
   <!-- ==================== 跳出視窗 1：點單字／字詞依段落語境顯示字義 ==================== -->
   <div id="word-popup-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4" onclick="closeWordModal(event)">
-    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-emerald-200 p-6 space-y-4 animate-fade-in" onclick="event.stopPropagation()">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-emerald-200 p-6 space-y-4" onclick="event.stopPropagation()">
       <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
         <div>
           <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">依段落語境查字義</span>
           <h4 id="word-modal-token" class="text-2xl font-black text-slate-900 mt-1.5">字詞</h4>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="speakModalWord()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm">🔊 發音</button>
           <button onclick="hideWordModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">✕ 關閉</button>
         </div>
       </div>
 
       <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
         <div class="text-xs font-black text-emerald-800">【本段語境字義】</div>
-        <div id="word-modal-meaning" class="text-base font-bold text-slate-900 leading-relaxed"></div>
+        <div id="word-modal-meaning" class="text-base font-bold text-slate-900 leading-relaxed whitespace-pre-line"></div>
       </div>
 
       <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
@@ -242,7 +223,6 @@
         </div>
         <div class="flex items-center gap-1.5">
           <button onclick="stepModalSentence(-1)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700">← 上一句</button>
-          <button onclick="speakModalSentence()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm">🔊 朗讀整句</button>
           <button onclick="stepModalSentence(1)" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700">下一句 →</button>
           <button onclick="hideSentenceModal()" class="ml-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold">✕ 關閉</button>
         </div>
@@ -253,9 +233,9 @@
         <div id="sent-modal-original" class="text-base sm:text-lg font-bold text-slate-900 leading-relaxed"></div>
       </div>
 
-      <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1">
-        <div class="text-xs font-bold text-emerald-700">【整句中文翻譯／白話語譯】</div>
-        <div id="sent-modal-translation" class="text-base font-medium text-slate-800 leading-relaxed"></div>
+      <div id="sent-modal-trans-box" class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1">
+        <div class="text-xs font-bold text-emerald-700">【整句白話翻譯】</div>
+        <div id="sent-modal-translation" class="text-base font-medium text-slate-800 leading-relaxed min-h-[1.5rem]"></div>
       </div>
 
       <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-1">
@@ -270,27 +250,28 @@
     <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 space-y-6">
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
         <div>
-          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 老師文言文／閱讀出題工作台（只需提供文言文或文章，系統自動出題與解析）</h2>
-          <p class="text-sm text-slate-500 mt-1">老師只要貼上文言文或上傳 PDF／Word，系統自動產生：逐句解釋、全文翻譯，以及至少 5 題大考風格選擇題（涵蓋字義辨析、文意理解與推論）與詳解。</p>
+          <h2 class="text-2xl font-black text-slate-800">👩‍🏫 老師閱讀出題工作台（上傳 PDF / Word 或貼上文章自動出題）</h2>
+          <p class="text-sm text-slate-500 mt-1">支援「文言文、英文（自動產生白話翻譯）」與「國文白話文（翻譯區自動留白）」，並自動產生至少 5 題大考風格選擇題與詳解。</p>
         </div>
       </div>
 
-      <!-- 步驟 1～4：選擇分類、標題、上傳 PDF/Word、貼上文言文 -->
+      <!-- 步驟 1～4：選擇分類、標題、上傳 PDF/Word、貼上文章 -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-bold text-slate-700 mb-1">1. 選擇文章歸屬分類</label>
             <select id="upload-category" class="w-full border border-slate-300 rounded-xl p-3 text-base font-bold">
-              <option value="chinese|文言文閱讀" selected>國文閱讀 — 文言文閱讀（大考字義＋文意出題）</option>
-              <option value="english|國小英文">英文閱讀 — 國小英文</option>
-              <option value="english|國中英文">英文閱讀 — 國中英文</option>
-              <option value="english|高中英文">英文閱讀 — 高中英文</option>
+              <option value="chinese|文言文閱讀" selected>國文閱讀 — 文言文閱讀（自動產生白話翻譯）</option>
+              <option value="chinese_modern|白話文閱讀">國文閱讀 — 白話文閱讀（翻譯區保持空白）</option>
+              <option value="english|國小英文">英文閱讀 — 國小英文（自動產生白話翻譯）</option>
+              <option value="english|國中英文">英文閱讀 — 國中英文（自動產生白話翻譯）</option>
+              <option value="english|高中英文">英文閱讀 — 高中英文（自動產生白話翻譯）</option>
             </select>
           </div>
 
           <div>
             <label class="block text-sm font-bold text-slate-700 mb-1">2. 文章標題（可選填，未填將自動命名）</label>
-            <input type="text" id="upload-title" placeholder="例如：師說節選、岳陽樓記節選 或直接貼上文言文" class="w-full border border-slate-300 rounded-xl p-3 text-base">
+            <input type="text" id="upload-title" placeholder="例如：師說節選、背影節選 或直接貼上文章" class="w-full border border-slate-300 rounded-xl p-3 text-base">
           </div>
 
           <div>
@@ -304,17 +285,17 @@
           </div>
         </div>
 
-        <!-- 文言文原文輸入區 -->
+        <!-- 原文輸入區 -->
         <div class="space-y-2 flex flex-col">
-          <label class="block text-sm font-bold text-slate-700">4. 貼上文言文原文（老師只需給文言文即可）</label>
-          <textarea id="upload-raw-text" rows="10" placeholder="請直接貼上文言文內容，例如：&#10;古之學者必有師。師者，所以傳道、受業、解惑也。人非生而知之者，孰能無惑？惑而不從師，其為惑也，終不解矣。" class="w-full flex-grow border border-slate-300 rounded-2xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+          <label class="block text-sm font-bold text-slate-700">4. 貼上文章原文（文言文、白話文或英文皆可）</label>
+          <textarea id="upload-raw-text" rows="10" placeholder="請直接貼上文章內容，例如：&#10;古之學者必有師。師者，所以傳道、受業、解惑也。人非生而知之者，孰能無惑？惑而不從師，其為惑也，終不解矣。" class="w-full flex-grow border border-slate-300 rounded-2xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
         </div>
       </div>
 
       <!-- 一鍵生成按鈕 -->
       <div class="pt-2 flex flex-wrap gap-3">
         <button onclick="generateAllReadingMaterials()" id="btn-ai-generate" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg text-base flex items-center gap-2">
-          ✨ 一鍵自動出題與解析（至少 5 題大考字義＋文意選擇題）
+          ✨ 一鍵自動出題與解析（至少 5 題選擇題）
         </button>
       </div>
 
@@ -349,14 +330,14 @@
           </div>
         </div>
 
-        <!-- 全文意思編輯區 -->
+        <!-- 全文白話翻譯編輯區（國文白話文預設為空白） -->
         <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-          <label class="block text-sm font-black text-brand-700">📄 全文意思（白話語譯／全文翻譯）</label>
-          <textarea id="edit-full-translation" rows="4" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
+          <label class="block text-sm font-black text-brand-700">📄 全文白話翻譯（文言文／英文有白話翻譯；國文白話文保持空白）</label>
+          <textarea id="edit-full-translation" rows="4" placeholder="（國文白話文此欄保持空白即可）" class="w-full border border-slate-300 rounded-xl p-3 text-sm bg-white leading-relaxed"></textarea>
         </div>
 
-        <!-- 逐句解析編輯區 -->
-        <div class="space-y-3">
+        <!-- 逐句解析編輯區（國文白話文時自動隱藏） -->
+        <div id="teacher-sentences-section" class="space-y-3">
           <div class="flex items-center justify-between">
             <h4 class="text-base font-black text-slate-800">🔍 逐句解釋明細（學生點句尾「💬 句解」時跳出顯示）</h4>
             <button onclick="addSentenceEditorRow()" class="text-xs font-bold bg-brand-100 hover:bg-brand-200 text-brand-800 px-3 py-1.5 rounded-xl">＋ 新增一句解釋</button>
@@ -367,7 +348,7 @@
         <!-- 選擇題與解析編輯區（至少 5 題） -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="text-base font-black text-slate-800">📝 閱讀理解選擇題與解析（至少 5 題，含字義辨析與大考文意題）</h4>
+            <h4 class="text-base font-black text-slate-800">📝 閱讀理解選擇題與解析（至少 5 題）</h4>
             <button onclick="addQuestionEditorRow()" class="text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white px-3.5 py-1.5 rounded-xl shadow-sm">＋ 新增一題選擇題</button>
           </div>
           <div id="edit-questions-container" class="space-y-4"></div>
@@ -377,7 +358,6 @@
   </section>
 
   <script>
-    const ADMIN_EMAIL = 'yhstella2@gmail.com';
     const STORAGE_KEY_ARTICLES = 'yh_reading_articles_v1';
     const STORAGE_KEY_DELETED_IDS = 'yh_reading_deleted_ids_v1';
 
@@ -817,6 +797,69 @@
             explanation: '「淤泥」比喻污濁的世俗環境，「不染」則比喻君子潔身自愛、不隨波逐流的節操。'
           }
         ]
+      },
+      {
+        id: 'zh_modern_1',
+        subject: 'chinese_modern',
+        level: '白話文閱讀',
+        title: '閱讀的慢時光（白話散文範例）',
+        sentences: [
+          {
+            text: '在資訊爆炸的時代，我們每天滑過無數則短訊，卻很少靜下心來讀完一整本書。',
+            translation: '',
+            grammar: '• 映襯手法：以「滑過無數則短訊」對比「讀完一整本書」，凸顯現代人閱讀碎片化的現象。',
+            wordNotes: {
+              '爆': '在此「資訊爆炸」比喻訊息數量龐大且傳播極為迅速。',
+              '炸': '與「爆」合用為「爆炸」，形容資訊大量湧現。',
+              '靜': '動詞「使……平靜、沉澱」，指讓心緒安定下來。'
+            }
+          },
+          {
+            text: '真正的深度閱讀，就像在山林裡慢步，唯有放慢腳步，才能看見葉脈上的晨露與光影變化。',
+            translation: '',
+            grammar: '• 譬喻修辭（明喻）：將「深度閱讀」比喻為「在山林裡慢步」，具體化抽象的閱讀體驗。',
+            wordNotes: {
+              '深': '在此「深度閱讀」指專注、深入思考並理解文章脈絡的閱讀方式。',
+              '唯': '副詞「只有」，強調放慢步調是體會細節的必要條件。',
+              '脈': '名詞「葉脈」，比喻文章中細微而有條理的結構與細節。'
+            }
+          },
+          {
+            text: '當我們願意為一段文字停留，書中的思想便會悄悄在心底生根，成為面對世界的力量。',
+            translation: '',
+            grammar: '• 轉化修辭（擬物）：將抽象的「思想」描寫為能「在心底生根」的植物。',
+            wordNotes: {
+              '停': '動詞「駐足、停留」，指不急著跳過，細細品味字句涵義。',
+              '留': '與「停」合用，表示專注停駐於文字之中。',
+              '根': '「生根」比喻書中的道理在內心深處扎實建立、產生長遠影響。'
+            }
+          }
+        ],
+        fullTranslation: '',
+        questions: [
+          {
+            question: '1. 作者在文中將「深度閱讀」比喻成「在山林裡慢步」，最主要是想強調什麼？',
+            options: {
+              A: '閱讀時應該到郊外山林才有好空氣',
+              B: '唯有放慢速度專注體會，才能領略文字中的細膩內涵',
+              C: '現代人已經完全不再使用任何電子產品',
+              D: '走路速度越慢的人，記憶力就一定越好'
+            },
+            answer: 'B',
+            explanation: '文中指出「唯有放慢腳步，才能看見葉脈上的晨露與光影變化」，藉此強調慢下來細讀才能體會文字深意，故選 (B)。'
+          },
+          {
+            question: '2. 下列哪一個句子使用了與「書中的思想便會悄悄在心底生根」相同的「轉化（擬物）」修辭？',
+            options: {
+              A: '教室裡安靜得連一根針掉在地上都聽得見',
+              B: '把煩惱種進土裡，讓陽光曬乾所有的憂傷',
+              C: '天上的白雲一朵接著一朵飄過山頭',
+              D: '他每天早上七點準時出門去學校上課'
+            },
+            answer: 'B',
+            explanation: '題幹將抽象的「思想」寫成可以「生根」的植物，屬於擬物修辭；(B) 將抽象的「煩惱」寫成可以「種進土裡」的種子，同樣為擬物修辭。'
+          }
+        ]
       }
     ];
 
@@ -826,8 +869,6 @@
     let currentArticle = null;
     let activeSentenceIdx = 0;
     let modalSentenceIdx = 0;
-    let modalWordText = '';
-    let isPlayingAll = false;
     let latestGeneratedArticle = null;
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -843,9 +884,6 @@
           const user = JSON.parse(saved);
           if (user && user.email) {
             document.getElementById('reading-user-badge').innerText = `👤 ${user.email}`;
-            if (user.email.toLowerCase() === ADMIN_EMAIL) {
-              document.getElementById('admin-mode-switch').classList.remove('hidden');
-            }
           }
         }
       } catch (e) {}
@@ -874,7 +912,7 @@
       if (!container) return;
 
       if (!allArticles || allArticles.length === 0) {
-        container.innerHTML = '<div class="p-4 text-sm text-slate-400">目前沒有任何文章，可直接在上方貼上文言文新增，或點擊「還原系統預設範例」。</div>';
+        container.innerHTML = '<div class="p-4 text-sm text-slate-400">目前沒有任何文章，可直接在上方貼上文章新增，或點擊「還原系統預設範例」。</div>';
         return;
       }
 
@@ -956,7 +994,6 @@
     }
 
     function selectCategory(subject, level) {
-      stopSpeech();
       currentSubject = subject;
       currentLevel = level;
 
@@ -967,13 +1004,18 @@
         '國小英文': 'cat-en-elem',
         '國中英文': 'cat-en-junior',
         '高中英文': 'cat-en-senior',
-        '文言文閱讀': 'cat-zh-classical'
+        '文言文閱讀': 'cat-zh-classical',
+        '白話文閱讀': 'cat-zh-modern'
       };
       const targetBtn = document.getElementById(activeBtnMap[level]);
       if (targetBtn) {
-        targetBtn.className = subject === 'chinese'
-          ? 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-amber-600 text-white shadow'
-          : 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-brand-600 text-white shadow';
+        if (subject === 'chinese') {
+          targetBtn.className = 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-amber-600 text-white shadow';
+        } else if (subject === 'chinese_modern') {
+          targetBtn.className = 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-sky-600 text-white shadow';
+        } else {
+          targetBtn.className = 'cat-btn px-4 py-2 rounded-xl text-sm font-bold transition-all bg-brand-600 text-white shadow';
+        }
       }
 
       document.getElementById('article-badge').innerText = level;
@@ -984,6 +1026,11 @@
 
       if (filtered.length === 0) {
         selector.innerHTML = '<option value="">目前此分類尚無文章</option>';
+        document.getElementById('display-article-title').innerText = '目前此分類尚無文章';
+        document.getElementById('interactive-passage-box').innerHTML = '';
+        document.getElementById('full-original-display').innerText = '';
+        document.getElementById('detail-full-translation').innerText = '';
+        document.getElementById('reading-quiz-list').innerHTML = '';
         return;
       }
 
@@ -1003,7 +1050,6 @@
       container.className = 'sentence-block';
 
       if (subject === 'english') {
-        // 英文依單字切分，保留標點與空白
         const parts = sentObj.text.split(/([A-Za-z]+(?:[-'][A-Za-z]+)*)/);
         parts.forEach(part => {
           if (/^[A-Za-z]+(?:[-'][A-Za-z]+)*$/.test(part)) {
@@ -1021,7 +1067,6 @@
           }
         });
       } else {
-        // 中文／文言文逐字可點，依該段落句子語境顯示字義
         for (const ch of sentObj.text) {
           if (/[\u4e00-\u9fff]/.test(ch)) {
             const cSpan = document.createElement('span');
@@ -1039,23 +1084,23 @@
         }
       }
 
-      // 句末加上「💬 句解」按鈕，點擊直接跳出整句視窗
-      const sentBtn = document.createElement('button');
-      sentBtn.type = 'button';
-      sentBtn.className = 'sentence-btn-trigger';
-      sentBtn.innerText = '💬 句解';
-      sentBtn.title = '點擊跳出整句翻譯與解析視窗';
-      sentBtn.onclick = (e) => {
-        e.stopPropagation();
-        openSentenceModal(sentIdx, true);
-      };
-      container.appendChild(sentBtn);
+      if (subject !== 'chinese_modern') {
+        const sentBtn = document.createElement('button');
+        sentBtn.type = 'button';
+        sentBtn.className = 'sentence-btn-trigger';
+        sentBtn.innerText = '💬 句解';
+        sentBtn.title = '點擊跳出整句解釋視窗';
+        sentBtn.onclick = (e) => {
+          e.stopPropagation();
+          openSentenceModal(sentIdx);
+        };
+        container.appendChild(sentBtn);
+      }
 
       return container;
     }
 
     function loadSelectedArticle() {
-      stopSpeech();
       const artId = document.getElementById('article-selector').value;
       const found = allArticles.find(a => a.id === artId);
       if (!found) return;
@@ -1072,12 +1117,22 @@
         passageBox.appendChild(block);
       });
 
-      // 全文意思對照區：上方原文、下方翻譯
+      // 全文意思對照區：上方原文；下方為白話翻譯（國文白話文則翻譯區直接維持空白）
       const rawOriginalCombined = (found.sentences || [])
         .map(s => s.text)
         .join(found.subject === 'english' ? ' ' : '');
       document.getElementById('full-original-display').innerText = rawOriginalCombined;
-      document.getElementById('detail-full-translation').innerText = found.fullTranslation || '無全文翻譯資料';
+
+      const isModernChinese = found.subject === 'chinese_modern' || found.level === '白話文閱讀';
+      const hintEl = document.getElementById('passage-interaction-hint');
+      if (hintEl) {
+        hintEl.innerHTML = isModernChinese
+          ? '💡 <span class="font-bold text-emerald-700">點任一字詞</span>：依該段上下文顯示詞義與語境說明。'
+          : '💡 <span class="font-bold text-emerald-700">點任一單字／字詞</span>：依該段上下文顯示字義；<span class="font-bold text-amber-700">點句尾「💬 句解」</span>：跳出整句翻譯與解析視窗！';
+      }
+      document.getElementById('detail-full-translation').innerText = isModernChinese
+        ? ''
+        : (found.fullTranslation || '');
 
       renderQuizList(found.questions || []);
     }
@@ -1087,52 +1142,52 @@
       const sentObj = currentArticle.sentences[sentIdx];
       const lowerWord = word.toLowerCase();
 
-      // 1. 先比對該句專屬 wordNotes（最貼近該段落語境）
       if (sentObj && sentObj.wordNotes) {
         if (sentObj.wordNotes[word]) return sentObj.wordNotes[word];
         if (sentObj.wordNotes[lowerWord]) return sentObj.wordNotes[lowerWord];
       }
 
-      // 2. 中文／文言文比對常見字義庫，並結合所在段落說明
       if (currentArticle.subject === 'chinese') {
         const lex = CLASSICAL_LEXICON.find(item => item.char === word);
         if (lex) {
-          return `讀音【${lex.reading}】｜常見義項：${lex.meaning}\n※ 本段語境提示：請代入本句「${sentObj.text}」與白話語譯「${sentObj.translation.replace(/^【白話語譯參考】/, '')}」對照最貼切之詞義（${lex.note}）。`;
+          return `讀音【${lex.reading}】｜本段語境義項：${lex.meaning}\n※ 文脈說明：${lex.note}`;
         }
-        return `本段語境中的「${word}」字，請對照本句白話語譯理解：\n「${sentObj.translation.replace(/^【白話語譯參考】/, '')}」`;
+        return `本段語境中的「${word}」字，請對照本句白話翻譯理解：\n「${sentObj.translation || sentObj.text}」`;
       }
 
-      // 3. 英文比對基礎字義庫並結合該句語境
+      if (currentArticle.subject === 'chinese_modern') {
+        return `本段語境中的「${word}」字，出現於句子「${sentObj.text}」中。\n※ 語境說明：${sentObj.grammar || '請結合上下文語意理解詞義。'}`;
+      }
+
       if (ENGLISH_LEXICON[lowerWord]) {
         return `${ENGLISH_LEXICON[lowerWord]}\n※ 本段句意對照：${sentObj.translation}`;
       }
 
-      return `本段語境中的「${word}」，請參考整句中文翻譯對照：\n「${sentObj.translation}」`;
+      return `本段語境中的「${word}」，請參考整句白話翻譯對照：\n「${sentObj.translation}」`;
     }
 
     function openWordContextModal(word, sentIdx) {
       if (!currentArticle || !currentArticle.sentences[sentIdx]) return;
       const sentObj = currentArticle.sentences[sentIdx];
-      modalWordText = word;
 
       highlightSentence(sentIdx);
 
-      document.getElementById('word-modal-token').innerText = currentArticle.subject === 'chinese'
+      document.getElementById('word-modal-token').innerText = (currentArticle.subject === 'chinese' || currentArticle.subject === 'chinese_modern')
         ? `「${word}」字（第 ${sentIdx + 1} 句）`
         : `${word}（第 ${sentIdx + 1} 句）`;
       document.getElementById('word-modal-meaning').innerText = resolveWordContextualMeaning(word, sentIdx);
+
+      const isModernChinese = currentArticle.subject === 'chinese_modern' || currentArticle.level === '白話文閱讀';
+      const transLine = (!isModernChinese && sentObj.translation)
+        ? `<div class="text-emerald-800">白話翻譯：${escapeHtml(sentObj.translation)}</div>`
+        : '';
+
       document.getElementById('word-modal-context').innerHTML = `
         <div class="font-bold text-slate-900 mb-1">原文：${escapeHtml(sentObj.text)}</div>
-        <div class="text-emerald-800">譯文：${escapeHtml(sentObj.translation.replace(/^【白話語譯參考】/, ''))}</div>
+        ${transLine}
       `;
 
       document.getElementById('word-popup-modal').classList.remove('hidden');
-      speakText(word, currentArticle.subject === 'english' ? 'en-US' : 'zh-TW');
-    }
-
-    function speakModalWord() {
-      if (!modalWordText || !currentArticle) return;
-      speakText(modalWordText, currentArticle.subject === 'english' ? 'en-US' : 'zh-TW');
     }
 
     function hideWordModal() {
@@ -1157,36 +1212,28 @@
       });
     }
 
-    function openSentenceModal(idx, shouldSpeak = false) {
+    function openSentenceModal(idx) {
       if (!currentArticle || !currentArticle.sentences[idx]) return;
       modalSentenceIdx = idx;
       highlightSentence(idx);
 
       const s = currentArticle.sentences[idx];
+      const isModernChinese = currentArticle.subject === 'chinese_modern' || currentArticle.level === '白話文閱讀';
+
       document.getElementById('sent-modal-badge').innerText = `第 ${idx + 1} / ${currentArticle.sentences.length} 句整句解析`;
       document.getElementById('sent-modal-original').innerText = s.text;
-      document.getElementById('sent-modal-translation').innerText = s.translation || '無翻譯';
+      document.getElementById('sent-modal-translation').innerText = isModernChinese ? '' : (s.translation || '');
       document.getElementById('sent-modal-grammar').innerText = s.grammar || '無補充解析';
 
       document.getElementById('sentence-popup-modal').classList.remove('hidden');
-
-      if (shouldSpeak) {
-        speakText(s.text, currentArticle.subject === 'english' ? 'en-US' : 'zh-TW');
-      }
     }
 
     function stepModalSentence(delta) {
       if (!currentArticle) return;
       const nextIdx = modalSentenceIdx + delta;
       if (nextIdx >= 0 && nextIdx < currentArticle.sentences.length) {
-        openSentenceModal(nextIdx, true);
+        openSentenceModal(nextIdx);
       }
-    }
-
-    function speakModalSentence() {
-      if (!currentArticle || !currentArticle.sentences[modalSentenceIdx]) return;
-      const s = currentArticle.sentences[modalSentenceIdx];
-      speakText(s.text, currentArticle.subject === 'english' ? 'en-US' : 'zh-TW');
     }
 
     function hideSentenceModal() {
@@ -1199,59 +1246,12 @@
       }
     }
 
-    // 按 ESC 鍵可快速關閉任何跳出視窗
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         hideWordModal();
         hideSentenceModal();
       }
     });
-
-    // ==================== 語音朗讀 ====================
-    function speakText(text, lang = 'en-US', onEndCallback = null) {
-      if (!('speechSynthesis' in window)) {
-        alert('您的瀏覽器不支援語音朗讀功能。');
-        return;
-      }
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = lang;
-      utter.rate = parseFloat(document.getElementById('speech-rate').value) || 0.95;
-      if (onEndCallback) {
-        utter.onend = onEndCallback;
-      }
-      window.speechSynthesis.speak(utter);
-    }
-
-    function speakChineseSummary() {
-      if (!currentArticle || !currentArticle.fullTranslation) return;
-      speakText(currentArticle.fullTranslation, 'zh-TW');
-    }
-
-    function playFullPassage() {
-      if (!currentArticle || !currentArticle.sentences.length) return;
-      isPlayingAll = true;
-      const lang = currentArticle.subject === 'english' ? 'en-US' : 'zh-TW';
-
-      function playNext(idx) {
-        if (!isPlayingAll || idx >= currentArticle.sentences.length) {
-          isPlayingAll = false;
-          return;
-        }
-        highlightSentence(idx);
-        speakText(currentArticle.sentences[idx].text, lang, () => {
-          if (isPlayingAll) playNext(idx + 1);
-        });
-      }
-      playNext(activeSentenceIdx);
-    }
-
-    function stopSpeech() {
-      isPlayingAll = false;
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-    }
 
     // ==================== 隨堂測驗（點選項直接出現正解及解析） ====================
     function renderQuizList(questions) {
@@ -1290,7 +1290,6 @@
 
       document.querySelectorAll(`input[name="rq_${qIdx}"]`).forEach(r => r.disabled = true);
 
-      // 標示正確選項為綠色框，若答錯也標示所選為紅色框
       const correctLabel = document.getElementById(`rq_opt_label_${qIdx}_${correct}`);
       if (correctLabel) {
         correctLabel.classList.add('bg-emerald-50', 'border-emerald-500', 'ring-1', 'ring-emerald-500');
@@ -1368,33 +1367,50 @@
       return [normalized];
     }
 
-    function buildClassicalTranslationHint(sent, foundChars) {
-      let hint = sent;
+    function buildClassicalPlainTranslation(sent, foundChars) {
+      let text = sent.trim();
       const replacements = [
-        ['之', '的'],
         ['焉', '啊'],
         ['乎', '嗎'],
         ['也', '呢'],
-        ['則', '就'],
-        ['故', '所以'],
         ['孰', '誰'],
-        ['益', '更加']
+        ['益', '更加'],
+        ['予', '我'],
+        ['吾', '我']
       ];
       replacements.forEach(([k, v]) => {
         if (foundChars.some(item => item.char === k)) {
-          hint = hint.replaceAll(k, `${k}（${v}）`);
+          text = text.replaceAll(k, v);
         }
       });
-      return `【白話語譯參考】${hint}（請依上下文語氣微調成自然口語）`;
+      return text;
+    }
+
+    function buildEnglishPlainTranslation(sent) {
+      const words = sent.split(/([A-Za-z]+(?:[-'][A-Za-z]+)*)/);
+      const glossed = words.map(w => {
+        const key = w.toLowerCase();
+        if (ENGLISH_LEXICON[key]) {
+          const cleanZh = ENGLISH_LEXICON[key].replace(/^\([^)]+\)\s*/, '').split('（')[0].split('；')[0];
+          return `${w}(${cleanZh})`;
+        }
+        return w;
+      }).join('');
+      return `白話大意：${glossed}`;
     }
 
     function buildSmartReadingPackage(rawText, customTitle, subject, level) {
       const sentencesRaw = splitClassicalOrTextSentences(rawText);
-      const effectiveSubject = (subject === 'chinese' || /[之乎者也矣焉哉]/.test(rawText)) ? 'chinese' : subject;
-      const effectiveLevel = effectiveSubject === 'chinese' && level !== '文言文閱讀' ? '文言文閱讀' : level;
-      const resolvedTitle = customTitle || (effectiveSubject === 'chinese'
-        ? `文言文精讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`
-        : `閱讀精讀測驗（${sentencesRaw[0].slice(0, 16)}）`);
+      const isModernChinese = subject === 'chinese_modern' || level === '白話文閱讀';
+      const isEnglish = subject === 'english';
+      const effectiveSubject = isModernChinese ? 'chinese_modern' : (isEnglish ? 'english' : 'chinese');
+      const effectiveLevel = level || (isModernChinese ? '白話文閱讀' : (isEnglish ? '國中英文' : '文言文閱讀'));
+
+      const resolvedTitle = customTitle || (isModernChinese
+        ? `白話文精讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`
+        : isEnglish
+          ? `英文閱讀測驗（${sentencesRaw[0].slice(0, 18)}）`
+          : `文言文精讀測驗（${sentencesRaw[0].slice(0, 10).replace(/[，。！？；：]/g, '')}）`);
 
       const matchedLexicon = CLASSICAL_LEXICON.filter(item => rawText.includes(item.char));
       const primaryCharObj = matchedLexicon[0] || CLASSICAL_LEXICON[0];
@@ -1404,54 +1420,152 @@
         const sentChars = CLASSICAL_LEXICON.filter(item => sent.includes(item.char));
         const charNotes = sentChars.map(c => `• 「${c.char}」：在此文脈中可留意「${c.meaning}」（${c.note}）`);
         if (charNotes.length === 0) {
-          charNotes.push('• 詞義與句法分析：留意關鍵實詞、虛詞搭配與前後句邏輯呼應。');
+          charNotes.push('• 句意與脈絡分析：留意關鍵詞彙搭配與前後句邏輯呼應。');
         }
 
         const wordNotes = {};
-        sentChars.forEach(c => {
-          wordNotes[c.char] = `讀音【${c.reading}】｜本段語境可理解為「${c.meaning}」（${c.note}）`;
-        });
+        if (effectiveSubject === 'chinese') {
+          sentChars.forEach(c => {
+            wordNotes[c.char] = `讀音【${c.reading}】｜本段語境可理解為「${c.meaning}」（${c.note}）`;
+          });
+        } else if (effectiveSubject === 'english') {
+          const tokens = sent.match(/[A-Za-z]+(?:[-'][A-Za-z]+)*/g) || [];
+          tokens.forEach(tok => {
+            const lk = tok.toLowerCase();
+            if (ENGLISH_LEXICON[lk]) {
+              wordNotes[lk] = `${ENGLISH_LEXICON[lk]}（出現於本句：${sent}）`;
+            }
+          });
+        }
+
+        // 文言文與英文皆產生白話翻譯；國文白話文則翻譯欄保持空白
+        let sentTranslation = '';
+        if (effectiveSubject === 'chinese') {
+          sentTranslation = buildClassicalPlainTranslation(sent, sentChars);
+        } else if (effectiveSubject === 'english') {
+          sentTranslation = buildEnglishPlainTranslation(sent);
+        } else {
+          sentTranslation = '';
+        }
 
         return {
           text: sent,
-          translation: effectiveSubject === 'chinese'
-            ? buildClassicalTranslationHint(sent, sentChars)
-            : `【第 ${idx + 1} 句句意】${sent}`,
+          translation: sentTranslation,
           grammar: charNotes.join('\n'),
           wordNotes
         };
       });
 
-      const fullTranslation = effectiveSubject === 'chinese'
-        ? sentences.map((s, i) => `(${i + 1}) ${s.translation.replace(/^【白話語譯參考】/, '')}`).join('\n')
-        : sentences.map((s, i) => `(${i + 1}) ${s.translation.replace(/^【第 \d+ 句句意】/, '')}`).join('\n');
+      // 全文白話翻譯：文言文／英文有內容；國文白話文直接維持空白 ''
+      let fullTranslation = '';
+      if (effectiveSubject === 'chinese') {
+        fullTranslation = sentences.map((s, i) => `(${i + 1}) ${s.translation}`).join('\n');
+      } else if (effectiveSubject === 'english') {
+        fullTranslation = sentences.map((s, i) => `(${i + 1}) ${s.translation}`).join('\n');
+      } else {
+        fullTranslation = '';
+      }
 
       const firstSent = sentences[0]?.text || rawText.slice(0, 40);
       const midSent = sentences[Math.floor(sentences.length / 2)]?.text || firstSent;
       const lastSent = sentences[sentences.length - 1]?.text || firstSent;
 
-      const questions = [
+      const questions = isEnglish ? [
         {
-          question: `1. 【字義辨析】下列各選項「${primaryCharObj.char}」字的意義，何者與原文「${firstSent.slice(0, 18)}」中的「${primaryCharObj.char}」字最相近？`,
+          question: `1. What is the main idea of "${resolvedTitle}"?`,
           options: {
+            A: `It discusses key details starting from "${firstSent.slice(0, 32)}..."`,
+            B: 'It lists unrelated historical dates without any explanation.',
+            C: 'It argues against reading any books or articles.',
+            D: 'It is a recipe for cooking traditional food.'
+          },
+          answer: 'A',
+          explanation: `依據首句「${firstSent}」與全文脈絡，文章核心圍繞該主題展開，故選 (A)。`
+        },
+        {
+          question: `2. According to the middle part of the passage, which statement is true?`,
+          options: {
+            A: `The passage mentions "${midSent.slice(0, 36)}..." to support its point.`,
+            B: 'The author states that the topic has no connection to daily life.',
+            C: 'All examples in the text are described as completely false.',
+            D: 'The passage ends without mentioning any conclusion.'
+          },
+          answer: 'A',
+          explanation: `文中明確提到「${midSent}」，與選項 (A) 敘述相符。`
+        },
+        {
+          question: `3. What can be inferred from the last sentence of the passage?`,
+          options: {
+            A: 'Understanding the whole context helps readers grasp the author’s message.',
+            B: 'Readers should ignore the ending of every paragraph.',
+            C: 'The final sentence contradicts everything written earlier.',
+            D: 'No further thought is needed after reading the first word.'
+          },
+          answer: 'A',
+          explanation: `由末句「${lastSent}」可推知需結合上下文脈絡理解作者用意，故選 (A)。`
+        },
+        {
+          question: `4. How are the sentences in this passage organized?`,
+          options: {
+            A: 'They connect logically from the opening idea to the closing thought.',
+            B: 'They are arranged in completely random order.',
+            C: 'Each sentence discusses an unrelated topic.',
+            D: 'Only the title carries meaning while the text is filler.'
+          },
+          answer: 'A',
+          explanation: '全篇從開頭引入主題到結尾收束觀點，語意連貫，故選 (A)。'
+        },
+        {
+          question: `5. Which reading strategy is best when answering questions about this text?`,
+          options: {
+            A: 'Check the exact sentence context before choosing an option.',
+            B: 'Pick any option that repeats a single word without checking meaning.',
+            C: 'Skip reading the passage and guess randomly.',
+            D: 'Assume the opposite of what the passage directly states.'
+          },
+          answer: 'A',
+          explanation: '閱讀測驗作答時必須回到原文對應段落核對上下文語意，故選 (A)。'
+        }
+      ] : [
+        {
+          question: isModernChinese
+            ? `1. 【詞語語境】關於文中「${firstSent.slice(0, 18)}」這句話的表達方式，下列敘述何者最恰當？`
+            : `1. 【字義辨析】下列各選項「${primaryCharObj.char}」字的意義，何者與原文「${firstSent.slice(0, 18)}」中的「${primaryCharObj.char}」字最相近？`,
+          options: isModernChinese ? {
+            A: '作者透過具體敘述點出文章開端的核心情境與關注焦點',
+            B: '此句與全文主旨毫無關聯，屬於誤植的段落',
+            C: '文中明確否定所有經驗與觀察的價值',
+            D: '僅在說明時間順序，未傳達任何感受或想法'
+          } : {
             A: `符合本篇語境之義項：${primaryCharObj.meaning.split('／')[0]}`,
             B: '完全與本篇無關之生僻字義（語意不通順）',
             C: '與上下文因果相反之意思',
             D: '僅限特定方言之誤用詞義'
           },
           answer: 'A',
-          explanation: `原文「${firstSent}」中的「${primaryCharObj.char}」字，依上下文脈絡可對應「${primaryCharObj.meaning}」。選項 (A) 貼合文意，故選 (A)。`
+          explanation: isModernChinese
+            ? `首句「${firstSent}」開啟全文脈絡並點出重點，選項 (A) 最貼切。`
+            : `原文「${firstSent}」中的「${primaryCharObj.char}」字，依上下文脈絡可對應「${primaryCharObj.meaning}」。選項 (A) 貼合文意，故選 (A)。`
         },
         {
-          question: `2. 【詞性與字詞運用】關於文中「${secondaryCharObj.char}」字或關鍵詞彙的用法，下列敘述何者正確？`,
-          options: {
+          question: isModernChinese
+            ? `2. 【句意理解】閱讀文中「${midSent.slice(0, 22)}」這段文字，可看出作者想傳達什麼？`
+            : `2. 【詞性與字詞運用】關於文中「${secondaryCharObj.char}」字或關鍵詞彙的用法，下列敘述何者正確？`,
+          options: isModernChinese ? {
+            A: '結合前後文脈絡，進一步深化並說明前文提出的觀點',
+            B: '作者在此推翻自己前一句的所有說法',
+            C: '這段文字純屬無意義的重複，沒有任何新訊息',
+            D: '作者認為讀者不需要思考文章背後的涵義'
+          } : {
             A: `需結合前後文語境判斷其詞性與作用（${secondaryCharObj.note}）`,
             B: '在任何文言或閱讀篇章中都只有單一固定意思，不需看上下文',
             C: '必然為否定副詞，表示完全相反的意思',
             D: '屬於贅字，刪除後不影響句意也不影響語法結構'
           },
           answer: 'A',
-          explanation: `大考字詞題重在「依文脈定字義」。「${secondaryCharObj.char}」字的常見用法包含「${secondaryCharObj.meaning}」，${secondaryCharObj.note}，因此選 (A)。`
+          explanation: isModernChinese
+            ? `「${midSent}」承接上文並深化主旨，選項 (A) 符合文意。`
+            : `大考字詞題重在「依文脈定字義」。「${secondaryCharObj.char}」字的常見用法包含「${secondaryCharObj.meaning}」，${secondaryCharObj.note}，因此選 (A)。`
         },
         {
           question: `3. 【文意理解】根據本文內容，下列哪一項最符合文章所傳達的核心文意？`,
@@ -1505,25 +1619,37 @@
       const [subject, level] = document.getElementById('upload-category').value.split('|');
 
       if (!rawText) {
-        alert('請先貼上文言文或文章內容（或上傳檔案）！');
+        alert('請先貼上文章內容（或上傳 PDF / Word 檔案）！');
         return;
       }
 
       latestGeneratedArticle = buildSmartReadingPackage(rawText, title, subject, level);
       document.getElementById('upload-title').value = latestGeneratedArticle.title;
 
+      const isModernChinese = latestGeneratedArticle.subject === 'chinese_modern';
       const statusBox = document.getElementById('ai-gen-status');
       statusBox.classList.remove('hidden');
-      statusBox.innerText = `✅ 已自動產生完整內容：共 ${latestGeneratedArticle.sentences.length} 句「整句跳出視窗解釋」、1 份「上下對照全文意思」與 ${latestGeneratedArticle.questions.length} 題「大考字義＋文意選擇題與解析」！`;
+      statusBox.innerText = isModernChinese
+        ? `✅ 已自動產生「國文白話文」教材（翻譯區依設定保持空白），共 ${latestGeneratedArticle.sentences.length} 句解釋與 ${latestGeneratedArticle.questions.length} 題選擇題！`
+        : `✅ 已自動產生「${latestGeneratedArticle.level}」教材（含白話翻譯），共 ${latestGeneratedArticle.sentences.length} 句解釋與 ${latestGeneratedArticle.questions.length} 題選擇題！`;
 
       renderTeacherEditors(latestGeneratedArticle);
       document.getElementById('generated-preview-box').classList.remove('hidden');
     }
 
     function renderTeacherEditors(article) {
-      document.getElementById('edit-full-translation').value = article.fullTranslation || '';
+      const isModernChinese = article.subject === 'chinese_modern' || article.level === '白話文閱讀';
+      document.getElementById('edit-full-translation').value = isModernChinese ? '' : (article.fullTranslation || '');
 
+      const sentSection = document.getElementById('teacher-sentences-section');
       const sentContainer = document.getElementById('edit-sentences-container');
+      if (isModernChinese) {
+        if (sentSection) sentSection.classList.add('hidden');
+        sentContainer.innerHTML = '';
+      } else {
+        if (sentSection) sentSection.classList.remove('hidden');
+      }
+      if (!isModernChinese) {
       sentContainer.innerHTML = (article.sentences || []).map((s, idx) => `
         <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 sentence-editor-card">
           <div class="flex items-center justify-between">
@@ -1535,8 +1661,8 @@
             <input type="text" class="sent-text w-full border border-slate-300 rounded-xl px-3 py-2 text-sm bg-white font-bold" value="${escapeAttr(s.text)}">
           </div>
           <div>
-            <label class="block text-xs font-bold text-emerald-700 mb-1">整句翻譯／白話語譯</label>
-            <input type="text" class="sent-trans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(s.translation)}">
+            <label class="block text-xs font-bold text-emerald-700 mb-1">整句白話翻譯（國文白話文保持空白）</label>
+            <input type="text" class="sent-trans w-full border border-emerald-300 rounded-xl px-3 py-2 text-sm bg-white" value="${escapeAttr(isModernChinese ? '' : (s.translation || ''))}">
           </div>
           <div>
             <label class="block text-xs font-bold text-blue-700 mb-1">補充字詞／句法解析</label>
@@ -1544,6 +1670,8 @@
           </div>
         </div>
       `).join('');
+
+      }
 
       const qContainer = document.getElementById('edit-questions-container');
       qContainer.innerHTML = (article.questions || []).map((q, qIdx) => `
@@ -1596,13 +1724,22 @@
     function collectArticleFromEditors() {
       const title = document.getElementById('upload-title').value.trim() || latestGeneratedArticle?.title || '未命名閱讀文章';
       const [subject, level] = document.getElementById('upload-category').value.split('|');
+      const isModernChinese = subject === 'chinese_modern' || level === '白話文閱讀';
 
-      const sentences = [...document.querySelectorAll('.sentence-editor-card')].map((card, i) => ({
-        text: card.querySelector('.sent-text').value.trim(),
-        translation: card.querySelector('.sent-trans').value.trim(),
-        grammar: card.querySelector('.sent-grammar').value.trim(),
-        wordNotes: latestGeneratedArticle?.sentences?.[i]?.wordNotes || {}
-      })).filter(s => s.text.length > 0);
+      const sentenceCards = [...document.querySelectorAll('.sentence-editor-card')];
+      const sentences = isModernChinese
+        ? (latestGeneratedArticle?.sentences || []).map(s => ({
+            text: s.text,
+            translation: '',
+            grammar: '',
+            wordNotes: s.wordNotes || {}
+          }))
+        : sentenceCards.map((card, i) => ({
+            text: card.querySelector('.sent-text').value.trim(),
+            translation: card.querySelector('.sent-trans').value.trim(),
+            grammar: card.querySelector('.sent-grammar').value.trim(),
+            wordNotes: latestGeneratedArticle?.sentences?.[i]?.wordNotes || {}
+          })).filter(s => s.text.length > 0);
 
       const questions = [...document.querySelectorAll('.question-editor-card')].map(card => ({
         question: card.querySelector('.q-stem').value.trim(),
@@ -1622,7 +1759,7 @@
         level,
         title,
         sentences,
-        fullTranslation: document.getElementById('edit-full-translation').value.trim(),
+        fullTranslation: isModernChinese ? '' : document.getElementById('edit-full-translation').value.trim(),
         questions
       };
     }
