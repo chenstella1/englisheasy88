@@ -161,15 +161,18 @@
         <p id="translation-section-hint" class="text-xs text-slate-500 mt-0.5">文言文閱讀將自動顯示系統產生的白話翻譯；白話文與英文直接閱讀原文與作答選擇題。</p>
       </div>
 
-      <!-- 原文 -->
+      <!-- 上方：文章原文 -->
       <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-        <div class="text-xs font-black text-slate-500 tracking-wider">【文章原文】</div>
+        <div class="text-xs font-black text-slate-500 tracking-wider">【上：文章原文】</div>
         <div id="full-original-display" class="text-base sm:text-lg text-slate-900 leading-loose whitespace-pre-line font-medium"></div>
       </div>
 
-      <!-- 文言文專用：系統整篇白話翻譯 -->
-      <div id="student-translation-box" class="hidden p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
-        <div class="text-xs font-black text-emerald-700 tracking-wider">【文言文整篇白話翻譯】</div>
+      <!-- 下方：全文翻譯 -->
+      <div id="student-translation-box" class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+        <div class="flex items-center justify-between gap-2">
+          <div class="text-xs font-black text-emerald-700 tracking-wider">【下：全文翻譯】</div>
+          <button type="button" onclick="toggleVocabBankModal()" class="text-xs font-bold px-3 py-1 rounded-xl bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300">📚 本篇單字庫（點擊加入／查看）</button>
+        </div>
         <div id="detail-full-translation" class="text-base sm:text-lg text-slate-800 leading-loose whitespace-pre-line min-h-[2.5rem]"></div>
       </div>
     </section>
@@ -197,7 +200,10 @@
           <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">依段落語境查字義</span>
           <h4 id="word-modal-token" class="text-2xl font-black text-slate-900 mt-1.5">字詞</h4>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button type="button" onclick="saveCurrentWordToBank()" class="px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-bold">＋ 存進單字庫</button>
+          <button type="button" onclick="speakEnglishText(currentModalSpeakText, 'en-US')" class="px-2.5 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-xl text-xs font-bold">🔊 美式發音</button>
+          <button type="button" onclick="speakEnglishText(currentModalSpeakText, 'en-GB')" class="px-2.5 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-900 rounded-xl text-xs font-bold">🔊 英式發音</button>
           <button onclick="hideWordModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold">✕ 關閉</button>
         </div>
       </div>
@@ -211,6 +217,20 @@
         <div class="text-xs font-black text-slate-500">【所在段落／句子上下文】</div>
         <div id="word-modal-context" class="text-sm text-slate-700 leading-relaxed"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== 跳出視窗 3：單字庫（可將點選單字存入並隨時複習／發音） ==================== -->
+  <div id="vocab-bank-modal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target.id==='vocab-bank-modal')this.classList.add('hidden')">
+    <div class="bg-white w-full max-w-2xl max-h-[82vh] overflow-y-auto rounded-3xl shadow-2xl border-2 border-emerald-300 p-6 space-y-4" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div>
+          <span class="text-xs font-black px-3 py-1 rounded-full bg-emerald-100 text-emerald-900">個人單字庫</span>
+          <h4 class="text-xl font-black text-slate-900 mt-1">📚 已收錄單字／詞彙清單</h4>
+        </div>
+        <button onclick="document.getElementById('vocab-bank-modal').classList.add('hidden')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold">✕ 關閉</button>
+      </div>
+      <div id="vocab-bank-list" class="space-y-2.5"></div>
     </div>
   </div>
 
@@ -255,47 +275,47 @@
         </div>
       </div>
 
-      <!-- 步驟 1～4：選擇分類、標題、上傳 PDF/Word、貼上文章 -->
+      <!-- 簡化流程：選分類 → 上傳含文章與題目的 PDF（英、中皆同） → 自動生成互動練習、答案解析、逐字逐句翻譯與單字庫 -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1">1. 選擇文章歸屬分類</label>
+            <label class="block text-sm font-bold text-slate-700 mb-1">1. 選擇分類（英文／國文皆同一流程）</label>
             <select id="upload-category" class="w-full border border-slate-300 rounded-xl p-3 text-base font-bold">
-              <option value="chinese|文言文閱讀" selected>國文閱讀 — 文言文閱讀（自動產生白話翻譯）</option>
-              <option value="chinese_modern|白話文閱讀">國文閱讀 — 白話文閱讀（翻譯區保持空白）</option>
-              <option value="english|國小英文">英文閱讀 — 國小英文（自動產生白話翻譯）</option>
-              <option value="english|國中英文">英文閱讀 — 國中英文（自動產生白話翻譯）</option>
-              <option value="english|高中英文">英文閱讀 — 高中英文（自動產生白話翻譯）</option>
+              <option value="english|國小英文">英文閱讀 — 國小英文</option>
+              <option value="english|國中英文" selected>英文閱讀 — 國中英文</option>
+              <option value="english|高中英文">英文閱讀 — 高中英文</option>
+              <option value="chinese|文言文閱讀">國文閱讀 — 文言文閱讀</option>
+              <option value="chinese_modern|白話文閱讀">國文閱讀 — 白話文閱讀</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1">2. 文章標題（可選填，未填將自動命名）</label>
-            <input type="text" id="upload-title" placeholder="例如：師說節選、背影節選 或直接貼上文章" class="w-full border border-slate-300 rounded-xl p-3 text-base">
+            <label class="block text-sm font-bold text-slate-700 mb-1">2. 標題（選填，未填自動取檔名或首句）</label>
+            <input type="text" id="upload-title" placeholder="可留空，系統自動命名" class="w-full border border-slate-300 rounded-xl p-3 text-base">
           </div>
 
           <div>
-            <label class="block text-sm font-bold text-slate-700 mb-1">3. 上傳 PDF (.pdf) 或 Word (.docx) 檔案（選填）</label>
-            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-brand-400 rounded-2xl bg-brand-50/40 hover:bg-brand-50 cursor-pointer transition-colors p-4 text-center">
-              <span class="text-2xl mb-1">📄</span>
-              <span class="text-sm font-bold text-brand-700">點擊選擇 PDF 或 Word (.docx) 檔案</span>
-              <span id="file-upload-status" class="text-xs text-slate-500 mt-1">支援自動擷取內文文字</span>
-              <input type="file" accept=".pdf,.docx,.txt" onchange="handleFileUpload(event)" class="hidden">
+            <label class="block text-sm font-bold text-slate-700 mb-1">3. 上傳 PDF 檔（內含文章＋題目，支援中、英文）</label>
+            <label class="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-brand-500 rounded-2xl bg-brand-50/50 hover:bg-brand-50 cursor-pointer transition-colors p-4 text-center">
+              <span class="text-3xl mb-1">📕</span>
+              <span class="text-sm font-black text-brand-700">點擊上傳 PDF 檔案（文章＋選擇題）</span>
+              <span id="file-upload-status" class="text-xs text-slate-600 mt-1">上傳後自動拆解文章與題目、產生互動練習、答案解析、逐字逐句翻譯與單字庫</span>
+              <input type="file" accept=".pdf" onchange="handlePdfOneClickUpload(event)" class="hidden">
             </label>
           </div>
         </div>
 
-        <!-- 原文輸入區 -->
+        <!-- 備用貼文區（亦可直接貼上含文章與題目的文字一鍵生成） -->
         <div class="space-y-2 flex flex-col">
-          <label class="block text-sm font-bold text-slate-700">4. 貼上文章原文（文言文、白話文或英文皆可）</label>
-          <textarea id="upload-raw-text" rows="10" placeholder="請直接貼上文章內容，例如：&#10;古之學者必有師。師者，所以傳道、受業、解惑也。人非生而知之者，孰能無惑？惑而不從師，其為惑也，終不解矣。" class="w-full flex-grow border border-slate-300 rounded-2xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+          <label class="block text-sm font-bold text-slate-700">4. 或直接貼上 PDF 複製文字（含文章與題目，可選）</label>
+          <textarea id="upload-raw-text" rows="10" placeholder="若不想選檔，也可直接貼上包含「文章＋題目／答案／解析」的文字，再按下方一鍵生成。" class="w-full flex-grow border border-slate-300 rounded-2xl p-4 text-base leading-relaxed focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
         </div>
       </div>
 
       <!-- 一鍵生成按鈕 -->
       <div class="pt-2 flex flex-wrap gap-3">
         <button onclick="generateAllReadingMaterials()" id="btn-ai-generate" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3.5 rounded-2xl shadow-lg text-base flex items-center gap-2">
-          ✨ 載入文章與題目編輯區（文言文自動產出逐句＆整篇翻譯）
+          ⚡ 一鍵生成互動練習、答案解析、逐字逐句翻譯與單字庫
         </button>
       </div>
 
@@ -649,6 +669,796 @@
             explanation: '最後一句提到 "the longer the bee shakes its body, the farther away the food is"（搖動越久，代表食物越遠）。'
           }
         ]
+      },
+      {
+        id: 'en_junior_laika_13',
+        subject: 'english',
+        level: '國中英文',
+        title: 'Laika: The Little Dog Who Traveled to Space（13_class 克漏字＋逐字／逐句聽讀）',
+        isClozeInteractive: true,
+        clozeQuestions: {
+      1: {
+        answer: "C",
+        options: { A: "who", B: "which", C: "that", D: "where" },
+        explanation: "先行詞為 a small stray dog（指動物），關係代名詞可用 which 或 that；此題選項提供 (A) who (B) which (C) that，依國八關代與題庫設定選 (C) that。"
+      },
+      2: {
+        answer: "B",
+        options: { A: "quietly", B: "quiet" },
+        explanation: "looked 為連綴動詞（看起來），後接形容詞作主詞補語，故選 (B) quiet（安靜的）。"
+      },
+      3: {
+        answer: "A",
+        options: { A: "soft", B: "softly" },
+        explanation: "felt 在此為連綴動詞（摸起來／感覺起來），後接形容詞，故選 (A) soft（柔軟的）。"
+      },
+      4: {
+        answer: "A",
+        options: { A: "X", B: "so", C: "but", D: "or" },
+        explanation: "句首已有從屬連接詞 Because 引導原因子句，主要子句前不可再加對等連接詞 so，故選 (A) X（不填）。"
+      },
+      5: {
+        answer: "B",
+        options: { A: "choose", B: "chose", C: "was choosing", D: "chooses" },
+        explanation: "全文敘述 1957 年的過去事實，choose 的過去式為 chose，故選 (B) chose。"
+      },
+      6: {
+        answer: "A",
+        options: { A: "put", B: "puts", C: "putted", D: "was putting" },
+        explanation: "put 的三態為 put - put - put（無 putted 拼法），依過去時態選 (A) put。"
+      },
+      7: {
+        answer: "A",
+        options: { A: "like thunder", B: "thunder", C: "liked thunder" },
+        explanation: "sounded 為連綴動詞，後接名詞 thunder 需加介系詞 like（sound like + N，聽起來像……），故選 (A) like thunder。"
+      },
+      8: {
+        answer: "B",
+        options: { A: "to shake", B: "shaking", C: "shook" },
+        explanation: "feel 為感官動詞，受詞為 the ship，接現在分詞 shaking 表示「感覺太空船正在震動」，故選 (B) shaking。"
+      },
+      9: {
+        answer: "B",
+        options: { A: "scared", B: "scary" },
+        explanation: "主詞 Everything around her（周圍的一切事物）是「令人害怕的」，事物作主詞用 -ing 形容詞 scary，故選 (B) scary。"
+      },
+      10: {
+        answer: "A",
+        options: { A: "sad", B: "sadly" },
+        explanation: "sounded 為連綴動詞（聽起來），後接形容詞作補語，故選 (A) sad（難過的／令人難過的）。"
+      },
+      11: {
+        answer: "B",
+        options: { A: "quick", B: "quickly" },
+        explanation: "修飾動詞 became（變得……）要用副詞，故選 (B) quickly（快速地）。"
+      },
+      12: {
+        answer: "B",
+        options: { A: "before", B: "later", C: "ago", D: "future" },
+        explanation: "「幾小時之後」為 a few hours later；ago 通常搭配現在完成式或特定過去時間點且多置於過去式句尾表示「……以前」，此處語意為「幾小時後」，選 (B) later。"
+      },
+      13: {
+        answer: "B",
+        options: { A: "teach", B: "teaches", C: "teaching", D: "taught" },
+        explanation: "句首有 Today 且敘述至今仍帶給人們的啟示，主詞 Laika's story 為單數，動詞用第三人稱單數現在式 teaches，故選 (B) teaches。"
+      },
+      14: {
+        answer: "C",
+        options: { A: "kind", B: "being kind", C: "be kind", D: "were kind" },
+        explanation: "助動詞 should 後接原形動詞；kind 為形容詞，需加上原形 be 動詞構成 be kind，故選 (C) be kind。"
+      }
+    },
+        clozeSentences: [
+      {
+        id: "s1",
+        zh: "1957 年，萊卡是一隻在俄羅斯寒冷街頭沒有家的流浪小狗。",
+        tokens: [
+          { t: "In" }, { t: "1957," }, { t: "Laika" }, { t: "was" }, { t: "a" },
+          { t: "small" }, { t: "stray" }, { t: "dog" }, { blank: 1 },
+          { t: "had" }, { t: "no" }, { t: "home" }, { t: "on" }, { t: "the" },
+          { t: "cold" }, { t: "streets" }, { t: "of" }, { t: "Russia." }
+        ]
+      },
+      {
+        id: "s2",
+        zh: "牠看起來可愛又安靜，毛皮摸起來非常柔軟。",
+        tokens: [
+          { t: "She" }, { t: "looked" }, { t: "cute" }, { t: "and" }, { blank: 2 },
+          { t: "and" }, { t: "her" }, { t: "fur" }, { t: "felt" }, { t: "very" }, { blank: 3 }
+        ]
+      },
+      {
+        id: "s3",
+        zh: "因為牠友善又冷靜，一些科學家挑選牠去執行一趟特別的太空之旅。",
+        tokens: [
+          { t: "Because" }, { t: "she" }, { t: "was" }, { t: "friendly" }, { t: "and" },
+          { t: "calm," }, { blank: 4 }, { t: "some" }, { t: "scientists" }, { blank: 5 },
+          { t: "her" }, { t: "for" }, { t: "a" }, { t: "special" }, { t: "trip" },
+          { t: "to" }, { t: "space." }
+        ]
+      },
+      {
+        id: "s4",
+        zh: "他們把牠放進一艘名為史普尼克 2 號（Sputnik 2）的小型太空船裡。",
+        tokens: [
+          { t: "They" }, { blank: 6 }, { t: "her" }, { t: "inside" }, { t: "a" },
+          { t: "small" }, { t: "spaceship" }, { t: "which" }, { t: "was" },
+          { t: "named" }, { t: "Sputnik" }, { t: "2." }
+        ]
+      },
+      {
+        id: "s5",
+        zh: "當火箭升空時，巨大的聲響聽起來像打雷一樣。",
+        tokens: [
+          { t: "When" }, { t: "the" }, { t: "rocket" }, { t: "went" }, { t: "up," },
+          { t: "the" }, { t: "loud" }, { t: "noise" }, { t: "sounded" }, { blank: 7 }
+        ]
+      },
+      {
+        id: "s6",
+        zh: "在黑暗的艙箱裡，空氣聞起來很奇怪，小空間起初感覺很冷。",
+        tokens: [
+          { t: "Inside" }, { t: "the" }, { t: "dark" }, { t: "box," }, { t: "the" },
+          { t: "air" }, { t: "smelled" }, { t: "strange," }, { t: "and" }, { t: "the" },
+          { t: "small" }, { t: "room" }, { t: "felt" }, { t: "cold" }, { t: "at" }, { t: "first." }
+        ]
+      },
+      {
+        id: "s7",
+        zh: "萊卡能聽見巨大的機器聲，並感覺到太空船在震動。",
+        tokens: [
+          { t: "Laika" }, { t: "could" }, { t: "hear" }, { t: "the" }, { t: "loud" },
+          { t: "machines" }, { t: "and" }, { t: "feel" }, { t: "the" }, { t: "ship" }, { blank: 8 }
+        ]
+      },
+      {
+        id: "s8",
+        zh: "她周圍的一切事物都很可怕。",
+        tokens: [
+          { t: "Everything" }, { t: "around" }, { t: "her" }, { t: "was" }, { blank: 9 }
+        ]
+      },
+      {
+        id: "s9",
+        zh: "許多年間，人們以為萊卡在一週後平靜地離開了。",
+        tokens: [
+          { t: "For" }, { t: "many" }, { t: "years," }, { t: "people" }, { t: "thought" },
+          { t: "Laika" }, { t: "died" }, { t: "peacefully" }, { t: "after" }, { t: "a" }, { t: "week." }
+        ]
+      },
+      {
+        id: "s10",
+        zh: "然而，真實的故事聽起來非常令人難過。",
+        tokens: [
+          { t: "However," }, { t: "the" }, { t: "true" }, { t: "story" }, { t: "sounded" }, { t: "very" }, { blank: 10 }
+        ]
+      },
+      {
+        id: "s11",
+        zh: "事實上，太空船內的機器故障了，所以艙室很快變得太熱。",
+        tokens: [
+          { t: "In" }, { t: "fact," }, { t: "the" }, { t: "machine" }, { t: "inside" },
+          { t: "the" }, { t: "spaceship" }, { t: "broke," }, { t: "so" }, { t: "the" },
+          { t: "room" }, { blank: 11 }, { t: "became" }, { t: "too" }, { t: "hot." }
+        ]
+      },
+      {
+        id: "s12",
+        zh: "可憐的萊卡在短短幾小時後就死於高溫與恐懼。",
+        tokens: [
+          { t: "Poor" }, { t: "Laika" }, { t: "died" }, { t: "from" }, { t: "the" },
+          { t: "heat" }, { t: "and" }, { t: "fear" }, { t: "just" }, { t: "a" },
+          { t: "few" }, { t: "hours" }, { blank: 12 }
+        ]
+      },
+      {
+        id: "s13",
+        zh: "她再也沒有回到地球。",
+        tokens: [
+          { t: "She" }, { t: "never" }, { t: "came" }, { t: "back" }, { t: "to" }, { t: "Earth." }
+        ]
+      },
+      {
+        id: "s14",
+        zh: "今天，萊卡的故事教導我們尊重生命。",
+        tokens: [
+          { t: "Today," }, { t: "Laika's" }, { t: "story" }, { blank: 13 }, { t: "us" },
+          { t: "to" }, { t: "respect" }, { t: "life." }
+        ]
+      },
+      {
+        id: "s15",
+        zh: "動物是我們的朋友，而不只是科學的工具。",
+        tokens: [
+          { t: "Animals" }, { t: "are" }, { t: "our" }, { t: "friends," }, { t: "not" },
+          { t: "just" }, { t: "tools" }, { t: "for" }, { t: "science." }
+        ]
+      },
+      {
+        id: "s16",
+        zh: "牠們像我們一樣能感受到痛苦與恐懼。",
+        tokens: [
+          { t: "They" }, { t: "can" }, { t: "feel" }, { t: "pain" }, { t: "and" },
+          { t: "fear," }, { t: "just" }, { t: "like" }, { t: "us." }
+        ]
+      },
+      {
+        id: "s17",
+        zh: "我們應該永遠善待每一個有生命的動物並保護牠們。",
+        tokens: [
+          { t: "We" }, { t: "should" }, { t: "always" }, { blank: 14 }, { t: "to" },
+          { t: "every" }, { t: "living" }, { t: "animal" }, { t: "and" }, { t: "protect" }, { t: "them." }
+        ]
+      }
+    ],
+        vocabList: [
+      { no: 1, en: "stray dog", pos: "n.", zh: "流浪狗", ex: "The stray dog looked hungry. 那隻流浪狗看起來很餓。" },
+      { no: 2, en: "Russia", pos: "n.", zh: "俄羅斯", ex: "Russia is a large country. 俄羅斯是一個很大的國家。" },
+      { no: 3, en: "quiet", pos: "adj.", zh: "安靜的", ex: "The dog is very quiet. 這隻狗很安靜。" },
+      { no: 4, en: "fur", pos: "n.", zh: "毛皮；軟毛", ex: "The cat has soft fur. 這隻貓有柔軟的毛。" },
+      { no: 5, en: "soft", pos: "adj.", zh: "柔軟的", ex: "This pillow is soft. 這個枕頭很柔軟。" },
+      { no: 6, en: "friendly", pos: "adj.", zh: "友善的", ex: "The dog is friendly to children. 這隻狗對小孩很友善。" },
+      { no: 7, en: "calm", pos: "adj./v.", zh: "平靜的；使平靜", ex: "Please stay calm. 請保持冷靜。" },
+      { no: 8, en: "scientist", pos: "n.", zh: "科學家", ex: "The scientist studies space. 這位科學家研究太空。" },
+      { no: 9, en: "space", pos: "n.", zh: "太空；空間", ex: "The spaceship traveled into space. 太空船飛進了太空。" },
+      { no: 10, en: "inside", pos: "prep./adv.", zh: "在……裡面；在裡面", ex: "The dog stayed inside the house. 那隻狗待在屋子裡。" },
+      { no: 11, en: "spaceship", pos: "n.", zh: "太空船", ex: "The spaceship went to the Moon. 太空船前往月球。" },
+      { no: 12, en: "rocket", pos: "n.", zh: "火箭", ex: "The rocket flew into the sky. 火箭飛向天空。" },
+      { no: 13, en: "machine", pos: "n.", zh: "機器", ex: "This machine is very useful. 這台機器非常有用。" },
+      { no: 14, en: "shake", pos: "v.", zh: "搖動；震動", ex: "The ground began to shake. 地面開始震動。" },
+      { no: 15, en: "scary", pos: "adj.", zh: "可怕的；嚇人的", ex: "The movie was scary. 這部電影很可怕。" },
+      { no: 16, en: "scared", pos: "adj.", zh: "害怕的", ex: "The little dog was scared. 那隻小狗很害怕。" },
+      { no: 17, en: "thought", pos: "n./v.", zh: "想法；思考（think 的過去式）", ex: "I thought about my family. 我想到了我的家人。" },
+      { no: 18, en: "peacefully", pos: "adv.", zh: "平靜地；安詳地", ex: "The baby slept peacefully. 寶寶安詳地睡著了。" },
+      { no: 19, en: "sounded", pos: "v.", zh: "聽起來（sound 的過去式）", ex: "The noise sounded strange. 那個聲音聽起來很奇怪。" },
+      { no: 20, en: "broke", pos: "v.", zh: "打破；弄壞（break 的過去式）", ex: "He broke the window. 他打破了窗戶。" },
+      { no: 21, en: "quickly", pos: "adv.", zh: "快速地", ex: "The dog ran quickly. 那隻狗跑得很快。" },
+      { no: 22, en: "die from", pos: "phr.", zh: "死於（某種原因）", ex: "Some animals die from hunger. 有些動物死於飢餓。" },
+      { no: 23, en: "heat", pos: "n.", zh: "熱；高溫", ex: "The heat was too strong. 高溫太強烈了。" },
+      { no: 24, en: "fear", pos: "n.", zh: "恐懼；害怕", ex: "She felt fear in the dark. 她在黑暗中感到恐懼。" },
+      { no: 25, en: "later", pos: "adv.", zh: "之後；稍後", ex: "I will call you later. 我晚點會打給你。" },
+      { no: 26, en: "ago", pos: "adv.", zh: "……以前", ex: "He left two days ago. 他兩天前離開了。" },
+      { no: 27, en: "future", pos: "n.", zh: "未來", ex: "Nobody knows the future. 沒有人知道未來會如何。" },
+      { no: 28, en: "Earth", pos: "n.", zh: "地球", ex: "The Earth moves around the Sun. 地球繞著太陽運行。" },
+      { no: 29, en: "respect", pos: "n./v.", zh: "尊重；敬意", ex: "We should respect all living things. 我們應該尊重所有生物。" },
+      { no: 30, en: "teach", pos: "v.", zh: "教導；教學", ex: "My mother taught me to cook. 我媽媽教我煮飯。" },
+      { no: 31, en: "tool", pos: "n.", zh: "工具", ex: "A hammer is a useful tool. 錘子是一種有用的工具。" },
+      { no: 32, en: "science", pos: "n.", zh: "科學", ex: "Science helps us understand the world. 科學幫助我們了解世界。" },
+      { no: 33, en: "pain", pos: "n.", zh: "疼痛；痛苦", ex: "The boy felt pain in his leg. 那個男孩感到腿部疼痛。" },
+      { no: 34, en: "protect", pos: "v.", zh: "保護", ex: "We should protect animals. 我們應該保護動物。" }
+    ],
+        extraDict: {
+      "in": { pos: "prep.", zh: "在……裡；於（年份前）", ex: "In 1957（在 1957 年）" },
+      "was": { pos: "v.", zh: "是（be 動詞過去式，單數）", ex: "Laika was a small stray dog." },
+      "a": { pos: "art.", zh: "一隻／一個（不定冠詞）", ex: "a small stray dog" },
+      "small": { pos: "adj.", zh: "小的；年幼的", ex: "a small stray dog" },
+      "dog": { pos: "n.", zh: "狗", ex: "The little dog traveled to space." },
+      "had": { pos: "v.", zh: "有；擁有（have 的過去式）", ex: "had no home（沒有家）" },
+      "no": { pos: "det./adv.", zh: "沒有；不", ex: "had no home（沒有家）" },
+      "home": { pos: "n./adv.", zh: "家；住處", ex: "no home（沒有家）" },
+      "on": { pos: "prep.", zh: "在……上面／在街道上", ex: "on the cold streets" },
+      "the": { pos: "art.", zh: "這／那（定冠詞）", ex: "the cold streets" },
+      "cold": { pos: "adj.", zh: "寒冷的；冷的", ex: "cold streets / felt cold" },
+      "streets": { pos: "n.", zh: "街道（street 的複數）", ex: "on the cold streets of Russia" },
+      "of": { pos: "prep.", zh: "……的", ex: "streets of Russia" },
+      "she": { pos: "pron.", zh: "她／牠（指母狗 Laika）", ex: "She looked cute." },
+      "looked": { pos: "v.", zh: "看起來（look 的過去式）", ex: "She looked cute." },
+      "cute": { pos: "adj.", zh: "可愛的", ex: "She looked cute." },
+      "and": { pos: "conj.", zh: "和；而且", ex: "cute and quiet" },
+      "her": { pos: "pron./adj.", zh: "她的／牠的", ex: "her fur / around her" },
+      "felt": { pos: "v.", zh: "感覺／摸起來（feel 的過去式）", ex: "her fur felt very soft." },
+      "very": { pos: "adv.", zh: "非常；很", ex: "very soft / very sad" },
+      "because": { pos: "conj.", zh: "因為", ex: "Because she was friendly..." },
+      "some": { pos: "det./pron.", zh: "一些", ex: "some scientists" },
+      "for": { pos: "prep.", zh: "為了；去……", ex: "for a special trip" },
+      "special": { pos: "adj.", zh: "特別的；特殊的", ex: "a special trip" },
+      "trip": { pos: "n.", zh: "旅行；旅程", ex: "a trip to space" },
+      "to": { pos: "prep./inf.", zh: "往；去；向", ex: "to space / to Earth / to respect" },
+      "they": { pos: "pron.", zh: "他們", ex: "They put her inside..." },
+      "which": { pos: "pron.", zh: "哪一個／關係代名詞（指物）", ex: "a small spaceship which was named..." },
+      "named": { pos: "v./adj.", zh: "命名；叫做", ex: "was named Sputnik 2" },
+      "when": { pos: "conj.", zh: "當……的時候", ex: "When the rocket went up..." },
+      "went": { pos: "v.", zh: "去；上升（go 的過去式）", ex: "went up（升空）" },
+      "up": { pos: "adv./prep.", zh: "向上；往上", ex: "went up（升空）" },
+      "loud": { pos: "adj.", zh: "大聲的；響亮的", ex: "loud noise / loud machines" },
+      "noise": { pos: "n.", zh: "噪音；聲響", ex: "the loud noise" },
+      "dark": { pos: "adj.", zh: "黑暗的", ex: "the dark box" },
+      "box": { pos: "n.", zh: "箱子；艙箱", ex: "Inside the dark box" },
+      "air": { pos: "n.", zh: "空氣", ex: "the air smelled strange" },
+      "smelled": { pos: "v.", zh: "聞起來（smell 的過去式）", ex: "smelled strange" },
+      "strange": { pos: "adj.", zh: "奇怪的；陌生的", ex: "smelled strange" },
+      "room": { pos: "n.", zh: "空間；艙室", ex: "the small room" },
+      "at": { pos: "prep.", zh: "在……", ex: "at first（起初；一開始）" },
+      "first": { pos: "adv./adj.", zh: "第一；起初", ex: "at first（起初）" },
+      "could": { pos: "aux.", zh: "能夠（can 的過去式）", ex: "Laika could hear..." },
+      "hear": { pos: "v.", zh: "聽見", ex: "hear the loud machines" },
+      "everything": { pos: "pron.", zh: "一切事物", ex: "Everything around her" },
+      "around": { pos: "prep./adv.", zh: "在……周圍", ex: "around her" },
+      "many": { pos: "adj.", zh: "許多的（接可數複數）", ex: "For many years" },
+      "years": { pos: "n.", zh: "年；歲月（year 的複數）", ex: "many years" },
+      "people": { pos: "n.", zh: "人們", ex: "people thought..." },
+      "after": { pos: "prep./conj.", zh: "在……之後", ex: "after a week" },
+      "week": { pos: "n.", zh: "週；星期", ex: "a week" },
+      "however": { pos: "adv.", zh: "然而；可是", ex: "However, the true story..." },
+      "true": { pos: "adj.", zh: "真實的；真的", ex: "the true story" },
+      "story": { pos: "n.", zh: "故事", ex: "Laika's story" },
+      "sad": { pos: "adj.", zh: "難過的；令人難過的", ex: "sounded very sad" },
+      "fact": { pos: "n.", zh: "事實", ex: "In fact（事實上）" },
+      "so": { pos: "conj./adv.", zh: "所以；因此／如此", ex: "so the room became too hot" },
+      "became": { pos: "v.", zh: "變得（become 的過去式）", ex: "became too hot" },
+      "too": { pos: "adv.", zh: "太；過於", ex: "too hot" },
+      "hot": { pos: "adj.", zh: "熱的；高溫的", ex: "became too hot" },
+      "poor": { pos: "adj.", zh: "可憐的", ex: "Poor Laika" },
+      "died": { pos: "v.", zh: "死亡（die 的過去式）", ex: "died from the heat" },
+      "just": { pos: "adv.", zh: "只是；僅僅", ex: "just a few hours" },
+      "few": { pos: "det./adj.", zh: "幾個；少數的", ex: "a few hours（幾小時）" },
+      "hours": { pos: "n.", zh: "小時（hour 的複數）", ex: "a few hours" },
+      "never": { pos: "adv.", zh: "從未；絕不", ex: "She never came back" },
+      "came": { pos: "v.", zh: "來（come 的過去式）", ex: "came back（回來）" },
+      "back": { pos: "adv./n.", zh: "回；回來", ex: "came back to Earth" },
+      "today": { pos: "adv./n.", zh: "今天；現今", ex: "Today, Laika's story..." },
+      "us": { pos: "pron.", zh: "我們（we 的受格）", ex: "teaches us to respect life" },
+      "life": { pos: "n.", zh: "生命；生活", ex: "respect life" },
+      "animals": { pos: "n.", zh: "動物（animal 的複數）", ex: "Animals are our friends." },
+      "are": { pos: "v.", zh: "是（be 動詞現在式複數）", ex: "Animals are our friends." },
+      "our": { pos: "adj.", zh: "我們的", ex: "our friends" },
+      "friends": { pos: "n.", zh: "朋友（friend 的複數）", ex: "our friends" },
+      "not": { pos: "adv.", zh: "不是；不", ex: "not just tools" },
+      "they": { pos: "pron.", zh: "牠們／他們", ex: "They can feel pain and fear." },
+      "can": { pos: "aux.", zh: "可以；能夠", ex: "can feel pain" },
+      "feel": { pos: "v.", zh: "感覺；感受到", ex: "feel pain and fear" },
+      "like": { pos: "prep./v.", zh: "像……一樣；喜歡", ex: "just like us" },
+      "we": { pos: "pron.", zh: "我們", ex: "We should always..." },
+      "should": { pos: "aux.", zh: "應該", ex: "We should always be kind." },
+      "always": { pos: "adv.", zh: "總是；永遠", ex: "always be kind" },
+      "kind": { pos: "adj.", zh: "友善的；仁慈的", ex: "be kind to every living animal" },
+      "every": { pos: "adj.", zh: "每一個", ex: "every living animal" },
+      "living": { pos: "adj.", zh: "活著的；有生命的", ex: "living animal" },
+      "animal": { pos: "n.", zh: "動物", ex: "every living animal" },
+      "them": { pos: "pron.", zh: "牠們／他們（they 的受格）", ex: "protect them" }
+    },
+        sentences: [
+      {
+        id: "s1",
+        zh: "1957 年，萊卡是一隻在俄羅斯寒冷街頭沒有家的流浪小狗。",
+        tokens: [
+          { t: "In" }, { t: "1957," }, { t: "Laika" }, { t: "was" }, { t: "a" },
+          { t: "small" }, { t: "stray" }, { t: "dog" }, { blank: 1 },
+          { t: "had" }, { t: "no" }, { t: "home" }, { t: "on" }, { t: "the" },
+          { t: "cold" }, { t: "streets" }, { t: "of" }, { t: "Russia." }
+        ]
+      },
+      {
+        id: "s2",
+        zh: "牠看起來可愛又安靜，毛皮摸起來非常柔軟。",
+        tokens: [
+          { t: "She" }, { t: "looked" }, { t: "cute" }, { t: "and" }, { blank: 2 },
+          { t: "and" }, { t: "her" }, { t: "fur" }, { t: "felt" }, { t: "very" }, { blank: 3 }
+        ]
+      },
+      {
+        id: "s3",
+        zh: "因為牠友善又冷靜，一些科學家挑選牠去執行一趟特別的太空之旅。",
+        tokens: [
+          { t: "Because" }, { t: "she" }, { t: "was" }, { t: "friendly" }, { t: "and" },
+          { t: "calm," }, { blank: 4 }, { t: "some" }, { t: "scientists" }, { blank: 5 },
+          { t: "her" }, { t: "for" }, { t: "a" }, { t: "special" }, { t: "trip" },
+          { t: "to" }, { t: "space." }
+        ]
+      },
+      {
+        id: "s4",
+        zh: "他們把牠放進一艘名為史普尼克 2 號（Sputnik 2）的小型太空船裡。",
+        tokens: [
+          { t: "They" }, { blank: 6 }, { t: "her" }, { t: "inside" }, { t: "a" },
+          { t: "small" }, { t: "spaceship" }, { t: "which" }, { t: "was" },
+          { t: "named" }, { t: "Sputnik" }, { t: "2." }
+        ]
+      },
+      {
+        id: "s5",
+        zh: "當火箭升空時，巨大的聲響聽起來像打雷一樣。",
+        tokens: [
+          { t: "When" }, { t: "the" }, { t: "rocket" }, { t: "went" }, { t: "up," },
+          { t: "the" }, { t: "loud" }, { t: "noise" }, { t: "sounded" }, { blank: 7 }
+        ]
+      },
+      {
+        id: "s6",
+        zh: "在黑暗的艙箱裡，空氣聞起來很奇怪，小空間起初感覺很冷。",
+        tokens: [
+          { t: "Inside" }, { t: "the" }, { t: "dark" }, { t: "box," }, { t: "the" },
+          { t: "air" }, { t: "smelled" }, { t: "strange," }, { t: "and" }, { t: "the" },
+          { t: "small" }, { t: "room" }, { t: "felt" }, { t: "cold" }, { t: "at" }, { t: "first." }
+        ]
+      },
+      {
+        id: "s7",
+        zh: "萊卡能聽見巨大的機器聲，並感覺到太空船在震動。",
+        tokens: [
+          { t: "Laika" }, { t: "could" }, { t: "hear" }, { t: "the" }, { t: "loud" },
+          { t: "machines" }, { t: "and" }, { t: "feel" }, { t: "the" }, { t: "ship" }, { blank: 8 }
+        ]
+      },
+      {
+        id: "s8",
+        zh: "她周圍的一切事物都很可怕。",
+        tokens: [
+          { t: "Everything" }, { t: "around" }, { t: "her" }, { t: "was" }, { blank: 9 }
+        ]
+      },
+      {
+        id: "s9",
+        zh: "許多年間，人們以為萊卡在一週後平靜地離開了。",
+        tokens: [
+          { t: "For" }, { t: "many" }, { t: "years," }, { t: "people" }, { t: "thought" },
+          { t: "Laika" }, { t: "died" }, { t: "peacefully" }, { t: "after" }, { t: "a" }, { t: "week." }
+        ]
+      },
+      {
+        id: "s10",
+        zh: "然而，真實的故事聽起來非常令人難過。",
+        tokens: [
+          { t: "However," }, { t: "the" }, { t: "true" }, { t: "story" }, { t: "sounded" }, { t: "very" }, { blank: 10 }
+        ]
+      },
+      {
+        id: "s11",
+        zh: "事實上，太空船內的機器故障了，所以艙室很快變得太熱。",
+        tokens: [
+          { t: "In" }, { t: "fact," }, { t: "the" }, { t: "machine" }, { t: "inside" },
+          { t: "the" }, { t: "spaceship" }, { t: "broke," }, { t: "so" }, { t: "the" },
+          { t: "room" }, { blank: 11 }, { t: "became" }, { t: "too" }, { t: "hot." }
+        ]
+      },
+      {
+        id: "s12",
+        zh: "可憐的萊卡在短短幾小時後就死於高溫與恐懼。",
+        tokens: [
+          { t: "Poor" }, { t: "Laika" }, { t: "died" }, { t: "from" }, { t: "the" },
+          { t: "heat" }, { t: "and" }, { t: "fear" }, { t: "just" }, { t: "a" },
+          { t: "few" }, { t: "hours" }, { blank: 12 }
+        ]
+      },
+      {
+        id: "s13",
+        zh: "她再也沒有回到地球。",
+        tokens: [
+          { t: "She" }, { t: "never" }, { t: "came" }, { t: "back" }, { t: "to" }, { t: "Earth." }
+        ]
+      },
+      {
+        id: "s14",
+        zh: "今天，萊卡的故事教導我們尊重生命。",
+        tokens: [
+          { t: "Today," }, { t: "Laika's" }, { t: "story" }, { blank: 13 }, { t: "us" },
+          { t: "to" }, { t: "respect" }, { t: "life." }
+        ]
+      },
+      {
+        id: "s15",
+        zh: "動物是我們的朋友，而不只是科學的工具。",
+        tokens: [
+          { t: "Animals" }, { t: "are" }, { t: "our" }, { t: "friends," }, { t: "not" },
+          { t: "just" }, { t: "tools" }, { t: "for" }, { t: "science." }
+        ]
+      },
+      {
+        id: "s16",
+        zh: "牠們像我們一樣能感受到痛苦與恐懼。",
+        tokens: [
+          { t: "They" }, { t: "can" }, { t: "feel" }, { t: "pain" }, { t: "and" },
+          { t: "fear," }, { t: "just" }, { t: "like" }, { t: "us." }
+        ]
+      },
+      {
+        id: "s17",
+        zh: "我們應該永遠善待每一個有生命的動物並保護牠們。",
+        tokens: [
+          { t: "We" }, { t: "should" }, { t: "always" }, { blank: 14 }, { t: "to" },
+          { t: "every" }, { t: "living" }, { t: "animal" }, { t: "and" }, { t: "protect" }, { t: "them." }
+        ]
+      }
+    ].map(s => ({
+          text: s.tokens.map(tok => tok.blank ? `(${tok.blank}) ____` : tok.t).join(' ').replace(/\s+([.,!?;:])/g, '$1'),
+          translation: s.zh,
+          grammar: '',
+          wordNotes: {}
+        })),
+        fullTranslation: [
+      {
+        id: "s1",
+        zh: "1957 年，萊卡是一隻在俄羅斯寒冷街頭沒有家的流浪小狗。",
+        tokens: [
+          { t: "In" }, { t: "1957," }, { t: "Laika" }, { t: "was" }, { t: "a" },
+          { t: "small" }, { t: "stray" }, { t: "dog" }, { blank: 1 },
+          { t: "had" }, { t: "no" }, { t: "home" }, { t: "on" }, { t: "the" },
+          { t: "cold" }, { t: "streets" }, { t: "of" }, { t: "Russia." }
+        ]
+      },
+      {
+        id: "s2",
+        zh: "牠看起來可愛又安靜，毛皮摸起來非常柔軟。",
+        tokens: [
+          { t: "She" }, { t: "looked" }, { t: "cute" }, { t: "and" }, { blank: 2 },
+          { t: "and" }, { t: "her" }, { t: "fur" }, { t: "felt" }, { t: "very" }, { blank: 3 }
+        ]
+      },
+      {
+        id: "s3",
+        zh: "因為牠友善又冷靜，一些科學家挑選牠去執行一趟特別的太空之旅。",
+        tokens: [
+          { t: "Because" }, { t: "she" }, { t: "was" }, { t: "friendly" }, { t: "and" },
+          { t: "calm," }, { blank: 4 }, { t: "some" }, { t: "scientists" }, { blank: 5 },
+          { t: "her" }, { t: "for" }, { t: "a" }, { t: "special" }, { t: "trip" },
+          { t: "to" }, { t: "space." }
+        ]
+      },
+      {
+        id: "s4",
+        zh: "他們把牠放進一艘名為史普尼克 2 號（Sputnik 2）的小型太空船裡。",
+        tokens: [
+          { t: "They" }, { blank: 6 }, { t: "her" }, { t: "inside" }, { t: "a" },
+          { t: "small" }, { t: "spaceship" }, { t: "which" }, { t: "was" },
+          { t: "named" }, { t: "Sputnik" }, { t: "2." }
+        ]
+      },
+      {
+        id: "s5",
+        zh: "當火箭升空時，巨大的聲響聽起來像打雷一樣。",
+        tokens: [
+          { t: "When" }, { t: "the" }, { t: "rocket" }, { t: "went" }, { t: "up," },
+          { t: "the" }, { t: "loud" }, { t: "noise" }, { t: "sounded" }, { blank: 7 }
+        ]
+      },
+      {
+        id: "s6",
+        zh: "在黑暗的艙箱裡，空氣聞起來很奇怪，小空間起初感覺很冷。",
+        tokens: [
+          { t: "Inside" }, { t: "the" }, { t: "dark" }, { t: "box," }, { t: "the" },
+          { t: "air" }, { t: "smelled" }, { t: "strange," }, { t: "and" }, { t: "the" },
+          { t: "small" }, { t: "room" }, { t: "felt" }, { t: "cold" }, { t: "at" }, { t: "first." }
+        ]
+      },
+      {
+        id: "s7",
+        zh: "萊卡能聽見巨大的機器聲，並感覺到太空船在震動。",
+        tokens: [
+          { t: "Laika" }, { t: "could" }, { t: "hear" }, { t: "the" }, { t: "loud" },
+          { t: "machines" }, { t: "and" }, { t: "feel" }, { t: "the" }, { t: "ship" }, { blank: 8 }
+        ]
+      },
+      {
+        id: "s8",
+        zh: "她周圍的一切事物都很可怕。",
+        tokens: [
+          { t: "Everything" }, { t: "around" }, { t: "her" }, { t: "was" }, { blank: 9 }
+        ]
+      },
+      {
+        id: "s9",
+        zh: "許多年間，人們以為萊卡在一週後平靜地離開了。",
+        tokens: [
+          { t: "For" }, { t: "many" }, { t: "years," }, { t: "people" }, { t: "thought" },
+          { t: "Laika" }, { t: "died" }, { t: "peacefully" }, { t: "after" }, { t: "a" }, { t: "week." }
+        ]
+      },
+      {
+        id: "s10",
+        zh: "然而，真實的故事聽起來非常令人難過。",
+        tokens: [
+          { t: "However," }, { t: "the" }, { t: "true" }, { t: "story" }, { t: "sounded" }, { t: "very" }, { blank: 10 }
+        ]
+      },
+      {
+        id: "s11",
+        zh: "事實上，太空船內的機器故障了，所以艙室很快變得太熱。",
+        tokens: [
+          { t: "In" }, { t: "fact," }, { t: "the" }, { t: "machine" }, { t: "inside" },
+          { t: "the" }, { t: "spaceship" }, { t: "broke," }, { t: "so" }, { t: "the" },
+          { t: "room" }, { blank: 11 }, { t: "became" }, { t: "too" }, { t: "hot." }
+        ]
+      },
+      {
+        id: "s12",
+        zh: "可憐的萊卡在短短幾小時後就死於高溫與恐懼。",
+        tokens: [
+          { t: "Poor" }, { t: "Laika" }, { t: "died" }, { t: "from" }, { t: "the" },
+          { t: "heat" }, { t: "and" }, { t: "fear" }, { t: "just" }, { t: "a" },
+          { t: "few" }, { t: "hours" }, { blank: 12 }
+        ]
+      },
+      {
+        id: "s13",
+        zh: "她再也沒有回到地球。",
+        tokens: [
+          { t: "She" }, { t: "never" }, { t: "came" }, { t: "back" }, { t: "to" }, { t: "Earth." }
+        ]
+      },
+      {
+        id: "s14",
+        zh: "今天，萊卡的故事教導我們尊重生命。",
+        tokens: [
+          { t: "Today," }, { t: "Laika's" }, { t: "story" }, { blank: 13 }, { t: "us" },
+          { t: "to" }, { t: "respect" }, { t: "life." }
+        ]
+      },
+      {
+        id: "s15",
+        zh: "動物是我們的朋友，而不只是科學的工具。",
+        tokens: [
+          { t: "Animals" }, { t: "are" }, { t: "our" }, { t: "friends," }, { t: "not" },
+          { t: "just" }, { t: "tools" }, { t: "for" }, { t: "science." }
+        ]
+      },
+      {
+        id: "s16",
+        zh: "牠們像我們一樣能感受到痛苦與恐懼。",
+        tokens: [
+          { t: "They" }, { t: "can" }, { t: "feel" }, { t: "pain" }, { t: "and" },
+          { t: "fear," }, { t: "just" }, { t: "like" }, { t: "us." }
+        ]
+      },
+      {
+        id: "s17",
+        zh: "我們應該永遠善待每一個有生命的動物並保護牠們。",
+        tokens: [
+          { t: "We" }, { t: "should" }, { t: "always" }, { blank: 14 }, { t: "to" },
+          { t: "every" }, { t: "living" }, { t: "animal" }, { t: "and" }, { t: "protect" }, { t: "them." }
+        ]
+      }
+    ].map(s => s.zh).join(' '),
+        questions: Object.keys({
+      1: {
+        answer: "C",
+        options: { A: "who", B: "which", C: "that", D: "where" },
+        explanation: "先行詞為 a small stray dog（指動物），關係代名詞可用 which 或 that；此題選項提供 (A) who (B) which (C) that，依國八關代與題庫設定選 (C) that。"
+      },
+      2: {
+        answer: "B",
+        options: { A: "quietly", B: "quiet" },
+        explanation: "looked 為連綴動詞（看起來），後接形容詞作主詞補語，故選 (B) quiet（安靜的）。"
+      },
+      3: {
+        answer: "A",
+        options: { A: "soft", B: "softly" },
+        explanation: "felt 在此為連綴動詞（摸起來／感覺起來），後接形容詞，故選 (A) soft（柔軟的）。"
+      },
+      4: {
+        answer: "A",
+        options: { A: "X", B: "so", C: "but", D: "or" },
+        explanation: "句首已有從屬連接詞 Because 引導原因子句，主要子句前不可再加對等連接詞 so，故選 (A) X（不填）。"
+      },
+      5: {
+        answer: "B",
+        options: { A: "choose", B: "chose", C: "was choosing", D: "chooses" },
+        explanation: "全文敘述 1957 年的過去事實，choose 的過去式為 chose，故選 (B) chose。"
+      },
+      6: {
+        answer: "A",
+        options: { A: "put", B: "puts", C: "putted", D: "was putting" },
+        explanation: "put 的三態為 put - put - put（無 putted 拼法），依過去時態選 (A) put。"
+      },
+      7: {
+        answer: "A",
+        options: { A: "like thunder", B: "thunder", C: "liked thunder" },
+        explanation: "sounded 為連綴動詞，後接名詞 thunder 需加介系詞 like（sound like + N，聽起來像……），故選 (A) like thunder。"
+      },
+      8: {
+        answer: "B",
+        options: { A: "to shake", B: "shaking", C: "shook" },
+        explanation: "feel 為感官動詞，受詞為 the ship，接現在分詞 shaking 表示「感覺太空船正在震動」，故選 (B) shaking。"
+      },
+      9: {
+        answer: "B",
+        options: { A: "scared", B: "scary" },
+        explanation: "主詞 Everything around her（周圍的一切事物）是「令人害怕的」，事物作主詞用 -ing 形容詞 scary，故選 (B) scary。"
+      },
+      10: {
+        answer: "A",
+        options: { A: "sad", B: "sadly" },
+        explanation: "sounded 為連綴動詞（聽起來），後接形容詞作補語，故選 (A) sad（難過的／令人難過的）。"
+      },
+      11: {
+        answer: "B",
+        options: { A: "quick", B: "quickly" },
+        explanation: "修飾動詞 became（變得……）要用副詞，故選 (B) quickly（快速地）。"
+      },
+      12: {
+        answer: "B",
+        options: { A: "before", B: "later", C: "ago", D: "future" },
+        explanation: "「幾小時之後」為 a few hours later；ago 通常搭配現在完成式或特定過去時間點且多置於過去式句尾表示「……以前」，此處語意為「幾小時後」，選 (B) later。"
+      },
+      13: {
+        answer: "B",
+        options: { A: "teach", B: "teaches", C: "teaching", D: "taught" },
+        explanation: "句首有 Today 且敘述至今仍帶給人們的啟示，主詞 Laika's story 為單數，動詞用第三人稱單數現在式 teaches，故選 (B) teaches。"
+      },
+      14: {
+        answer: "C",
+        options: { A: "kind", B: "being kind", C: "be kind", D: "were kind" },
+        explanation: "助動詞 should 後接原形動詞；kind 為形容詞，需加上原形 be 動詞構成 be kind，故選 (C) be kind。"
+      }
+    }).map(Number).sort((a,b)=>a-b).map(num => {
+          const q = {
+      1: {
+        answer: "C",
+        options: { A: "who", B: "which", C: "that", D: "where" },
+        explanation: "先行詞為 a small stray dog（指動物），關係代名詞可用 which 或 that；此題選項提供 (A) who (B) which (C) that，依國八關代與題庫設定選 (C) that。"
+      },
+      2: {
+        answer: "B",
+        options: { A: "quietly", B: "quiet" },
+        explanation: "looked 為連綴動詞（看起來），後接形容詞作主詞補語，故選 (B) quiet（安靜的）。"
+      },
+      3: {
+        answer: "A",
+        options: { A: "soft", B: "softly" },
+        explanation: "felt 在此為連綴動詞（摸起來／感覺起來），後接形容詞，故選 (A) soft（柔軟的）。"
+      },
+      4: {
+        answer: "A",
+        options: { A: "X", B: "so", C: "but", D: "or" },
+        explanation: "句首已有從屬連接詞 Because 引導原因子句，主要子句前不可再加對等連接詞 so，故選 (A) X（不填）。"
+      },
+      5: {
+        answer: "B",
+        options: { A: "choose", B: "chose", C: "was choosing", D: "chooses" },
+        explanation: "全文敘述 1957 年的過去事實，choose 的過去式為 chose，故選 (B) chose。"
+      },
+      6: {
+        answer: "A",
+        options: { A: "put", B: "puts", C: "putted", D: "was putting" },
+        explanation: "put 的三態為 put - put - put（無 putted 拼法），依過去時態選 (A) put。"
+      },
+      7: {
+        answer: "A",
+        options: { A: "like thunder", B: "thunder", C: "liked thunder" },
+        explanation: "sounded 為連綴動詞，後接名詞 thunder 需加介系詞 like（sound like + N，聽起來像……），故選 (A) like thunder。"
+      },
+      8: {
+        answer: "B",
+        options: { A: "to shake", B: "shaking", C: "shook" },
+        explanation: "feel 為感官動詞，受詞為 the ship，接現在分詞 shaking 表示「感覺太空船正在震動」，故選 (B) shaking。"
+      },
+      9: {
+        answer: "B",
+        options: { A: "scared", B: "scary" },
+        explanation: "主詞 Everything around her（周圍的一切事物）是「令人害怕的」，事物作主詞用 -ing 形容詞 scary，故選 (B) scary。"
+      },
+      10: {
+        answer: "A",
+        options: { A: "sad", B: "sadly" },
+        explanation: "sounded 為連綴動詞（聽起來），後接形容詞作補語，故選 (A) sad（難過的／令人難過的）。"
+      },
+      11: {
+        answer: "B",
+        options: { A: "quick", B: "quickly" },
+        explanation: "修飾動詞 became（變得……）要用副詞，故選 (B) quickly（快速地）。"
+      },
+      12: {
+        answer: "B",
+        options: { A: "before", B: "later", C: "ago", D: "future" },
+        explanation: "「幾小時之後」為 a few hours later；ago 通常搭配現在完成式或特定過去時間點且多置於過去式句尾表示「……以前」，此處語意為「幾小時後」，選 (B) later。"
+      },
+      13: {
+        answer: "B",
+        options: { A: "teach", B: "teaches", C: "teaching", D: "taught" },
+        explanation: "句首有 Today 且敘述至今仍帶給人們的啟示，主詞 Laika's story 為單數，動詞用第三人稱單數現在式 teaches，故選 (B) teaches。"
+      },
+      14: {
+        answer: "C",
+        options: { A: "kind", B: "being kind", C: "be kind", D: "were kind" },
+        explanation: "助動詞 should 後接原形動詞；kind 為形容詞，需加上原形 be 動詞構成 be kind，故選 (C) be kind。"
+      }
+    }[num];
+          return {
+            question: `${num}. 請填入最適合第 (${num}) 格的選項：`,
+            options: q.options,
+            answer: q.answer,
+            explanation: q.explanation
+          };
+        })
       },
       {
         id: 'en_senior_1',
@@ -1100,6 +1910,222 @@
       return container;
     }
 
+
+    let activeClozeBlanks = new Set(Array.from({length: 14}, (_, i) => i + 1));
+    let clozeUserAnswers = {};
+    let clozeGraded = false;
+    let currentModalSpeakText = '';
+
+    function speakEnglishText(text, lang = 'en-US') {
+      if (!('speechSynthesis' in window) || !text) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = lang;
+      utter.rate = 0.95;
+      const voices = window.speechSynthesis.getVoices();
+      const matched = voices.find(v => v.lang.toLowerCase().startsWith(lang.toLowerCase()));
+      if (matched) utter.voice = matched;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function getPlainClozeSentence(sentObj, qMap) {
+      return sentObj.tokens.map(tok => {
+        if (tok.blank) {
+          const chosen = clozeUserAnswers[tok.blank];
+          if (chosen && qMap[tok.blank]?.options[chosen]) return qMap[tok.blank].options[chosen];
+          return qMap[tok.blank].options[qMap[tok.blank].answer];
+        }
+        return tok.t;
+      }).join(' ').replace(/\s+([.,!?;:])/g, '$1');
+    }
+
+    function findLaikaWordEntry(rawWord, art) {
+      const clean = String(rawWord || '').replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, '');
+      const lower = clean.toLowerCase();
+      if (!lower) return null;
+
+      const vocabList = art.vocabList || [];
+      const extraDict = art.extraDict || {};
+
+      const exact = vocabList.find(v => v.en.toLowerCase() === lower);
+      if (exact) {
+        return {
+          word: exact.en,
+          meaning: `【${exact.pos}】${exact.zh}\n※ 例句：${exact.ex}`
+        };
+      }
+
+      const lemmaMap = {
+        'scientists': 'scientist', 'rockets': 'rocket', 'machines': 'machine',
+        'shaking': 'shake', 'shook': 'shake', 'thinking': 'thought', 'think': 'thought',
+        'sound': 'sounded', 'break': 'broke', 'broken': 'broke', 'died': 'die from',
+        'die': 'die from', 'fears': 'fear', 'respected': 'respect', 'respecting': 'respect',
+        'teaches': 'teach', 'taught': 'teach', 'tools': 'tool', 'protects': 'protect',
+        'protected': 'protect', 'protecting': 'protect', 'quietly': 'quiet', 'softly': 'soft'
+      };
+      if (lemmaMap[lower]) {
+        const base = vocabList.find(v => v.en.toLowerCase() === lemmaMap[lower]);
+        if (base) {
+          return {
+            word: clean,
+            meaning: `【${base.pos}】${base.zh}（原型：${base.en}）\n※ 例句：${base.ex}`
+          };
+        }
+      }
+
+      if (extraDict[lower]) {
+        return {
+          word: clean,
+          meaning: `【${extraDict[lower].pos}】${extraDict[lower].zh}\n※ 語境：${extraDict[lower].ex}`
+        };
+      }
+
+      return {
+        word: clean,
+        meaning: `英文單字「${clean}」，可點擊下方按鈕聽美式／英式發音，並參考本句中文翻譯。`
+      };
+    }
+
+    function renderInteractiveClozeArticle(art) {
+      const passageBox = document.getElementById('interactive-passage-box');
+      passageBox.innerHTML = '';
+
+      const qMap = art.clozeQuestions || {};
+      const sentList = art.clozeSentences || [];
+
+      const topBar = document.createElement('div');
+      topBar.className = 'p-3.5 rounded-2xl bg-blue-50 border border-blue-200 flex flex-wrap items-center justify-between gap-2 text-sm mb-3';
+      topBar.innerHTML = `
+        <div class="font-bold text-blue-900">✂️ 克漏字互動模式（1～14 題）：點任一單字查中文＋聽發音；點「🌐 句譯＋發音」看整句中譯與聽讀；點空格可跳題作答。</div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="randomActiveClozeBlanks(6)" class="px-3 py-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs">🎲 隨機挖空 6 題</button>
+          <button type="button" onclick="restoreAllClozeBlanks()" class="px-3 py-1 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs">還原 14 題</button>
+        </div>
+      `;
+      passageBox.appendChild(topBar);
+
+      sentList.forEach((sObj, sIdx) => {
+        const lineDiv = document.createElement('div');
+        lineDiv.className = 'p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-colors space-y-1.5';
+
+        const textSpan = document.createElement('div');
+        textSpan.className = 'text-lg sm:text-xl leading-loose text-slate-900';
+
+        sObj.tokens.forEach(tok => {
+          if (tok.blank) {
+            const qNum = tok.blank;
+            const chosen = clozeUserAnswers[qNum];
+            const ans = qMap[qNum]?.answer;
+            const slot = document.createElement('button');
+            slot.type = 'button';
+            slot.className = 'inline-flex items-center px-2.5 py-0.5 mx-1 rounded-lg font-bold text-sm border-2 transition-colors';
+
+            if (!activeClozeBlanks.has(qNum)) {
+              slot.className += ' bg-slate-100 border-slate-300 text-slate-800';
+              slot.textContent = qMap[qNum]?.options[ans] || '';
+            } else {
+              slot.textContent = chosen ? `(${qNum}) ${chosen}` : `(${qNum}) ____`;
+              if (clozeGraded) {
+                slot.className += (chosen === ans)
+                  ? ' bg-emerald-100 border-emerald-500 text-emerald-900'
+                  : ' bg-red-100 border-red-400 text-red-900';
+              } else {
+                slot.className += chosen
+                  ? ' bg-blue-100 border-blue-500 text-blue-900'
+                  : ' bg-blue-50 border-dashed border-blue-500 text-blue-800';
+              }
+            }
+            slot.onclick = (e) => {
+              e.stopPropagation();
+              const targetCard = document.getElementById(`rq_card_${qNum - 1}`);
+              if (targetCard) targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            };
+            textSpan.appendChild(slot);
+          } else {
+            const match = tok.t.match(/^([^A-Za-z']*)([A-Za-z']+[^A-Za-z']*)?([^A-Za-z']*)$/);
+            const lead = match ? match[1] : '';
+            const core = match && match[2] ? match[2] : '';
+            const trail = match && match[3] ? match[3] : '';
+            if (lead) textSpan.appendChild(document.createTextNode(lead));
+            if (core) {
+              const wEl = document.createElement('span');
+              wEl.className = 'word-token';
+              wEl.textContent = core;
+              wEl.onclick = (e) => {
+                e.stopPropagation();
+                const entry = findLaikaWordEntry(core, art);
+                currentModalSpeakText = entry ? entry.word : core;
+                document.getElementById('word-modal-token').innerText = `${core}（第 ${sIdx + 1} 句）`;
+                document.getElementById('word-modal-meaning').innerText = entry ? entry.meaning : core;
+                document.getElementById('word-modal-context').innerHTML = `
+                  <div class="font-bold text-slate-900 mb-1">原句：${escapeHtml(getPlainClozeSentence(sObj, qMap))}</div>
+                  <div class="text-emerald-800 font-semibold">中文翻譯：${escapeHtml(sObj.zh || '')}</div>
+                `;
+                document.getElementById('word-popup-modal').classList.remove('hidden');
+                speakEnglishText(currentModalSpeakText, 'en-US');
+              };
+              textSpan.appendChild(wEl);
+            } else if (!lead && !trail) {
+              textSpan.appendChild(document.createTextNode(tok.t));
+            }
+            if (trail) textSpan.appendChild(document.createTextNode(trail));
+            textSpan.appendChild(document.createTextNode(' '));
+          }
+        });
+
+        const btnRow = document.createElement('div');
+        btnRow.className = 'flex flex-wrap gap-2';
+
+        const speakBtn = document.createElement('button');
+        speakBtn.type = 'button';
+        speakBtn.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700';
+        speakBtn.textContent = '🔊 聽整句';
+        speakBtn.onclick = () => speakEnglishText(getPlainClozeSentence(sObj, qMap), 'en-US');
+
+        const transPopupBtn = document.createElement('button');
+        transPopupBtn.type = 'button';
+        transPopupBtn.className = 'text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900';
+        transPopupBtn.textContent = '🌐 句譯＋發音';
+        transPopupBtn.onclick = () => {
+          const plainEn = getPlainClozeSentence(sObj, qMap);
+          currentModalSpeakText = plainEn;
+          modalSentenceIdx = sIdx;
+          document.getElementById('sent-modal-badge').innerText = `第 ${sIdx + 1} / ${sentList.length} 句翻譯與發音`;
+          document.getElementById('sent-modal-original').innerText = plainEn;
+          document.getElementById('sent-modal-translation').innerText = sObj.zh || '';
+          document.getElementById('sent-modal-grammar').innerText = '可點擊上方「上一句／下一句」連續聽讀與查看翻譯。';
+          document.getElementById('sentence-popup-modal').classList.remove('hidden');
+          speakEnglishText(plainEn, 'en-US');
+        };
+
+        btnRow.appendChild(speakBtn);
+        btnRow.appendChild(transPopupBtn);
+        lineDiv.appendChild(textSpan);
+        lineDiv.appendChild(btnRow);
+        passageBox.appendChild(lineDiv);
+      });
+
+      document.getElementById('full-original-display').innerText =
+        sentList.map(s => getPlainClozeSentence(s, qMap)).join(' ');
+    }
+
+    function randomActiveClozeBlanks(count) {
+      const pool = Array.from({ length: 14 }, (_, i) => i + 1);
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      activeClozeBlanks = new Set(pool.slice(0, count).sort((a, b) => a - b));
+      clozeGraded = false;
+      if (currentArticle?.isClozeInteractive) renderInteractiveClozeArticle(currentArticle);
+    }
+
+    function restoreAllClozeBlanks() {
+      activeClozeBlanks = new Set(Array.from({ length: 14 }, (_, i) => i + 1));
+      clozeGraded = false;
+      if (currentArticle?.isClozeInteractive) renderInteractiveClozeArticle(currentArticle);
+    }
+
     function loadSelectedArticle() {
       const artId = document.getElementById('article-selector').value;
       const found = allArticles.find(a => a.id === artId);
@@ -1110,12 +2136,16 @@
 
       document.getElementById('display-article-title').innerText = found.title;
 
-      const passageBox = document.getElementById('interactive-passage-box');
-      passageBox.innerHTML = '';
-      (found.sentences || []).forEach((s, idx) => {
-        const block = renderTokenizedSentence(s, idx, found.subject);
-        passageBox.appendChild(block);
-      });
+      if (found.isClozeInteractive) {
+        renderInteractiveClozeArticle(found);
+      } else {
+        const passageBox = document.getElementById('interactive-passage-box');
+        passageBox.innerHTML = '';
+        (found.sentences || []).forEach((s, idx) => {
+          const block = renderTokenizedSentence(s, idx, found.subject);
+          passageBox.appendChild(block);
+        });
+      }
 
       // 全文意思對照區：上方原文；下方為白話翻譯（國文白話文則翻譯區直接維持空白）
       const rawOriginalCombined = (found.sentences || [])
@@ -1132,13 +2162,15 @@
           : '💡 <span class="font-bold text-emerald-700">點任一單字／字詞</span>：依該段上下文顯示字義，並於下方作答選擇題。';
       }
       if (transBoxEl) {
-        if (isClassical) {
-          transBoxEl.classList.remove('hidden');
-          document.getElementById('detail-full-translation').innerText = found.fullTranslation || '';
-        } else {
-          transBoxEl.classList.add('hidden');
-          document.getElementById('detail-full-translation').innerText = '';
-        }
+        transBoxEl.classList.remove('hidden');
+        const autoFull = found.fullTranslation || (found.sentences || []).map((s, idx) => {
+          if (s.translation) return `(${idx + 1}) ${s.translation}`;
+          return found.subject === 'english'
+            ? `(${idx + 1}) ${buildEnglishPlainTranslation(s.text).replace(/^白話大意：/, '')}`
+            : `(${idx + 1}) ${s.text}`;
+        }).join('
+');
+        document.getElementById('detail-full-translation').innerText = autoFull;
       }
 
       renderQuizList(found.questions || []);
@@ -1229,7 +2261,7 @@
 
       document.getElementById('sent-modal-badge').innerText = `第 ${idx + 1} / ${currentArticle.sentences.length} 句整句解析`;
       document.getElementById('sent-modal-original').innerText = s.text;
-      document.getElementById('sent-modal-translation').innerText = isModernChinese ? '' : (s.translation || '');
+      document.getElementById('sent-modal-translation').innerText = s.translation || (currentArticle.subject === 'english' ? buildEnglishPlainTranslation(s.text).replace(/^白話大意：/, '') : s.text);
       document.getElementById('sent-modal-grammar').innerText = s.grammar || '無補充解析';
 
       document.getElementById('sentence-popup-modal').classList.remove('hidden');
@@ -1290,6 +2322,11 @@
     }
 
     function checkReadingAnswer(qIdx, selectedKey) {
+      if (currentArticle?.isClozeInteractive) {
+        clozeUserAnswers[qIdx + 1] = selectedKey;
+        clozeGraded = true;
+        renderInteractiveClozeArticle(currentArticle);
+      }
       const q = currentArticle.questions[qIdx];
       if (!q) return;
       const correct = String(q.answer || '').trim().toUpperCase();
@@ -1476,6 +2513,234 @@
         fullTranslation,
         questions
       };
+    }
+
+
+    const VOCAB_BANK_KEY = 'yh_reading_vocab_bank_v1';
+
+    function getVocabBank() {
+      try {
+        return JSON.parse(localStorage.getItem(VOCAB_BANK_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCurrentWordToBank() {
+      const term = (currentModalSpeakText || document.getElementById('word-modal-token')?.innerText || '').replace(/（第\s*\d+\s*句）|「|」|字/g, '').trim();
+      const meaning = document.getElementById('word-modal-meaning')?.innerText || '';
+      if (!term) return;
+      const bank = getVocabBank();
+      const idx = bank.findIndex(item => item.term.toLowerCase() === term.toLowerCase());
+      const entry = {
+        term,
+        meaning,
+        articleTitle: currentArticle?.title || '',
+        updatedAt: new Date().toLocaleString()
+      };
+      if (idx >= 0) bank[idx] = entry;
+      else bank.unshift(entry);
+      localStorage.setItem(VOCAB_BANK_KEY, JSON.stringify(bank));
+      alert(`已將「${term}」加入單字庫！`);
+    }
+
+    function autoPopulateVocabBankFromArticle(art) {
+      if (!art || !Array.isArray(art.sentences)) return;
+      const bank = getVocabBank();
+      const existingTerms = new Set(bank.map(x => x.term.toLowerCase()));
+      let added = 0;
+
+      art.sentences.forEach((s, sIdx) => {
+        if (art.subject === 'english') {
+          const words = (s.text.match(/[A-Za-z]{3,}/g) || []);
+          words.forEach(w => {
+            const lower = w.toLowerCase();
+            if (!existingTerms.has(lower) && ENGLISH_LEXICON[lower]) {
+              existingTerms.add(lower);
+              bank.unshift({
+                term: lower,
+                meaning: `${ENGLISH_LEXICON[lower]}
+※ 例句：${s.text}`,
+                articleTitle: art.title,
+                updatedAt: new Date().toLocaleString()
+              });
+              added++;
+            }
+          });
+        } else {
+          for (const ch of s.text) {
+            if (/[一-鿿]/.test(ch) && !existingTerms.has(ch)) {
+              const lex = CLASSICAL_LEXICON.find(i => i.char === ch);
+              if (lex) {
+                existingTerms.add(ch);
+                bank.unshift({
+                  term: ch,
+                  meaning: `讀音【${lex.reading}】｜${lex.meaning}
+※ 例句：${s.text}`,
+                  articleTitle: art.title,
+                  updatedAt: new Date().toLocaleString()
+                });
+                added++;
+              }
+            }
+          }
+        }
+      });
+
+      if (added > 0) {
+        localStorage.setItem(VOCAB_BANK_KEY, JSON.stringify(bank.slice(0, 200)));
+      }
+    }
+
+    function toggleVocabBankModal() {
+      const bank = getVocabBank();
+      const listEl = document.getElementById('vocab-bank-list');
+      if (!bank.length) {
+        listEl.innerHTML = '<div class="text-sm text-slate-500 p-4 rounded-2xl bg-slate-50">單字庫目前尚無單字，點擊文章中任一單字或上傳 PDF 後會自動收錄。</div>';
+      } else {
+        listEl.innerHTML = bank.map((item, idx) => `
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start justify-between gap-3">
+            <div class="space-y-1">
+              <div class="font-black text-slate-900 text-base">${escapeHtml(item.term)} <span class="text-xs font-normal text-slate-400">(${escapeHtml(item.articleTitle || '')})</span></div>
+              <div class="text-xs text-slate-700 whitespace-pre-line">${escapeHtml(item.meaning)}</div>
+            </div>
+            <div class="flex flex-col gap-1.5 shrink-0">
+              <button type="button" onclick="speakEnglishText('${escapeAttr(item.term)}', 'en-US')" class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 text-xs font-bold">🔊 發音</button>
+              <button type="button" onclick="removeVocabBankItem(${idx})" class="px-2.5 py-1 rounded-lg bg-red-50 text-red-700 text-xs font-bold">移除</button>
+            </div>
+          </div>
+        `).join('');
+      }
+      document.getElementById('vocab-bank-modal').classList.remove('hidden');
+    }
+
+    function removeVocabBankItem(idx) {
+      const bank = getVocabBank();
+      bank.splice(idx, 1);
+      localStorage.setItem(VOCAB_BANK_KEY, JSON.stringify(bank));
+      toggleVocabBankModal();
+    }
+
+    function parseQuestionsFromPdfText(fullText) {
+      const lines = fullText.split(/?
+/).map(l => l.trim()).filter(Boolean);
+      const parsed = [];
+      let currentQ = null;
+
+      for (const line of lines) {
+        const qMatch = line.match(/^(?:Q?\s*)?(\d+)[\.\、\)]\s*(.+)/);
+        const optA = line.match(/[\(\[]?A[\)\]\.、：:]\s*(.+?)(?:\s+[\(\[]?B[\)\]\.、：:]\s*(.+?))?(?:\s+[\(\[]?C[\)\]\.、：:]\s*(.+?))?(?:\s+[\(\[]?D[\)\]\.、：:]\s*(.+))?$/i);
+        const ansMatch = line.match(/(?:答案|解答|Ans(?:wer)?)\s*[:：]?\s*\(?([A-Da-d])\)?/i);
+        const expMatch = line.match(/(?:解析|說明|Explanation)\s*[:：]\s*(.+)/i);
+
+        if (qMatch && !line.match(/^(?:A|B|C|D)[\)\.\、]/i) && currentQ === null || (qMatch && qMatch[2].length > 3 && !optA)) {
+          if (currentQ && (currentQ.options.A || currentQ.options.B)) parsed.push(currentQ);
+          currentQ = {
+            question: `${qMatch[1]}. ${qMatch[2].trim()}`,
+            options: { A: '', B: '', C: '', D: '' },
+            answer: 'A',
+            explanation: ''
+          };
+          continue;
+        }
+
+        if (currentQ && optA) {
+          currentQ.options.A = (optA[1] || '').trim();
+          if (optA[2]) currentQ.options.B = optA[2].trim();
+          if (optA[3]) currentQ.options.C = optA[3].trim();
+          if (optA[4]) currentQ.options.D = optA[4].trim();
+          continue;
+        }
+
+        if (currentQ && /^\(?[B-D]\)?[\.、：:]\s*(.+)/i.test(line)) {
+          const m = line.match(/^\(?([B-D])\)?[\.、：:]\s*(.+)/i);
+          if (m) currentQ.options[m[1].toUpperCase()] = m[2].trim();
+          continue;
+        }
+
+        if (currentQ && ansMatch) {
+          currentQ.answer = ansMatch[1].toUpperCase();
+        }
+        if (currentQ && expMatch) {
+          currentQ.explanation = expMatch[1].trim();
+        } else if (currentQ && currentQ.explanation && !ansMatch) {
+          currentQ.explanation += ' ' + line;
+        }
+      }
+
+      if (currentQ && (currentQ.options.A || currentQ.options.B || currentQ.question)) {
+        parsed.push(currentQ);
+      }
+      return parsed;
+    }
+
+    async function handlePdfOneClickUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusEl = document.getElementById('file-upload-status');
+      statusEl.innerText = `正在解析 PDF：${file.name}...`;
+
+      const titleInput = document.getElementById('upload-title');
+      if (!titleInput.value.trim()) {
+        titleInput.value = file.name.replace(/\.pdf$/i, '');
+      }
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullPdfText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          fullPdfText += content.items.map(item => item.str).join(' ') + '
+';
+        }
+
+        document.getElementById('upload-raw-text').value = fullPdfText.trim();
+        const [subject, level] = document.getElementById('upload-category').value.split('|');
+        const extractedQs = parseQuestionsFromPdfText(fullPdfText);
+
+        // Split article portion before first question if questions were detected
+        const firstQIdx = fullPdfText.search(/
+\s*(?:1[\.\、\)]|Questions?|閱讀測驗)/i);
+        const articlePart = firstQIdx > 20 ? fullPdfText.slice(0, firstQIdx).trim() : fullPdfText.trim();
+
+        const pkg = buildSmartReadingPackage(articlePart, titleInput.value.trim(), subject, level);
+        if (extractedQs.length > 0) {
+          pkg.questions = extractedQs;
+        }
+
+        // Fill sentence translations & full translation for both Chinese and English so top=original, bottom=translation works seamlessly
+        pkg.sentences = pkg.sentences.map(s => ({
+          ...s,
+          translation: s.translation || (subject === 'english'
+            ? buildEnglishPlainTranslation(s.text)
+            : buildClassicalPlainTranslation(s.text, CLASSICAL_LEXICON.filter(c => s.text.includes(c.char)))),
+          grammar: s.grammar || (subject === 'english'
+            ? `整句翻譯：${buildEnglishPlainTranslation(s.text).replace(/^白話大意：/, '')}`
+            : `整句翻譯：${s.translation || s.text}`)
+        }));
+        pkg.fullTranslation = pkg.sentences.map((s, i) => `(${i + 1}) ${s.translation}`).join('
+');
+
+        latestGeneratedArticle = pkg;
+        autoPopulateVocabBankFromArticle(pkg);
+
+        const existing = JSON.parse(localStorage.getItem(STORAGE_KEY_ARTICLES) || '[]');
+        existing.push(pkg);
+        localStorage.setItem(STORAGE_KEY_ARTICLES, JSON.stringify(existing));
+
+        loadArticlesFromStorage();
+        switchReadingMode('student');
+        selectCategory(pkg.subject, pkg.level);
+        document.getElementById('article-selector').value = pkg.id;
+        loadSelectedArticle();
+        statusEl.innerText = `✅ 已完成「${file.name}」自動生成（${pkg.questions.length} 題＋逐字逐句翻譯＋單字庫）`;
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = '❌ PDF 讀取失敗，請改貼文字或確認檔案未加密。';
+      }
     }
 
     function generateAllReadingMaterials() {
