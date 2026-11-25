@@ -33,19 +33,15 @@
     }
     .sentence-block {
       cursor: pointer;
-      border-left: 3px solid transparent;
-      padding-left: 8px;
-      margin-left: -11px;
-      border-radius: 0 8px 8px 0;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
+      border-radius: 6px;
+      padding: 2px 4px;
+      transition: background-color 0.15s ease;
     }
     .sentence-block:hover {
       background-color: #f0fdfa;
-      border-left-color: #0d9488;
     }
     .sentence-block.active-sentence {
       background-color: #fef3c7;
-      border-left-color: #d97706;
     }
     .blank-slot {
       display: inline-flex;
@@ -138,16 +134,16 @@
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-bold text-slate-600">英文原文（可自由編輯或由檔案匯入）</label>
+            <label class="text-xs font-bold text-slate-600">英文原文（完全保留你的換行與斷句）</label>
             <button id="btnAutoTranslate" type="button" class="text-xs font-bold text-teal-700 hover:text-teal-900 underline">
-              自動產生全文中文翻譯
+              依原文斷句自動翻譯
             </button>
           </div>
-          <textarea id="sourceTextInput" rows="7" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或上傳英文文章..."></textarea>
+          <textarea id="sourceTextInput" rows="7" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或上傳英文文章，按 Enter 換行或空一行都會完整保留..."></textarea>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1">全文中文翻譯（顯示於原文下方）</label>
+          <label class="block text-xs font-bold text-slate-600 mb-1">全文中文翻譯（依英文斷句對齊顯示於原文下方）</label>
           <textarea id="translationTextInput" rows="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或自動生成全文中文翻譯..."></textarea>
         </div>
 
@@ -203,22 +199,22 @@
               🔊 朗讀原文
             </button>
           </div>
-          <div id="interactivePassage" class="text-base sm:text-[17px] leading-[2.05] text-slate-800 space-y-3 pt-1"></div>
+          <div id="interactivePassage" class="text-base sm:text-[17px] leading-[2.05] text-slate-800 space-y-2 pt-1"></div>
         </div>
 
         <!-- 下：全文中文翻譯區 -->
         <div class="border-t-2 border-dashed border-slate-200 pt-5 space-y-2.5">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-extrabold uppercase tracking-wider text-amber-900 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200/80">
-              ▼ 全文中文翻譯
+              ▼ 全文中文翻譯（依英文斷句對齊）
             </h3>
-            <span class="text-xs text-slate-400">原文對照譯文</span>
+            <span class="text-xs text-slate-400">原文斷句對照譯文</span>
           </div>
-          <div id="displayTranslation" class="text-sm sm:text-base leading-[1.95] text-slate-700 bg-amber-50/40 rounded-2xl p-4 sm:p-5 border border-amber-200/60 space-y-2.5"></div>
+          <div id="displayTranslation" class="text-sm sm:text-base leading-[1.95] text-slate-700 bg-amber-50/40 rounded-2xl p-4 sm:p-5 border border-amber-200/60 space-y-2"></div>
         </div>
       </article>
 
-      <!-- 我的收藏單字庫（學生與管理者皆可使用） -->
+      <!-- 我的收藏單字庫 -->
       <section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-3 no-print">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-extrabold text-slate-800">我的收藏單字庫 (<span id="savedVocabCount">0</span>)</h3>
@@ -314,34 +310,40 @@
         "She looked cute and very quiet, and her fur felt soft.",
         "Because she was friendly and calm, scientists chose her for a special trip to space.",
         "They put her inside a small spaceship which was named Sputnik 2.",
+        "",
         "Inside the dark box, the air smelled strange, and the small room felt cold at first.",
         "When the rocket went up, the loud noise sounded like thunder.",
         "Laika could hear the loud machines and feel the ship shaking.",
         "Everything around her was scary.",
+        "",
         "For many years, people thought Laika died peacefully after a week.",
         "However, the true story sounded very sad.",
         "In fact, the machine inside the spaceship broke, so the room quickly became too hot.",
         "Poor Laika died from the heat and fear just a few hours later.",
         "She never came back to Earth.",
+        "",
         "Today, Laika's story teaches us to respect life.",
         "Animals are our friends, not just tools for science.",
         "They can feel pain and fear, just like us.",
         "We should always be kind to every living animal and protect them."
-      ].join(" "),
+      ].join("\n"),
       translation: [
         "1957年，萊卡是一隻在俄羅斯寒冷街頭無家可歸的小流浪狗。",
         "牠看起來可愛又安靜，毛皮摸起來很柔軟。",
         "因為牠友善又冷靜，科學家挑選牠進行一趟特別的太空之旅。",
         "他們把牠放進一艘名為史普尼克2號的小型太空船裡。",
+        "",
         "在黑暗的艙內，空氣聞起來很奇怪，小空間一開始感覺很冷。",
         "當火箭升空時，巨大的聲響聽起來像打雷。",
         "萊卡能聽見吵雜的機器聲，並感覺到太空船在震動。",
         "周圍的一切都很可怕。",
+        "",
         "多年來，人們以為萊卡在一週後平靜地死去。",
         "然而，真實的故事聽起來非常難過。",
         "事實上，太空船裡的機器壞了，所以艙內很快就變得太熱。",
         "可憐的萊卡在幾小時後就因高溫與恐懼而死去。",
         "牠再也沒有回到地球。",
+        "",
         "如今，萊卡的故事教導我們要尊重生命。",
         "動物是我們的朋友，不只是科學的工具。",
         "牠們像我們一樣會感到疼痛與恐懼。",
@@ -394,6 +396,7 @@
       passage: SAMPLE_DATA.passage,
       translation: SAMPLE_DATA.translation,
       sentences: [],
+      sentenceTranslations: [],
       questions: [],
       answers: {},
       savedVocab: [],
@@ -443,7 +446,6 @@
         }
       } catch (e) {}
 
-      // 預設為學生模式（不顯示左側管理者檔案上傳區），僅當明確以管理者身份進入時才顯示
       applyRoleLayout(roleParam === "admin" || isStoredAdmin);
     }
 
@@ -476,78 +478,120 @@
       el.textContent = msg;
     }
 
-    function splitSentences(text) {
-      const clean = (text || "").replace(/\r\n/g, "\n").trim();
-      if (!clean) return [];
-      const matches = clean.match(/[^.!?。！？\n]+(?:[.!?。！？]+|$)/g) || [clean];
+    function splitSentencesInLine(lineText) {
+      const trimmed = (lineText || "").trim();
+      if (!trimmed) return [];
+      const matches = trimmed.match(/[^.!?。！？]+(?:[.!?。！？]+|$)/g) || [trimmed];
       return matches.map((s) => s.trim()).filter(Boolean);
     }
 
+    function splitSentences(text) {
+      const clean = (text || "").replace(/\r\n/g, "\n").trim();
+      if (!clean) return [];
+      const result = [];
+      clean.split("\n").forEach((line) => {
+        splitSentencesInLine(line).forEach((s) => result.push(s));
+      });
+      return result;
+    }
+
+    // 完全依照你在編輯框裡的「換行」與「空行分段」來呈現，不擅自拆斷句子
     function renderPassageInteractive() {
       const container = $("interactivePassage");
       container.innerHTML = "";
-      state.sentences = splitSentences(state.passage);
+      const rawText = (state.passage || "").replace(/\r\n/g, "\n").trim();
 
-      if (state.sentences.length === 0) {
+      if (!rawText) {
         container.innerHTML = '<p class="text-slate-400">尚未載入英文原文。</p>';
         return;
       }
 
-      state.sentences.forEach((sentence, sIdx) => {
+      const lines = rawText.split("\n");
+      state.sentences = [];
+      let globalSentenceIdx = 0;
+
+      lines.forEach((line) => {
+        const trimmedLine = line.trim();
+
+        if (!trimmedLine) {
+          const spacer = document.createElement("div");
+          spacer.className = "h-3";
+          container.appendChild(spacer);
+          return;
+        }
+
         const p = document.createElement("p");
-        p.className = "sentence-block";
-        p.dataset.sIdx = String(sIdx);
-        p.title = "點擊此句可查看整句翻譯與文法提示";
+        p.className = "leading-[2.05] text-slate-800";
 
-        const tokens = sentence.split(/(\s+)/);
-        tokens.forEach((tok) => {
-          if (!tok) return;
-          if (/^\s+$/.test(tok)) {
-            p.appendChild(document.createTextNode(tok));
-            return;
-          }
-          const wordMatch = tok.match(/^([^A-Za-z']*)([A-Za-z][A-Za-z'-]*)([^A-Za-z']*)$/);
-          if (wordMatch) {
-            const [, prefix, coreWord, suffix] = wordMatch;
-            if (prefix) p.appendChild(document.createTextNode(prefix));
-            const span = document.createElement("span");
-            span.className = "word-chip";
-            span.textContent = coreWord;
-            span.title = `點擊查詢「${coreWord}」`;
-            span.addEventListener("click", (ev) => {
-              ev.stopPropagation();
-              openWordDictionary(coreWord, sentence);
-            });
-            p.appendChild(span);
-            if (suffix) p.appendChild(document.createTextNode(suffix));
-          } else {
-            p.appendChild(document.createTextNode(tok));
-          }
-        });
+        const lineSentences = splitSentencesInLine(trimmedLine);
 
-        p.addEventListener("click", () => {
-          document.querySelectorAll(".sentence-block.active-sentence").forEach((el) => el.classList.remove("active-sentence"));
-          p.classList.add("active-sentence");
-          openSentenceDictionary(sentence, sIdx);
+        lineSentences.forEach((sentence, idxInLine) => {
+          const currentIdx = globalSentenceIdx++;
+          state.sentences.push(sentence);
+
+          const sentSpan = document.createElement("span");
+          sentSpan.className = "sentence-block inline";
+          sentSpan.dataset.sIdx = String(currentIdx);
+          sentSpan.title = "點擊此句可查看整句翻譯與文法提示";
+
+          const tokens = sentence.split(/(\s+)/);
+          tokens.forEach((tok) => {
+            if (!tok) return;
+            if (/^\s+$/.test(tok)) {
+              sentSpan.appendChild(document.createTextNode(tok));
+              return;
+            }
+            const wordMatch = tok.match(/^([^A-Za-z']*)([A-Za-z][A-Za-z'-]*)([^A-Za-z']*)$/);
+            if (wordMatch) {
+              const [, prefix, coreWord, suffix] = wordMatch;
+              if (prefix) sentSpan.appendChild(document.createTextNode(prefix));
+              const wordSpan = document.createElement("span");
+              wordSpan.className = "word-chip";
+              wordSpan.textContent = coreWord;
+              wordSpan.title = `點擊查詢「${coreWord}」`;
+              wordSpan.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                openWordDictionary(coreWord, sentence);
+              });
+              sentSpan.appendChild(wordSpan);
+              if (suffix) sentSpan.appendChild(document.createTextNode(suffix));
+            } else {
+              sentSpan.appendChild(document.createTextNode(tok));
+            }
+          });
+
+          sentSpan.addEventListener("click", () => {
+            document.querySelectorAll(".sentence-block.active-sentence").forEach((el) => el.classList.remove("active-sentence"));
+            sentSpan.classList.add("active-sentence");
+            openSentenceDictionary(sentence, currentIdx);
+          });
+
+          p.appendChild(sentSpan);
+          if (idxInLine < lineSentences.length - 1) {
+            p.appendChild(document.createTextNode(" "));
+          }
         });
 
         container.appendChild(p);
       });
     }
 
+    // 全文中文翻譯也同樣保留你的換行與空行段落
     function renderTranslation() {
       const box = $("displayTranslation");
-      const lines = (state.translation || "")
-        .split(/\n+/)
-        .map((l) => l.trim())
-        .filter(Boolean);
+      const rawTrans = (state.translation || "").replace(/\r\n/g, "\n").trim();
 
-      if (lines.length === 0) {
+      if (!rawTrans) {
         box.innerHTML = '<p class="text-slate-400">尚未填入全文中文翻譯。</p>';
         return;
       }
 
-      box.innerHTML = lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("");
+      const lines = rawTrans.split("\n");
+      box.innerHTML = lines.map((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) return '<div class="h-2.5"></div>';
+        return `<p>${escapeHtml(trimmed)}</p>`;
+      }).join("");
     }
 
     function escapeHtml(str) {
@@ -568,32 +612,47 @@
       window.speechSynthesis.speak(utter);
     }
 
-    async function translateViaFreeApi(text, sl = "en", tl = "zh-TW") {
-      const trimmed = (text || "").trim();
-      if (!trimmed) return "";
-      const chunks = [];
-      const sentences = splitSentences(trimmed);
-      let buf = "";
-      for (const s of sentences) {
-        if ((buf + " " + s).length > 420 && buf) {
-          chunks.push(buf.trim());
-          buf = s;
-        } else {
-          buf = buf ? buf + " " + s : s;
-        }
-      }
-      if (buf) chunks.push(buf.trim());
+    async function translateSingleChunk(chunk, sl = "en", tl = "zh-TW") {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(sl)}&tl=${encodeURIComponent(tl)}&dt=t&q=${encodeURIComponent(chunk)}`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error("翻譯服務暫時無法連線");
+      const data = await resp.json();
+      return (data[0] || []).map((item) => item[0] || "").join("").trim();
+    }
 
-      const out = [];
-      for (const chunk of chunks) {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(sl)}&tl=${encodeURIComponent(tl)}&dt=t&q=${encodeURIComponent(chunk)}`;
-        const resp = await fetch(url);
-        if (!resp.ok) throw new Error("翻譯服務暫時無法連線");
-        const data = await resp.json();
-        const translatedPart = (data[0] || []).map((item) => item[0] || "").join("");
-        out.push(translatedPart.trim());
+    // 嚴格依照英文原文的每一行與斷句來翻譯，保留原本換行與空行
+    async function translateAlignedByEnglish(text, sl = "en", tl = "zh-TW") {
+      const clean = (text || "").replace(/\r\n/g, "\n").trim();
+      if (!clean) return { fullText: "", sentencesZh: [] };
+
+      const lines = clean.split("\n");
+      const outputLines = [];
+      const sentencesZh = [];
+
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) {
+          outputLines.push("");
+          continue;
+        }
+
+        const lineSents = splitSentencesInLine(trimmedLine);
+        const translatedLineSents = [];
+
+        for (const sent of lineSents) {
+          const zhSent = await translateSingleChunk(sent, sl, tl);
+          const finalSent = zhSent || sent;
+          translatedLineSents.push(finalSent);
+          sentencesZh.push(finalSent);
+        }
+
+        outputLines.push(translatedLineSents.join(" "));
       }
-      return out.join("\n");
+
+      return {
+        fullText: outputLines.join("\n"),
+        sentencesZh
+      };
     }
 
     async function openWordDictionary(word, contextSentence = "") {
@@ -621,7 +680,7 @@
       }
 
       try {
-        const zh = await translateViaFreeApi(word, "en", "zh-TW");
+        const zh = await translateSingleChunk(word, "en", "zh-TW");
         state.activeDict.meaning = zh || "查無中文釋義";
         state.activeDict.note = `已為您查詢「${word}」的中文意思，可按「加入單字庫」收藏複習。`;
         $("dictMeaning").textContent = state.activeDict.meaning;
@@ -646,7 +705,19 @@
       $("dictModal").classList.remove("hidden");
       $("dictModal").classList.add("flex");
 
-      const transLines = (state.translation || "").split(/\n+/).map((s) => s.trim()).filter(Boolean);
+      if (state.sentenceTranslations[sIdx]) {
+        state.activeDict.meaning = state.sentenceTranslations[sIdx];
+        $("dictMeaning").textContent = state.activeDict.meaning;
+        $("dictNoteBox").textContent = "已依英文斷句對應中文翻譯；若想查其中某個單字，可單獨點選該單字。";
+        return;
+      }
+
+      const transLines = (state.translation || "")
+        .replace(/\r\n/g, "\n")
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       if (transLines[sIdx] && state.sentences.length === transLines.length) {
         state.activeDict.meaning = transLines[sIdx];
         $("dictMeaning").textContent = transLines[sIdx];
@@ -655,10 +726,11 @@
       }
 
       try {
-        const zhSentence = await translateViaFreeApi(sentence, "en", "zh-TW");
+        const zhSentence = await translateSingleChunk(sentence, "en", "zh-TW");
         state.activeDict.meaning = zhSentence || "無法取得句意翻譯";
+        state.sentenceTranslations[sIdx] = state.activeDict.meaning;
         $("dictMeaning").textContent = state.activeDict.meaning;
-        $("dictNoteBox").textContent = "已自動翻譯此句；點選單字可查詢個別詞彙釋義。";
+        $("dictNoteBox").textContent = "已依照此句英文斷句翻譯；點選單字可查詢個別詞彙釋義。";
       } catch {
         state.activeDict.meaning = "目前無法連線翻譯服務，請稍後再試。";
         $("dictMeaning").textContent = state.activeDict.meaning;
@@ -860,12 +932,18 @@
           return;
         }
 
-        const cleaned = extracted.replace(/\s+/g, " ").trim();
+        const cleaned = extracted
+          .replace(/\r\n/g, "\n")
+          .replace(/[ \t]+/g, " ")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+
         $("sourceTextInput").value = cleaned;
+        $("translationTextInput").value = "";
         const firstLine = file.name.replace(/\.[^.]+$/, "");
         $("metaTitle").value = firstLine;
 
-        setStatus(`已成功從「${file.name}」擷取內容，正在自動翻譯與出題...`, "success");
+        setStatus(`已成功從「${file.name}」擷取內容，正在依原文斷句翻譯與出題...`, "success");
         await applyInputsAndGenerate(true);
       } catch (err) {
         setStatus(`檔案處理失敗：${err.message || err}`, "error");
@@ -878,6 +956,7 @@
       state.title = ($("metaTitle").value || "互動閱讀文章").trim();
       state.passage = ($("sourceTextInput").value || "").trim();
       state.translation = ($("translationTextInput").value || "").trim();
+      state.sentenceTranslations = [];
 
       $("badgeLevel").textContent = state.level;
       $("badgeTopic").textContent = state.topic;
@@ -887,9 +966,10 @@
 
       if (autoTranslateMissing && state.passage && !state.translation) {
         try {
-          const zh = await translateViaFreeApi(state.passage, "en", "zh-TW");
-          state.translation = zh;
-          $("translationTextInput").value = zh;
+          const aligned = await translateAlignedByEnglish(state.passage, "en", "zh-TW");
+          state.translation = aligned.fullText;
+          state.sentenceTranslations = aligned.sentencesZh;
+          $("translationTextInput").value = aligned.fullText;
         } catch {}
       }
 
@@ -921,13 +1001,16 @@
         setStatus("請先輸入或上傳英文原文再產生翻譯。", "warn");
         return;
       }
-      setStatus("正在自動生成全文中文翻譯...", "info");
+      setStatus("正在依照英文斷句逐句翻譯中...", "info");
       try {
-        const zh = await translateViaFreeApi(src, "en", "zh-TW");
-        $("translationTextInput").value = zh;
-        state.translation = zh;
+        state.passage = src;
+        renderPassageInteractive();
+        const aligned = await translateAlignedByEnglish(src, "en", "zh-TW");
+        $("translationTextInput").value = aligned.fullText;
+        state.translation = aligned.fullText;
+        state.sentenceTranslations = aligned.sentencesZh;
         renderTranslation();
-        setStatus("已完成全文中文翻譯！", "success");
+        setStatus("已完成依英文斷句對齊的全文中文翻譯！", "success");
       } catch (err) {
         setStatus(`自動翻譯失敗：${err.message || err}`, "error");
       }
