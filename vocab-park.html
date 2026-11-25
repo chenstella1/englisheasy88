@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>英文遊樂園｜優華線上英文設計</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top right, #fef3c7 0%, #f0fdfa 45%, #f8fafc 100%);
+      color: #1e293b;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+    }
+    .park-card {
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+    .park-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -10px rgba(15, 118, 110, 0.22);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- 頂部大廳導覽（標示優華線上英文設計＋串接 index.html） -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 to-teal-500 text-slate-950 font-black text-xl flex items-center justify-center shadow">
+          🎡
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-base sm:text-xl font-black tracking-wide">英文遊樂園</h1>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/30 font-bold">
+              優華線上英文設計
+            </span>
+          </div>
+          <p class="text-xs text-slate-300">優華線上英文設計 · 單字闖關與文法重點遊樂園</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="px-3 py-1.5 rounded-xl bg-white/10 text-amber-300 text-xs sm:text-sm font-extrabold">
+          ★ 總星星：<span id="totalStars">0</span>
+        </span>
+        <a href="index.html" class="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-xs sm:text-sm font-bold transition">
+          ← 返回主頁
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6 flex-1">
+    <!-- 園區大廳歡迎橫幅 -->
+    <section class="bg-white/95 rounded-3xl border border-teal-100 shadow-sm p-5 sm:p-7 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+      <div class="space-y-2">
+        <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-xs font-extrabold">
+          <span>🎢 園區大廳</span>
+          <span>·</span>
+          <span>優華線上英文設計</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">英文遊樂園 — 優華線上英文設計</h2>
+        <p class="text-sm text-slate-600 leading-relaxed">
+          先在下方挑選學習<strong>單元</strong>，再切換分頁挑戰<strong>「關卡 3：看英文意思選英文」</strong>、<strong>「看英文意思選中文」</strong>或瀏覽<strong>「文法重點區」</strong>。作答可使用滑鼠或鍵盤 <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded text-xs">1</kbd>～<kbd class="px-1.5 py-0.5 bg-slate-100 border rounded text-xs">4</kbd>。
+        </p>
+      </div>
+
+      <div class="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 sm:min-w-[270px] space-y-1">
+        <div class="text-xs font-extrabold text-amber-900">優華線上英文設計 · 目前單元</div>
+        <div id="currentUnitName" class="text-base font-black text-slate-900">單元一：能源與生活設施（22字）</div>
+        <div id="currentUnitStats" class="text-xs text-slate-600">單字量：22 字｜已獲星星：0 ★</div>
+      </div>
+    </section>
+
+    <!-- 單元選擇列 -->
+    <section class="space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+          <span class="w-2.5 h-6 rounded-full bg-teal-600"></span>
+          單元選擇列
+        </h3>
+        <span class="text-xs text-slate-500">點選切換單元</span>
+      </div>
+
+      <div id="unitBar" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- 三大功能分頁列 -->
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div class="flex flex-wrap gap-2" role="tablist">
+          <button id="tabStage3" type="button" onclick="switchTab('enToEn')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition bg-amber-500 text-slate-950 shadow-sm">
+            關卡 3：看英文意思選英文
+          </button>
+          <button id="tabEnToZh" type="button" onclick="switchTab('enToZh')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition bg-slate-100 text-slate-700 hover:bg-slate-200">
+            看英文意思選中文
+          </button>
+          <button id="tabGrammar" type="button" onclick="switchTab('grammar')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition bg-slate-100 text-slate-700 hover:bg-slate-200">
+            文法重點區
+          </button>
+        </div>
+
+        <div id="quizProgressBadge" class="text-xs sm:text-sm font-extrabold text-teal-800 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+          進度：1 / 10
+        </div>
+      </div>
+
+      <!-- 分頁 A：選擇題作答區（關卡 3 看英文意思選英文 / 看英文意思選中文） -->
+      <div id="quizPanel" class="space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div id="modeTitleLabel" class="text-sm font-black text-amber-900 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">
+            關卡 3：看英文意思選英文
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnSpeakDefinition" type="button" class="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs sm:text-sm font-bold transition">
+              🔊 朗讀英文解釋
+            </button>
+            <button id="btnRestartQuiz" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold transition">
+              重新出題
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-2">
+          <div id="definitionHeading" class="text-xs font-extrabold uppercase tracking-wider text-teal-700">
+            ENGLISH DEFINITION（英文解釋）
+          </div>
+          <div id="definitionText" class="text-lg sm:text-2xl font-black text-slate-900 leading-relaxed"></div>
+          <div id="definitionSubHint" class="text-xs text-slate-500">
+            提示：可點擊選項右側喇叭聽發音，或直接按鍵盤 1、2、3、4 選擇答案。
+          </div>
+        </div>
+
+        <div id="choicesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+        <div id="answerFeedback" class="hidden rounded-2xl p-4 sm:p-5 text-sm leading-relaxed border"></div>
+
+        <div class="flex items-center justify-between pt-2">
+          <div id="sessionScoreLabel" class="text-xs sm:text-sm font-extrabold text-slate-600">目前答對：0 題</div>
+          <button id="btnNextQ" type="button" class="hidden px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-extrabold transition">
+            下一題 →
+          </button>
+        </div>
+      </div>
+
+      <!-- 分頁 B：文法重點區 -->
+      <div id="grammarPanel" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <h4 class="text-base sm:text-lg font-black text-slate-900">本單元文法重點整理</h4>
+          <span id="grammarUnitTag" class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900">單元一</span>
+        </div>
+        <div id="grammarCards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 頁尾（標示優華線上英文設計） -->
+  <footer class="bg-slate-900 text-slate-300 text-xs py-4 px-4 text-center mt-8">
+    英文遊樂園 · 優華線上英文設計｜版權所有
+  </footer>
+
+  <script>
+    // =========================================================================
+    // 單元資料區：未來只要在 UNITS 陣列加一個物件，就能擴充新單元
+    // =========================================================================
+    const UNITS = [
+      {
+        id: "unit1",
+        title: "單元一：能源與生活設施（22字）",
+        shortLabel: "單元一",
+        countText: "22字",
+        summary: "涵蓋電力能源、家電設備、公共設施與日常節約詞彙。",
+        words: [
+          { en: "energy", pos: "n.", zh: "能源；能量", def: "the power from sources such as electricity, gas, or sun that makes machines work", example: "Solar power is a clean kind of energy.", exampleZh: "太陽能是一種乾淨的能源。" },
+          { en: "electricity", pos: "n.", zh: "電；電力", def: "a form of energy that can flow through wires to power lights and machines", example: "We turn off the lights to save electricity.", exampleZh: "我們關燈來省電。" },
+          { en: "power", pos: "n. / v.", zh: "電力；力量；供電", def: "energy used to operate a device, or the ability to control or do something", example: "Wind turbines can power many homes.", exampleZh: "風力發電機可以為許多家庭供電。" },
+          { en: "solar", pos: "adj.", zh: "太陽的；太陽能的", def: "relating to or using energy from the sun", example: "They put solar panels on the roof.", exampleZh: "他們在屋頂裝了太陽能板。" },
+          { en: "battery", pos: "n.", zh: "電池", def: "a device that stores electrical energy to give power to a phone, toy, or car", example: "My phone battery is almost empty.", exampleZh: "我的手機電池快沒電了。" },
+          { en: "plug", pos: "n. / v.", zh: "插頭；插上插頭", def: "a small object that connects a cord to an electrical outlet, or to connect it", example: "Please plug the lamp into the wall.", exampleZh: "請把檯燈插頭插到牆上插座。" },
+          { en: "outlet", pos: "n.", zh: "插座；出口", def: "a point on a wall where you connect electrical equipment to the power supply", example: "There is an outlet next to the desk.", exampleZh: "書桌旁邊有一個插座。" },
+          { en: "switch", pos: "n. / v.", zh: "開關；轉換", def: "a small control that turns electricity or a machine on or off, or to change", example: "Flip the switch to turn on the fan.", exampleZh: "撥動開關打開電風扇。" },
+          { en: "appliance", pos: "n.", zh: "家電用品", def: "a machine or piece of equipment used in the home, such as a fridge or oven", example: "A refrigerator is a necessary home appliance.", exampleZh: "冰箱是必備的家用電器。" },
+          { en: "refrigerator", pos: "n.", zh: "電冰箱", def: "a large kitchen appliance that keeps food and drinks cold and fresh", example: "Put the milk inside the refrigerator.", exampleZh: "把牛奶放進冰箱裡。" },
+          { en: "microwave", pos: "n.", zh: "微波爐", def: "a kitchen appliance that cooks or heats food very quickly using waves", example: "He heated the soup in the microwave.", exampleZh: "他用微波爐把湯加熱。" },
+          { en: "heater", pos: "n.", zh: "暖氣機；加熱器", def: "a machine or device that makes air or water warmer", example: "Turn on the heater when the room is cold.", exampleZh: "房間冷的時候打開暖氣機。" },
+          { en: "conditioner", pos: "n.", zh: "空調機；調節器", def: "a machine that cools and dries the air in a room or building", example: "Set the air conditioner to twenty-six degrees.", exampleZh: "把冷氣設定在二十六度。" },
+          { en: "lamp", pos: "n.", zh: "檯燈；燈", def: "a device that gives light, often standing on a table or desk", example: "She studies under a bright desk lamp.", exampleZh: "她在明亮的檯燈下讀書。" },
+          { en: "bulb", pos: "n.", zh: "燈泡", def: "the round glass part of a light that gives off light when electricity passes through", example: "We need to change the broken light bulb.", exampleZh: "我們需要換掉壞掉的燈泡。" },
+          { en: "pipe", pos: "n.", zh: "水管；管子", def: "a long hollow tube through which water, gas, or oil can flow", example: "Water flows through the metal pipe.", exampleZh: "水從金屬水管流過。" },
+          { en: "faucet", pos: "n.", zh: "水龍頭", def: "a device that controls the flow of water from a pipe or sink", example: "Turn off the faucet after washing your hands.", exampleZh: "洗完手後把水龍頭關上。" },
+          { en: "drain", pos: "v. / n.", zh: "排乾；排水孔", def: "to make water flow away slowly, or a hole where water flows out", example: "Water goes down the sink drain.", exampleZh: "水順著水槽排水孔流下去。" },
+          { en: "waste", pos: "v. / n.", zh: "浪費；廢棄物", def: "to use something valuable carelessly without good reason, or unwanted material", example: "Don't waste water or electricity.", exampleZh: "不要浪費水或電。" },
+          { en: "save", pos: "v.", zh: "節省；拯救", def: "to use less of something like time, money, or energy so it is not lost", example: "LED lights help save energy.", exampleZh: "LED 燈有助於節省能源。" },
+          { en: "recycle", pos: "v.", zh: "回收再利用", def: "to treat used objects or materials so that they can be used again", example: "We recycle paper, glass, and plastic bottles.", exampleZh: "我們回收紙張、玻璃和塑膠瓶。" },
+          { en: "facility", pos: "n.", zh: "設施；設備", def: "a building, room, or piece of equipment built for a particular purpose", example: "The community center has great sports facilities.", exampleZh: "社區中心有很棒的運動設施。" }
+        ],
+        grammarPoints: [
+          {
+            title: "1. 祈使句＋表目的不定詞（to + 原形動詞）",
+            rule: "常用來提醒節約能源或正確使用電器，結構為「動詞原形 + 受詞 + to V（為了……）」。",
+            example: "Turn off the light to save electricity. （關燈以節省電力。）"
+          },
+          {
+            title: "2. 不可數名詞與量詞搭配",
+            rule: "electricity、energy、water 在英文中多為不可數名詞，動詞用單數，數量可用 a lot of / much / some 修飾。",
+            example: "Too much energy is wasted every day. （每天都有太多能源被浪費。）"
+          },
+          {
+            title: "3. 動詞片語 turn on / turn off / plug in",
+            rule: "受詞若是代名詞（it / them），必須放在動詞與受詞之間；受詞若是名詞，可放中間或後面。",
+            example: "Please plug it in. / Please plug the charger in. （請把充電器插上。）"
+          },
+          {
+            title: "4. 複合名詞的詞彙構成",
+            rule: "許多生活設施名詞由兩個詞組成，如 air conditioner、light bulb、water pipe，讀時重音常落在第一個詞。",
+            example: "The air conditioner is set to 26°C. （冷氣設定在攝氏 26 度。）"
+          }
+        ]
+      },
+      {
+        id: "unit2",
+        title: "單元二：太空與動物關懷（16字）",
+        shortLabel: "單元二",
+        countText: "16字",
+        summary: "聚焦太空探索詞彙與動物保護、同理關懷核心單字。",
+        words: [
+          { en: "space", pos: "n.", zh: "太空；空間", def: "the area beyond the Earth where stars, planets, and rockets travel", example: "Astronauts travel into space in a spacecraft.", exampleZh: "太空人搭乘太空船進入太空。" },
+          { en: "rocket", pos: "n.", zh: "火箭", def: "a vehicle shaped like a tube that travels into space by burning fuel", example: "The rocket launched into the sky with a loud roar.", exampleZh: "火箭伴隨巨大的轟鳴聲發射升空。" },
+          { en: "spaceship", pos: "n.", zh: "太空船", def: "a vehicle designed to carry people or objects through space", example: "The spaceship moved slowly around the Earth.", exampleZh: "太空船在地球周圍緩慢運行。" },
+          { en: "orbit", pos: "n. / v.", zh: "軌道；繞行", def: "the curved path of an object in space around a star or planet, or to move along it", example: "The satellite stays in orbit around the Earth.", exampleZh: "人造衛星維持在繞行地球的軌道上。" },
+          { en: "astronaut", pos: "n.", zh: "太空人", def: "a person who is trained to travel and work in a spacecraft", example: "The astronaut floated inside the space station.", exampleZh: "太空人在太空站內漂浮。" },
+          { en: "planet", pos: "n.", zh: "行星", def: "a large round object in space that moves around a star, such as Earth or Mars", example: "Earth is the third planet from the sun.", exampleZh: "地球是距離太陽第三近的行星。" },
+          { en: "stray", pos: "adj. / n.", zh: "流浪的；流浪動物", def: "lost or having no home or owner, often used for a dog or cat", example: "They adopted a friendly stray dog from the street.", exampleZh: "他們從街上領養了一隻友善的流浪狗。" },
+          { en: "shelter", pos: "n. / v.", zh: "收容所；庇護", def: "a place that gives protection or safety to animals or people without a home", example: "Volunteers help clean cages at the animal shelter.", exampleZh: "志工在動物收容所幫忙清理籠舍。" },
+          { en: "adopt", pos: "v.", zh: "領養；採用", def: "to take an animal or child into your family and care for it as your own", example: "Adopt, don't shop for a pet.", exampleZh: "以領養代替購買寵物。" },
+          { en: "rescue", pos: "v. / n.", zh: "救援；營救", def: "to save someone or an animal from a dangerous or harmful situation", example: "Rescuers helped the injured sea turtle.", exampleZh: "救援人員幫助了受傷的海龜。" },
+          { en: "gentle", pos: "adj.", zh: "溫柔的；柔和的", def: "kind, calm, and careful so as not to hurt or frighten others", example: "Speak in a gentle voice around scared animals.", exampleZh: "在害怕的動物身邊要用溫柔的聲音說話。" },
+          { en: "kindness", pos: "n.", zh: "善良；仁慈", def: "the quality of being friendly, generous, and considerate to others", example: "Small acts of kindness can change an animal's life.", exampleZh: "小小的善行可以改變動物的一生。" },
+          { en: "respect", pos: "v. / n.", zh: "尊重；敬重", def: "to show care and honor for the feelings, rights, or life of someone or something", example: "We must respect all living creatures on Earth.", exampleZh: "我們必須尊重地球上所有的生物。" },
+          { en: "protect", pos: "v.", zh: "保護", def: "to keep someone or something safe from harm, danger, or loss", example: "Laws help protect endangered wild animals.", exampleZh: "法律有助於保護瀕危野生動物。" },
+          { en: "habitat", pos: "n.", zh: "棲息地", def: "the natural home or environment of an animal, plant, or other organism", example: "Cutting down forests destroys wildlife habitats.", exampleZh: "砍伐森林會破壞野生動物的棲息地。" },
+          { en: "companion", pos: "n.", zh: "同伴；伴侶", def: "a person or animal that spends a lot of time with you and keeps you company", example: "A loyal dog can be a great companion.", exampleZh: "忠心的狗可以成為很棒的同伴。" }
+        ],
+        grammarPoints: [
+          {
+            title: "1. 關係子句補充說明名詞（who / which / that）",
+            rule: "描述人或動物特徵時，可用關係代名詞連接句子，使語意更完整。",
+            example: "Laika was a stray dog that traveled into space. （萊卡是一隻進入太空的流浪狗。）"
+          },
+          {
+            title: "2. 感官動詞與連綴動詞用法",
+            rule: "feel / look / sound 後面常接形容詞表達狀態，如 feel gentle、look scared、sound sad。",
+            example: "The little cat looks scared in the loud noise. （小貓在巨大的聲響中看起來很害怕。）"
+          },
+          {
+            title: "3. 情態助動詞 should / must 表達責任與關懷",
+            rule: "談論動物關懷與生態保育時，常搭配 should（應該）或 must（必須）後接原形動詞。",
+            example: "We should protect animals and their habitats. （我們應該保護動物與牠們的棲息地。）"
+          },
+          {
+            title: "4. 動名詞當主詞（V-ing + 單數動詞）",
+            rule: "以動名詞片語當句首主詞時，謂語動詞通常用單數形式。",
+            example: "Helping stray animals brings joy to many people. （幫助流浪動物為許多人帶來喜悅。）"
+          }
+        ]
+      }
+    ];
+
+    const state = {
+      unitIndex: 0,
+      tab: "enToEn", // "enToEn"（關卡3：看英文意思選英文） | "enToZh"（看英文意思選中文） | "grammar"（文法重點區）
+      questions: [],
+      qIndex: 0,
+      correctCount: 0,
+      answered: false,
+      unitStars: {} // key: `${unitId}_${tab}` -> stars (1~3)
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function speakEn(text) {
+      if (!("speechSynthesis" in window) || !text) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      utter.rate = 0.94;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function getCurrentUnit() {
+      return UNITS[state.unitIndex] || UNITS[0];
+    }
+
+    function refreshHeaderStats() {
+      const unit = getCurrentUnit();
+      const total = Object.values(state.unitStars).reduce((a, b) => a + b, 0);
+      $("totalStars").textContent = String(total);
+
+      const uStars = ["enToEn", "enToZh"].reduce(
+        (sum, modeKey) => sum + (state.unitStars[`${unit.id}_${modeKey}`] || 0),
+        0
+      );
+      $("currentUnitName").textContent = unit.title;
+      $("currentUnitStats").textContent = `單字量：${unit.words.length} 字｜本單元星星：${uStars} ★`;
+    }
+
+    function renderUnitBar() {
+      const bar = $("unitBar");
+      bar.innerHTML = UNITS.map((u, idx) => {
+        const active = idx === state.unitIndex;
+        const uStars = ["enToEn", "enToZh"].reduce(
+          (sum, modeKey) => sum + (state.unitStars[`${u.id}_${modeKey}`] || 0),
+          0
+        );
+        return `
+          <button type="button" onclick="selectUnit(${idx})" class="park-card text-left rounded-2xl p-5 border-2 transition ${
+            active
+              ? "bg-teal-50/80 border-teal-600 shadow-sm"
+              : "bg-white border-slate-200 hover:border-teal-300"
+          }">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-xs font-black px-2.5 py-0.5 rounded-full ${
+                active ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-700"
+              }">${u.shortLabel} · ${u.countText}</span>
+              <span class="text-xs font-extrabold text-amber-700">★ ${uStars}</span>
+            </div>
+            <div class="text-base sm:text-lg font-black text-slate-900">${u.title}</div>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed">${u.summary}</p>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function selectUnit(idx) {
+      state.unitIndex = idx;
+      renderUnitBar();
+      refreshHeaderStats();
+      if (state.tab === "grammar") {
+        renderGrammarPanel();
+      } else {
+        startQuizSession();
+      }
+    }
+
+    function switchTab(tabName) {
+      state.tab = tabName;
+
+      const t3 = $("tabStage3");
+      const tZh = $("tabEnToZh");
+      const tGr = $("tabGrammar");
+
+      t3.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition bg-slate-100 text-slate-700 hover:bg-slate-200";
+      tZh.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition bg-slate-100 text-slate-700 hover:bg-slate-200";
+      tGr.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition bg-slate-100 text-slate-700 hover:bg-slate-200";
+
+      if (tabName === "enToEn") {
+        t3.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition bg-amber-500 text-slate-950 shadow-sm";
+        $("quizPanel").classList.remove("hidden");
+        $("grammarPanel").classList.add("hidden");
+        startQuizSession();
+      } else if (tabName === "enToZh") {
+        tZh.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition bg-teal-600 text-white shadow-sm";
+        $("quizPanel").classList.remove("hidden");
+        $("grammarPanel").classList.add("hidden");
+        startQuizSession();
+      } else {
+        tGr.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition bg-slate-900 text-white shadow-sm";
+        $("quizPanel").classList.add("hidden");
+        $("grammarPanel").classList.remove("hidden");
+        renderGrammarPanel();
+      }
+    }
+
+    function buildQuestionsForMode(unit, mode) {
+      const shuffled = [...unit.words].sort(() => Math.random() - 0.5).slice(0, 10);
+
+      return shuffled.map((target) => {
+        const distractors = unit.words
+          .filter((w) => w.en !== target.en)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+
+        const choices = [target, ...distractors].sort(() => Math.random() - 0.5);
+        const answerIdx = choices.findIndex((c) => c.en === target.en);
+
+        if (mode === "enToEn") {
+          // 關卡 3：看英文意思選英文
+          return {
+            modeTitle: "關卡 3：看英文意思選英文",
+            heading: "ENGLISH DEFINITION（看英文意思）",
+            definition: target.def,
+            speakTarget: target.def,
+            optionType: "en",
+            options: choices.map((c) => c.en),
+            answer: answerIdx,
+            explanation: `正確單字為「${target.en}」（${target.pos} ${target.zh}）。例句：${target.example}（${target.exampleZh}）`
+          };
+        }
+
+        // 看英文意思選中文
+        return {
+          modeTitle: "看英文意思選中文",
+          heading: "ENGLISH DEFINITION（英文解釋）",
+          definition: target.def,
+          speakTarget: target.def,
+          optionType: "zh",
+          options: choices.map((c) => `${c.pos} ${c.zh}`),
+          answer: answerIdx,
+          explanation: `對應英文單字為「${target.en}」，中文意思是「${target.pos} ${target.zh}」。例句：${target.example}（${target.exampleZh}）`
+        };
+      });
+    }
+
+    function startQuizSession() {
+      const unit = getCurrentUnit();
+      state.questions = buildQuestionsForMode(unit, state.tab);
+      state.qIndex = 0;
+      state.correctCount = 0;
+      state.answered = false;
+      renderCurrentQuestion();
+    }
+
+    function renderCurrentQuestion() {
+      const q = state.questions[state.qIndex];
+      if (!q) return;
+
+      $("modeTitleLabel").textContent = q.modeTitle;
+      $("definitionHeading").textContent = q.heading;
+      $("definitionText").textContent = q.definition;
+      $("quizProgressBadge").textContent = `進度：${state.qIndex + 1} / ${state.questions.length}`;
+      $("sessionScoreLabel").textContent = `目前答對：${state.correctCount} 題`;
+      $("answerFeedback").classList.add("hidden");
+      $("btnNextQ").classList.add("hidden");
+      state.answered = false;
+
+      const letters = ["1", "2", "3", "4"];
+      $("choicesContainer").innerHTML = q.options.map((opt, idx) => {
+        const speakWord = q.optionType === "en" ? opt : state.questions[state.qIndex].options[idx];
+        return `
+          <div id="choiceCard_${idx}" class="rounded-2xl border-2 border-slate-200 bg-white hover:border-teal-400 transition flex items-center justify-between pr-2">
+            <button type="button" onclick="submitChoice(${idx})" class="flex-1 text-left px-4 py-3.5 flex items-center gap-3 font-extrabold text-slate-900">
+              <span class="w-7 h-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-xs font-black shrink-0">${letters[idx]}</span>
+              <span class="text-base">${escapeHtml(opt)}</span>
+            </button>
+            ${
+              q.optionType === "en"
+                ? `<button type="button" title="聽單字發音" onclick="event.stopPropagation(); speakEn('${escapeJs(speakWord)}')" class="p-2 rounded-xl text-teal-700 hover:bg-teal-50 text-sm font-bold shrink-0">🔊</button>`
+                : ""
+            }
+          </div>
+        `;
+      }).join("");
+    }
+
+    function submitChoice(idx) {
+      if (state.answered || idx < 0 || idx >= 4) return;
+      state.answered = true;
+
+      const q = state.questions[state.qIndex];
+      const isRight = idx === q.answer;
+      if (isRight) state.correctCount++;
+
+      if (q.optionType === "en") {
+        speakEn(q.options[q.answer]);
+      }
+
+      q.options.forEach((_, i) => {
+        const card = $(`choiceCard_${i}`);
+        const btn = card.querySelector("button");
+        btn.disabled = true;
+        card.classList.remove("hover:border-teal-400");
+        if (i === q.answer) {
+          card.className = "rounded-2xl border-2 border-emerald-500 bg-emerald-50 text-emerald-950 flex items-center justify-between pr-2";
+        } else if (i === idx && !isRight) {
+          card.className = "rounded-2xl border-2 border-rose-400 bg-rose-50 text-rose-950 flex items-center justify-between pr-2";
+        }
+      });
+
+      const fb = $("answerFeedback");
+      fb.classList.remove("hidden");
+      fb.className = `rounded-2xl p-4 sm:p-5 text-sm leading-relaxed border ${
+        isRight
+          ? "bg-emerald-50 text-emerald-950 border-emerald-200"
+          : "bg-amber-50 text-amber-950 border-amber-200"
+      }`;
+      fb.innerHTML = `
+        <div class="font-black mb-1">${
+          isRight
+            ? "🎉 答對了！中文翻譯與解析："
+            : `💡 再接再厲，正確答案是「${escapeHtml(q.options[q.answer])}」。中文翻譯與解析：`
+        }</div>
+        <div>${escapeHtml(q.explanation)}</div>
+      `;
+
+      $("sessionScoreLabel").textContent = `目前答對：${state.correctCount} 題`;
+      const nextBtn = $("btnNextQ");
+      nextBtn.classList.remove("hidden");
+      nextBtn.textContent = state.qIndex + 1 < state.questions.length ? "下一題 →" : "完成本回合 ✓";
+    }
+
+    function renderGrammarPanel() {
+      const unit = getCurrentUnit();
+      $("grammarUnitTag").textContent = unit.title;
+      $("grammarCards").innerHTML = unit.grammarPoints.map((gp) => `
+        <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 space-y-2">
+          <div class="text-base font-black text-slate-900">${escapeHtml(gp.title)}</div>
+          <p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(gp.rule)}</p>
+          <div class="text-xs sm:text-sm font-bold text-teal-800 bg-teal-50/90 border border-teal-200/70 rounded-xl px-3.5 py-2.5">
+            ${escapeHtml(gp.example)}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function escapeJs(str) {
+      return String(str).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    $("btnSpeakDefinition").addEventListener("click", () => {
+      const q = state.questions[state.qIndex];
+      if (q) speakEn(q.speakTarget);
+    });
+
+    $("btnRestartQuiz").addEventListener("click", () => {
+      startQuizSession();
+    });
+
+    $("btnNextQ").addEventListener("click", () => {
+      if (state.qIndex + 1 < state.questions.length) {
+        state.qIndex++;
+        renderCurrentQuestion();
+      } else {
+        const unit = getCurrentUnit();
+        const ratio = state.correctCount / state.questions.length;
+        const stars = ratio >= 0.8 ? 3 : ratio >= 0.6 ? 2 : 1;
+        const key = `${unit.id}_${state.tab}`;
+        state.unitStars[key] = Math.max(state.unitStars[key] || 0, stars);
+        refreshHeaderStats();
+        renderUnitBar();
+
+        alert(`完成「${unit.title}」！答對 ${state.correctCount} / ${state.questions.length} 題，獲得 ${"★".repeat(stars)}！`);
+        startQuizSession();
+      }
+    });
+
+    // 支援鍵盤 1~4 作答、Enter 或方向鍵右移下一題
+    document.addEventListener("keydown", (e) => {
+      if (state.tab === "grammar") return;
+      if (!state.answered && ["1", "2", "3", "4"].includes(e.key)) {
+        submitChoice(Number(e.key) - 1);
+      } else if (state.answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+        $("btnNextQ").click();
+      }
+    });
+
+    renderUnitBar();
+    refreshHeaderStats();
+    switchTab("enToEn");
+  </script>
+</body>
+</html>
