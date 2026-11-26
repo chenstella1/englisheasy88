@@ -144,7 +144,7 @@
         <label id="dropZone" for="fileInput" class="block border-2 border-dashed border-teal-300 hover:border-teal-500 bg-teal-50/40 hover:bg-teal-50/80 rounded-2xl p-5 text-center cursor-pointer transition">
           <div class="text-2xl mb-1">📄🖼️📝</div>
           <div class="text-sm font-bold text-slate-700">點擊選擇或拖曳學習單檔案至此</div>
-          <div class="text-xs text-slate-500 mt-1">自動辨識「文章＋文內挖空題＋下方閱讀測驗＋解析」</div>
+          <div class="text-xs text-slate-500 mt-1">自動辨識「文章＋文內挖空與選項＋下方閱讀測驗＋自動生解析」</div>
           <input id="fileInput" type="file" accept=".pdf,.docx,.odt,.jpg,.jpeg,.png,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,image/*" class="hidden" />
         </label>
 
@@ -182,18 +182,32 @@
           <textarea id="translationTextInput" rows="5" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或自動生成全文中文翻譯..."></textarea>
         </div>
 
-        <!-- 管理者文內挖空管理區 -->
+        <!-- 管理者文內挖空與原檔選項解析區 -->
         <div class="border-t border-slate-200 pt-4 space-y-3">
-          <div class="flex items-center justify-between gap-2">
-            <label class="text-xs font-extrabold text-teal-900">文內挖空管理</label>
-            <div class="flex items-center gap-1.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <label class="text-xs font-extrabold text-teal-900">文內挖空與選項解析管理</label>
+            <div class="flex flex-wrap items-center gap-1.5">
               <button id="btnAutoDetectBlanks" type="button" class="text-xs font-bold px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200">
-                ⚡ 原文有挖空自動挖
+                ⚡ 原文挖空＋選項自動生成
               </button>
               <button id="btnAddManualBlank" type="button" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white shadow-2xs">
                 ＋ 新增一格挖空
               </button>
             </div>
+          </div>
+
+          <!-- 原檔挖空選項貼上／自動解析面板 -->
+          <div class="rounded-xl p-3 bg-indigo-50/70 border border-indigo-200/80 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-extrabold text-indigo-950">📄 原檔挖空選項（Word / PDF 自動帶入或貼上）</span>
+              <button id="btnParseRawBlankOptions" type="button" class="text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
+                ✨ 自動配對選項＋出解析
+              </button>
+            </div>
+            <textarea id="rawClozeOptionsInput" rows="4" class="w-full px-2.5 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="上傳 Word / PDF 時會自動擷取挖空選項至此（也可直接貼上，例如：&#10;1. (A) behind (B) under (C) between (D) across&#10;2. (A) in front of (B) between (C) next (D) under&#10;Answer: 1. A 2. B）"></textarea>
+            <p class="text-[11px] text-indigo-900/80 leading-snug">
+              上傳含挖空與選項的 Word / PDF 後，系統會自動形成各格選項並產出中文解析，您可直接在下方卡片修改答案與解析。
+            </p>
           </div>
 
           <!-- 選取／反白詞彙提示條 -->
@@ -205,7 +219,7 @@
             <span class="text-[11px] text-amber-800/80">點文章單字或反白後按「＋ 新增一格挖空」</span>
           </div>
 
-          <div id="adminBlankManagerList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
+          <div id="adminBlankManagerList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
         </div>
 
         <div class="grid grid-cols-2 gap-2.5 items-center pt-1">
@@ -350,7 +364,7 @@
         </div>
       </section>
 
-      <!-- 單純的閱讀測驗題目區 -->
+      <!-- 單純的閱讀測驗題目區（已移除學生前台的文內挖空按鈕） -->
       <section id="quizAnchor" class="scroll-mt-20 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-7 print-card space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
@@ -369,9 +383,6 @@
             <a href="#passageAnchor" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs sm:text-sm font-bold transition">
               ↑ 回文章找線索
             </a>
-            <button id="btnAddInlineCloze" type="button" class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm font-bold transition">
-              ＋ 文內挖空加練
-            </button>
             <button id="btnResetQuiz" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold transition">
               清除作答
             </button>
@@ -621,6 +632,9 @@
       "between": { pos: "prep.", zh: "在……之間（兩者之間）", note: "常見句型：between A and B「在 A 和 B 之間」。" },
       "glasses": { pos: "n.", zh: "眼鏡（恆用複數）", note: "Dad's glasses「爸爸的眼鏡」；一副眼鏡為 a pair of glasses。" },
       "across": { pos: "prep. / adv.", zh: "在……對面；橫越", note: "across from... 表示「在……的對面」，如 across from our house。" },
+      "across from": { pos: "prep.", zh: "在……對面", note: "固定片語介系詞，後接地點名詞。" },
+      "under": { pos: "prep.", zh: "在……下面", note: "方位介系詞，under the bed「在床底下」。" },
+      "in front of": { pos: "prep.", zh: "在……前面（外部）", note: "in front of the TV「在電視前面」。" },
       "dialogue": { pos: "n.", zh: "對話", note: "閱讀測驗常見題幹字：What is the dialogue mainly about?（這段對話主要關於什麼？）" },
       "mainly": { pos: "adv.", zh: "主要地；大體上", note: "由 main + -ly 構成，常用於主旨題。" },
       "missing": { pos: "adj.", zh: "遺失的；失蹤的", note: "his missing wallet「他不見的錢包」。" }
@@ -671,7 +685,6 @@
       }
     }
 
-    // 監聽管理者反白選取的文字（包含文章區或原文輸入框）
     document.addEventListener("selectionchange", () => {
       if (!state.isAdmin) return;
       const sel = window.getSelection ? window.getSelection().toString().trim() : "";
@@ -856,7 +869,7 @@
       if (!box) return;
 
       if (!state.inlineBlanks.length) {
-        box.innerHTML = '<div class="text-xs text-slate-400 bg-slate-50 rounded-xl p-3 border border-slate-200">目前沒有文內挖空題；可在文章中點字／反白後按「＋ 新增一格挖空」，或按「⚡ 原文有挖空自動挖」。</div>';
+        box.innerHTML = '<div class="text-xs text-slate-400 bg-slate-50 rounded-xl p-3 border border-slate-200">目前沒有文內挖空題；上傳含挖空與選項的 Word / PDF，或在文章中點字／反白後按「＋ 新增一格挖空」。</div>';
         return;
       }
 
@@ -880,7 +893,10 @@
               ${[0, 1, 2, 3].map((oIdx) => `<option value="${oIdx}" ${b.answer === oIdx ? "selected" : ""}>(${labels[oIdx]}) ${escapeHtml(b.options[oIdx] || "")}</option>`).join("")}
             </select>
           </div>
-          <input type="text" value="${escapeHtml(b.explanation || "")}" onchange="updateBlankExplanation(${idx}, this.value)" placeholder="中文解析說明..." class="w-full px-2 py-1 rounded-lg border border-slate-300 bg-white text-xs" />
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 mb-0.5">中文解析（系統自動生成，可直接修改）：</label>
+            <textarea rows="2" onchange="updateBlankExplanation(${idx}, this.value)" placeholder="中文解析說明..." class="w-full px-2 py-1 rounded-lg border border-slate-300 bg-white text-xs leading-relaxed">${escapeHtml(b.explanation || "")}</textarea>
+          </div>
         </div>
       `).join("");
     }
@@ -893,7 +909,11 @@
 
     function updateBlankAnswer(blankIdx, ansIdx) {
       if (!state.inlineBlanks[blankIdx]) return;
-      state.inlineBlanks[blankIdx].answer = ansIdx;
+      const b = state.inlineBlanks[blankIdx];
+      b.answer = ansIdx;
+      if (!b.explanation || b.explanation.includes("（管理者可直接修改此解析）") || b.explanation.includes("本題測驗文意與詞彙搭配")) {
+        b.explanation = generateAutoClozeExplanation(b.num, b.contextSentence, b.options, ansIdx);
+      }
       state.inlineAnswers = {};
       renderPassageInteractive();
       renderAdminBlankManager();
@@ -933,12 +953,10 @@
       setStatus(`已移除第 ${blankIdx + 1} 格挖空並還原文內詞彙。`, "success");
     }
 
-    // 點字或反白後，按「＋ 新增一格挖空」
     function addManualInlineBlank() {
       let text = ($("sourceTextInput").value || state.passage || "");
       let pickedWord = (state.selectedAdminWord || "").trim();
 
-      // 若管理者在 textarea 中反白了文字，優先使用該反白詞彙
       const ta = $("sourceTextInput");
       if (ta && document.activeElement === ta && ta.selectionStart !== ta.selectionEnd) {
         const selectedInTa = ta.value.slice(ta.selectionStart, ta.selectionEnd).trim();
@@ -969,8 +987,6 @@
         distractors.push(["table", "desk", "bag", "door"][distractors.length] || "book");
       }
       const options = [pickedWord, ...distractors];
-      const dictInfo = BUILTIN_DICT[pickedWord.toLowerCase()];
-
       const sent = splitSentences(updatedText).find((s) => s.includes(`[${newNum}]`)) || updatedText;
 
       state.inlineBlanks.push({
@@ -978,9 +994,7 @@
         contextSentence: sent,
         options,
         answer: 0,
-        explanation: dictInfo
-          ? `此格答案為「${pickedWord}」（${dictInfo.zh}）。${dictInfo.note}`
-          : `此格填入「${pickedWord}」符合上下文語意。`
+        explanation: generateAutoClozeExplanation(newNum, sent, options, 0)
       });
 
       state.passage = updatedText;
@@ -989,15 +1003,13 @@
       setSelectedAdminWord("");
       renderPassageInteractive();
       renderAdminBlankManager();
-      setStatus(`已將「${pickedWord}」設為第 ${newNum} 格文內挖空！`, "success");
+      setStatus(`已將「${pickedWord}」設為第 ${newNum} 格文內挖空並自動生成解析！`, "success");
     }
 
-    // 自動偵測英文原文中已有的挖空（如 [1]、(1)____、___1___、____ 等）並轉為可作答挖空
     function autoDetectAndBuildBlanksFromPassage(showFeedback = true) {
       let text = ($("sourceTextInput").value || state.passage || "");
       if (!text.trim()) return 0;
 
-      // 先將各種底線／括號空格統一轉為 [n]
       let seq = 0;
       const existingNums = new Set([...text.matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1])));
       const nextNum = () => {
@@ -1022,10 +1034,19 @@
 
       const allMarkers = [...new Set([...text.matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1])))].sort((a, b) => a - b);
       const wordPool = [...new Set((text.match(/\b[A-Za-z]{3,}\b/g) || []).map((w) => w.toLowerCase()))];
+      const rawParsedBlanks = parseRawClozeOptionsBlock($("rawClozeOptionsInput")?.value || "", text);
 
       const newBlanks = allMarkers.map((num, idx) => {
+        const fromRaw = rawParsedBlanks.find((b) => b.num === num);
         const prev = state.inlineBlanks.find((b) => b.num === num);
         const sent = splitSentences(text).find((s) => s.includes(`[${num}]`)) || text;
+        if (fromRaw) {
+          return {
+            ...fromRaw,
+            num,
+            contextSentence: sent
+          };
+        }
         if (prev) {
           return {
             ...prev,
@@ -1039,12 +1060,13 @@
         while (distractors.length < 3) {
           distractors.push(["on", "in", "at", "to"][distractors.length] || "for");
         }
+        const opts = [cand, ...distractors];
         return {
           num,
           contextSentence: sent,
-          options: [cand, ...distractors],
+          options: opts,
           answer: 0,
-          explanation: `此格為系統自動偵測到的文內挖空 [${num}]，可於左側「文內挖空管理」調整選項與解析。`
+          explanation: generateAutoClozeExplanation(num, sent, opts, 0)
         };
       });
 
@@ -1055,7 +1077,7 @@
       renderPassageInteractive();
       renderAdminBlankManager();
       if (showFeedback) {
-        setStatus(`已自動辨識並建立 ${newBlanks.length} 格文內挖空！`, "success");
+        setStatus(`已自動辨識並建立 ${newBlanks.length} 格文內挖空與解析！`, "success");
       }
       return newBlanks.length;
     }
@@ -1076,7 +1098,7 @@
         studentMain.classList.add("lg:col-span-8");
         badge.textContent = "管理者上傳模式";
         badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/30 font-semibold";
-        subtitle.textContent = "點單字／反白後按「＋ 新增一格挖空」，或讓原文現有挖空自動挖空";
+        subtitle.textContent = "上傳 Word / PDF 自動擷取挖空與選項並出解析，亦可點字反白新增挖空";
         toggleBtn.textContent = "退出管理者模式";
       } else {
         setSelectedAdminWord("");
@@ -1153,11 +1175,127 @@
       return result;
     }
 
+    function generateAutoClozeExplanation(num, contextSentence, options, answerIdx) {
+      const labels = ["A", "B", "C", "D"];
+      const correctOpt = (options[answerIdx] || "").trim();
+      const correctLetter = labels[answerIdx] || "A";
+      const lowerOpt = correctOpt.toLowerCase();
+      const dictInfo = BUILTIN_DICT[lowerOpt];
+
+      const optSummaries = options
+        .map((opt, idx) => {
+          const cleanOpt = (opt || "").trim();
+          if (!cleanOpt) return "";
+          const info = BUILTIN_DICT[cleanOpt.toLowerCase()];
+          return `(${labels[idx]}) ${cleanOpt}${info ? `（${info.zh}）` : ""}`;
+        })
+        .filter(Boolean)
+        .join("、");
+
+      const cleanSentence = (contextSentence || "").replace(`[${num}]`, `___(${correctOpt})___`);
+
+      if (dictInfo) {
+        return `本題測驗文意與詞彙搭配。各選項意義：${optSummaries}。根據原句「${cleanSentence}」的上下文語意，應選 (${correctLetter}) ${correctOpt}（${dictInfo.zh}）。補充提示：${dictInfo.note}`;
+      }
+      return `本題為第 [${num}] 格文內挖空題。選項包含：${optSummaries}。對照原句「${cleanSentence}」的前後文語意與文法結構，最適合填入 (${correctLetter}) ${correctOpt}。（管理者可直接修改此解析）`;
+    }
+
+    function parseRawClozeOptionsBlock(rawBlockText, articleText = "") {
+      const normalized = (rawBlockText || "")
+        .replace(/\r\n/g, "\n")
+        .replace(/\s+(?=\([A-D]\)\s*)/g, "\n")
+        .replace(/(Answer\s*Key[^\n]*|Answers?\s*[:：][^\n]*|解答\s*[:：][^\n]*|答案\s*[:：][^\n]*)/gi, "\n$1\n")
+        .trim();
+
+      if (!normalized) return [];
+
+      const lines = normalized.split("\n").map((l) => l.trim()).filter(Boolean);
+      const ansIdxLine = lines.findIndex((l) => /^(Answer\s*Key|Answers?|解答|答案|中文解析)/i.test(l));
+      const qLines = ansIdxLine === -1 ? lines : lines.slice(0, ansIdxLine);
+      const aLines = ansIdxLine === -1 ? [] : lines.slice(ansIdxLine);
+
+      const items = [];
+      let cur = null;
+
+      for (const line of qLines) {
+        const qHead = line.match(/^(?:\((\d{1,2})\)|(\d{1,2})[\.\)、])\s*(.*)$/);
+        if (qHead) {
+          if (cur) items.push(cur);
+          const qNum = parseInt(qHead[1] || qHead[2], 10);
+          const rest = (qHead[3] || "").trim();
+          cur = {
+            num: qNum,
+            options: [],
+            answer: 0,
+            explanation: ""
+          };
+          if (rest && /\([A-D]\)/i.test(rest)) {
+            const inlineOpts = [...rest.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)];
+            inlineOpts.forEach((m) => cur.options.push(m[2].trim()));
+          }
+          continue;
+        }
+
+        if (cur && /\([A-D]\)/i.test(line)) {
+          const inlineOpts = [...line.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)];
+          if (inlineOpts.length > 0) {
+            inlineOpts.forEach((m) => cur.options.push(m[2].trim()));
+            continue;
+          }
+        }
+      }
+      if (cur) items.push(cur);
+
+      const ansMap = {};
+      const expMap = {};
+      for (const line of aLines) {
+        const cleanedLine = line.replace(/^(Answer\s*Key|Answers?|解答|答案|中文解析)\s*[:：]?\s*/i, "").trim();
+        if (!cleanedLine) continue;
+
+        const multiPairs = [...cleanedLine.matchAll(/(\d{1,2})\s*[\.\)、:：]?\s*\(?([A-D])\)?/gi)];
+        if (multiPairs.length >= 2) {
+          multiPairs.forEach((m) => {
+            ansMap[parseInt(m[1], 10)] = ["A", "B", "C", "D"].indexOf(m[2].toUpperCase());
+          });
+          continue;
+        }
+
+        const singleMatch = cleanedLine.match(/^(\d{1,2})\s*[\.\)、:：\s]+\(?([A-D])\)?\s*(?:[—\-–:：]\s*(.*))?$/i);
+        if (singleMatch) {
+          const qNum = parseInt(singleMatch[1], 10);
+          ansMap[qNum] = ["A", "B", "C", "D"].indexOf(singleMatch[2].toUpperCase());
+          if (singleMatch[3] && singleMatch[3].trim()) {
+            expMap[qNum] = singleMatch[3].trim();
+          }
+        }
+      }
+
+      return items
+        .filter((it) => it.options.length >= 2)
+        .map((it) => {
+          while (it.options.length < 4) it.options.push("");
+          const ans = ansMap[it.num] !== undefined && ansMap[it.num] !== -1 ? ansMap[it.num] : 0;
+          const sent = articleText
+            ? (splitSentences(articleText).find((s) => s.includes(`[${it.num}]`)) || articleText)
+            : "";
+          const explanation = expMap[it.num]
+            ? expMap[it.num]
+            : generateAutoClozeExplanation(it.num, sent, it.options, ans);
+          return {
+            num: it.num,
+            contextSentence: sent,
+            options: it.options.slice(0, 4),
+            answer: ans,
+            explanation
+          };
+        });
+    }
+
     function parseWorksheetContent(rawText) {
       let normalized = (rawText || "").replace(/\r\n/g, "\n").trim();
 
       normalized = normalized
-        .replace(/([.!?？”"'])\s*(?=\d{1,2}\.\s+[A-Za-z"'(])/g, "$1\n")
+        .replace(/([.!?？”"'])\s*(?=\d{1,2}\.\s+[A-Za-z"'(_])/g, "$1\n")
         .replace(/\s+(?=\([A-D]\)\s*)/g, "\n")
         .replace(/(Answer\s*Key[^\n]*)/gi, "\n$1\n");
 
@@ -1165,7 +1303,7 @@
 
       let firstQuestionIdx = -1;
       for (let i = 0; i < lines.length; i++) {
-        if (/^1\.\s+/.test(lines[i])) {
+        if (/^(?:1\.|\(1\))\s*/.test(lines[i])) {
           const lookahead = lines.slice(i, i + 8).join(" ");
           if (/\(A\)/i.test(lookahead)) {
             firstQuestionIdx = i;
@@ -1174,15 +1312,31 @@
         }
       }
 
+      const normalizeBlankMarkers = (txt) => {
+        let autoSeq = 0;
+        const usedNums = new Set([...txt.matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1])));
+        return txt.replace(/(?:\(\s*(\d{1,2})\s*\)\s*_{2,}|\[\s*(\d{1,2})\s*\]|_{2,}\s*(\d{1,2})\s*_{2,}|\(\s*(\d{1,2})\s*\)(?=\s+[A-Za-z])|_{3,})/g, (match, g1, g2, g3, g4) => {
+          let num = parseInt(g1 || g2 || g3 || g4, 10);
+          if (!num) {
+            autoSeq += 1;
+            while (usedNums.has(autoSeq)) autoSeq += 1;
+            num = autoSeq;
+          }
+          usedNums.add(num);
+          return `[${num}]`;
+        });
+      };
+
       if (firstQuestionIdx === -1) {
         return {
-          articleText: rawText.trim(),
+          articleText: normalizeBlankMarkers(rawText.trim()),
           inlineBlanks: [],
-          readingQuestions: []
+          readingQuestions: [],
+          rawClozeOptionsText: ""
         };
       }
 
-      let articleText = lines.slice(0, firstQuestionIdx).join("\n").trim();
+      let articleText = normalizeBlankMarkers(lines.slice(0, firstQuestionIdx).join("\n").trim());
       const restLines = lines.slice(firstQuestionIdx);
 
       let answerSectionIdx = restLines.findIndex((l) =>
@@ -1197,16 +1351,23 @@
 
       for (const line of questionLines) {
         if (!line) continue;
-        const qMatch = line.match(/^(\d{1,2})\.\s*(.+)$/);
+        const qMatch = line.match(/^(?:\((\d{1,2})\)|(\d{1,2})\.)\s*(.*)$/);
         if (qMatch) {
           if (currentQ) parsedQuestions.push(currentQ);
+          const qNum = parseInt(qMatch[1] || qMatch[2], 10);
+          const qBody = (qMatch[3] || "").trim();
           currentQ = {
-            num: parseInt(qMatch[1], 10),
-            questionText: `${qMatch[1]}. ${qMatch[2].trim()}`,
+            num: qNum,
+            questionText: `${qNum}. ${qBody}`,
             options: [],
             answer: 0,
-            explanation: ""
+            explanation: "",
+            hasExplicitExplanation: false
           };
+          if (qBody && /\([A-D]\)/i.test(qBody)) {
+            const inlineOpts = [...qBody.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)];
+            inlineOpts.forEach((m) => currentQ.options.push(m[2].trim()));
+          }
           continue;
         }
 
@@ -1233,6 +1394,17 @@
       const answerEntries = [];
       for (const line of answerLines) {
         if (!line) continue;
+        const multiPairs = [...line.matchAll(/(\d{1,2})\s*[\.\)、:：]?\s*\(?([A-D])\)?/gi)];
+        if (multiPairs.length >= 2) {
+          multiPairs.forEach((m) => {
+            answerEntries.push({
+              num: parseInt(m[1], 10),
+              letter: m[2].toUpperCase(),
+              explanation: ""
+            });
+          });
+          continue;
+        }
         const m = line.match(/^(?:(\d{1,2})[\.\)、\s]+)?\(?([A-D])\)?\s*(?:[—\-–:：]\s*(.*))?$/i);
         if (m) {
           answerEntries.push({
@@ -1251,11 +1423,10 @@
         if (matchedAns) {
           const ansIdx = ["A", "B", "C", "D"].indexOf(matchedAns.letter);
           if (ansIdx !== -1) q.answer = ansIdx;
-          if (matchedAns.explanation) q.explanation = matchedAns.explanation;
-        }
-        if (!q.explanation) {
-          const correctLetter = ["A", "B", "C", "D"][q.answer] || "A";
-          q.explanation = `正確答案為 (${correctLetter}) ${q.options[q.answer] || ""}，可對照文章前後文線索。`;
+          if (matchedAns.explanation) {
+            q.explanation = matchedAns.explanation;
+            q.hasExplicitExplanation = true;
+          }
         }
       });
 
@@ -1263,32 +1434,47 @@
 
       const inlineBlanks = [];
       const readingQuestions = [];
-
-      articleText = articleText.replace(/(?:\(\s*(\d{1,2})\s*\)\s*_{2,}|\[\s*(\d{1,2})\s*\]|_{2,}\s*(\d{1,2})\s*_{2,}|_{3,})/g, (match, g1, g2, g3, offset, fullStr) => {
-        const num = parseInt(g1 || g2 || g3, 10) || (inlineBlanks.length + readingQuestions.length + 1);
-        return `[${num}]`;
-      });
+      const rawClozeLines = [];
+      const labels = ["A", "B", "C", "D"];
 
       validQuestions.forEach((q) => {
         const marker = `[${q.num}]`;
         if (articleText.includes(marker)) {
           const foundSent = splitSentences(articleText).find((s) => s.includes(marker)) || articleText;
+          while (q.options.length < 4) q.options.push("");
+          const autoExp = q.hasExplicitExplanation
+            ? q.explanation
+            : generateAutoClozeExplanation(q.num, foundSent, q.options, q.answer);
+
           inlineBlanks.push({
             num: q.num,
             contextSentence: foundSent,
-            options: q.options,
+            options: q.options.slice(0, 4),
             answer: q.answer,
-            explanation: q.explanation
+            explanation: autoExp
           });
+
+          const optStr = q.options.slice(0, 4).map((o, i) => `(${labels[i]}) ${o}`).join(" ");
+          rawClozeLines.push(`${q.num}. ${optStr}`);
         } else {
+          if (!q.explanation) {
+            const correctLetter = labels[q.answer] || "A";
+            q.explanation = `正確答案為 (${correctLetter}) ${q.options[q.answer] || ""}，可對照文章前後文線索。`;
+          }
           readingQuestions.push(q);
         }
       });
 
+      if (inlineBlanks.length > 0) {
+        const ansSummary = inlineBlanks.map((b) => `${b.num}. ${labels[b.answer] || "A"}`).join("  ");
+        rawClozeLines.push(`Answer: ${ansSummary}`);
+      }
+
       return {
         articleText,
         inlineBlanks,
-        readingQuestions
+        readingQuestions,
+        rawClozeOptionsText: rawClozeLines.join("\n")
       };
     }
 
@@ -1547,16 +1733,14 @@
 
         const options = [item.word, ...distractors].sort(() => Math.random() - 0.5);
         const answer = options.indexOf(item.word);
-        const dictInfo = BUILTIN_DICT[targetLower];
+        const sent = lines[item.lineIdx].trim();
 
         newBlanks.push({
           num,
-          contextSentence: lines[item.lineIdx].trim(),
+          contextSentence: sent,
           options,
           answer,
-          explanation: dictInfo
-            ? `此格應填入「${item.word}」（${dictInfo.zh}）。${dictInfo.note}`
-            : `根據上下文語意，此格最適合填入「${item.word}」。`
+          explanation: generateAutoClozeExplanation(num, sent, options, answer)
         });
       });
 
@@ -1963,7 +2147,7 @@
     async function handleFileUpload(file) {
       if (!file) return;
       const name = file.name.toLowerCase();
-      setStatus(`正在讀取檔案「${file.name}」並解析文內挖空與閱讀題...`, "info");
+      setStatus(`正在讀取檔案「${file.name}」並解析文內挖空、選項與自動生成解析...`, "info");
 
       try {
         let extracted = "";
@@ -1998,12 +2182,15 @@
         state.readingAnswers = {};
 
         $("sourceTextInput").value = parsed.articleText;
+        if ($("rawClozeOptionsInput")) {
+          $("rawClozeOptionsInput").value = parsed.rawClozeOptionsText || "";
+        }
         $("translationTextInput").value = "";
         $("metaTitle").value = file.name.replace(/\.[^.]+$/, "");
 
-        setStatus(`已成功讀取「${file.name}」（文內挖空 ${parsed.inlineBlanks.length} 格、下方閱讀題 ${parsed.readingQuestions.length} 題），正在自動翻譯...`, "success");
+        setStatus(`已成功讀取「${file.name}」（自動形成文內挖空 ${parsed.inlineBlanks.length} 格並生成中文解析、下方閱讀題 ${parsed.readingQuestions.length} 題），正在自動翻譯...`, "success");
         await applyInputsAndGenerate(true, true);
-        setStatus(`完成！「${file.name}」已完成中文翻譯與互動題型建立。`, "success");
+        setStatus(`完成！「${file.name}」已自動建立文內選項與中文解析，您可於左側面板修改。`, "success");
       } catch (err) {
         setStatus(`檔案處理失敗：${err.message || err}`, "error");
       }
@@ -2017,12 +2204,10 @@
       state.translation = ($("translationTextInput").value || "").trim();
       state.sentenceTranslations = [];
 
-      // 若原文有 ____ 或 (1)____ 等現成挖空，自動轉換並建立挖空題
       if (autoDetectRawBlanks && /(?:_{3,}|\(\s*\d{1,2}\s*\)\s*_{2,})/.test(state.passage)) {
         autoDetectAndBuildBlanksFromPassage(false);
       }
 
-      // 若管理者直接在英文原文手動刪除 [n] 標記，同步移除對應的 inlineBlanks 項目
       const existingMarkers = new Set([...state.passage.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])));
       if (state.inlineBlanks.length > 0 && existingMarkers.size < state.inlineBlanks.length) {
         state.inlineBlanks = state.inlineBlanks.filter((b) => existingMarkers.has(b.num));
@@ -2071,6 +2256,12 @@
       $("metaTitle").value = SAMPLE_DATA.title;
       $("sourceTextInput").value = SAMPLE_DATA.passage;
       $("translationTextInput").value = SAMPLE_DATA.translation;
+      if ($("rawClozeOptionsInput")) {
+        const lbls = ["A", "B", "C", "D"];
+        const lines = SAMPLE_DATA.inlineBlanks.map((b) => `${b.num}. ` + b.options.map((o, i) => `(${lbls[i]}) ${o}`).join(" "));
+        lines.push("Answer: " + SAMPLE_DATA.inlineBlanks.map((b) => `${b.num}. ${lbls[b.answer]}`).join("  "));
+        $("rawClozeOptionsInput").value = lines.join("\n");
+      }
       state.inlineBlanks = SAMPLE_DATA.inlineBlanks.map((b) => ({ ...b, options: [...b.options] }));
       state.inlineAnswers = {};
       state.readingQuestions = SAMPLE_DATA.readingQuestions.map((q) => ({ ...q, options: [...q.options] }));
@@ -2082,9 +2273,30 @@
 
     $("btnLoadSample").addEventListener("click", loadSample);
     $("btnBuildInteractive").addEventListener("click", () => applyInputsAndGenerate(false, true));
-    $("btnAddInlineCloze").addEventListener("click", () => generateInlineClozeFromPassage(4));
     $("btnAddManualBlank").addEventListener("click", addManualInlineBlank);
     $("btnAutoDetectBlanks").addEventListener("click", () => autoDetectAndBuildBlanksFromPassage(true));
+    $("btnParseRawBlankOptions")?.addEventListener("click", () => {
+      autoDetectAndBuildBlanksFromPassage(false);
+      const text = ($("sourceTextInput").value || state.passage || "");
+      const parsedFromBox = parseRawClozeOptionsBlock($("rawClozeOptionsInput")?.value || "", text);
+      if (!parsedFromBox.length) {
+        setStatus("未偵測到有效的選項格式，請確認包含題號與 (A) (B) (C) (D) 選項。", "warn");
+        return;
+      }
+      parsedFromBox.forEach((item) => {
+        const existingIdx = state.inlineBlanks.findIndex((b) => b.num === item.num);
+        if (existingIdx !== -1) {
+          state.inlineBlanks[existingIdx] = item;
+        } else {
+          state.inlineBlanks.push(item);
+        }
+      });
+      state.inlineBlanks.sort((a, b) => a.num - b.num);
+      state.inlineAnswers = {};
+      renderPassageInteractive();
+      renderAdminBlankManager();
+      setStatus(`已自動配對 ${parsedFromBox.length} 格選項並生成中文解析，您可直接於下方修改！`, "success");
+    });
     $("btnSaveArticleToLibrary").addEventListener("click", saveCurrentArticleToLibrary);
 
     $("btnResetInlineCloze").addEventListener("click", () => {
