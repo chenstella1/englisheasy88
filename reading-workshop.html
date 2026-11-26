@@ -35,6 +35,13 @@
       background-color: #ccfbf1;
       color: #115e59;
     }
+    .admin-picked-word {
+      background-color: #fde68a !important;
+      color: #78350f !important;
+      outline: 2px solid #f59e0b;
+      border-radius: 4px;
+      font-weight: 800;
+    }
     .sentence-block {
       cursor: pointer;
       border-radius: 6px;
@@ -47,7 +54,6 @@
     .sentence-block.active-sentence {
       background-color: #fef3c7;
     }
-    /* 文內挖空克漏字按鈕樣式 */
     .inline-blank-btn {
       display: inline-flex;
       align-items: center;
@@ -124,7 +130,7 @@
   </header>
 
   <main id="mainGrid" class="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 gap-6 flex-1">
-    <!-- 左側：管理者上傳與設定面板（預設隱藏，僅管理者模式顯示） -->
+    <!-- 左側：管理者上傳與設定面板 -->
     <aside id="adminSidebar" class="hidden lg:col-span-4 space-y-5 no-print">
       <section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-4">
         <div class="flex items-center justify-between">
@@ -163,12 +169,12 @@
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-bold text-slate-600">英文原文（支援 [1] 挖空標記）</label>
+            <label class="text-xs font-bold text-slate-600">英文原文（支援 [1] / ____ / (1)____ 挖空）</label>
             <button id="btnAutoTranslate" type="button" class="text-xs font-bold text-teal-700 hover:text-teal-900 underline">
               依原文斷句自動翻譯
             </button>
           </div>
-          <textarea id="sourceTextInput" rows="7" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或上傳英文文章（可用 [1] 代表第1題文內空格）..."></textarea>
+          <textarea id="sourceTextInput" rows="7" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或上傳英文文章（支援 [1] 或 ____ 空格標記）..."></textarea>
         </div>
 
         <div>
@@ -176,15 +182,29 @@
           <textarea id="translationTextInput" rows="5" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或自動生成全文中文翻譯..."></textarea>
         </div>
 
-        <!-- 1. 管理者文內挖空管理區（新增／修改／刪除挖空） -->
+        <!-- 管理者文內挖空管理區 -->
         <div class="border-t border-slate-200 pt-4 space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-extrabold text-teal-900">文內挖空管理（新增／修改／刪除）</label>
-            <button id="btnAddManualBlank" type="button" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200">
-              ＋ 新增一格挖空
-            </button>
+          <div class="flex items-center justify-between gap-2">
+            <label class="text-xs font-extrabold text-teal-900">文內挖空管理</label>
+            <div class="flex items-center gap-1.5">
+              <button id="btnAutoDetectBlanks" type="button" class="text-xs font-bold px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200">
+                ⚡ 原文有挖空自動挖
+              </button>
+              <button id="btnAddManualBlank" type="button" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white shadow-2xs">
+                ＋ 新增一格挖空
+              </button>
+            </div>
           </div>
-          <p class="text-[11px] text-slate-500">也可直接在「英文原文」刪除或修改 <code class="bg-slate-100 px-1 rounded">[1]</code> 標記後點「套用預覽」。</p>
+
+          <!-- 選取／反白詞彙提示條 -->
+          <div id="selectedWordBanner" class="rounded-xl px-3 py-2 bg-amber-50 border border-amber-200 text-xs text-amber-950 flex items-center justify-between gap-2">
+            <div>
+              <span class="font-bold">目前選取詞彙：</span>
+              <span id="selectedWordDisplay" class="font-black text-teal-800">尚未點選或反白詞彙</span>
+            </div>
+            <span class="text-[11px] text-amber-800/80">點文章單字或反白後按「＋ 新增一格挖空」</span>
+          </div>
+
           <div id="adminBlankManagerList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
         </div>
 
@@ -204,7 +224,7 @@
           </div>
         </div>
 
-        <!-- 2. 儲存文章並發布至前台 -->
+        <!-- 儲存文章並發布至前台 -->
         <button id="btnSaveArticleToLibrary" type="button" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-black shadow-sm transition flex items-center justify-center gap-2">
           <span>💾</span>
           <span>儲存文章並發布至前台</span>
@@ -214,7 +234,7 @@
 
     <!-- 右側：學生互動練習主區 -->
     <section id="studentMainSection" class="space-y-6">
-      <!-- 已儲存文章庫：讓前台使用者挑選文章開始練習 -->
+      <!-- 已儲存文章庫 -->
       <section id="savedArticlesSection" class="bg-white rounded-2xl border border-emerald-200/90 shadow-sm p-4 sm:p-5 space-y-3 no-print">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -256,7 +276,7 @@
           </div>
         </div>
 
-        <!-- 上：英文原文互動區（含文內可直接點擊做答的挖空題） -->
+        <!-- 上：英文原文互動區 -->
         <div class="space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h3 class="text-sm font-extrabold tracking-wider text-teal-800 bg-teal-50 px-3 py-1 rounded-lg border border-teal-200/70">
@@ -330,7 +350,7 @@
         </div>
       </section>
 
-      <!-- 單純的閱讀測驗題目區（做在文章下面） -->
+      <!-- 單純的閱讀測驗題目區 -->
       <section id="quizAnchor" class="scroll-mt-20 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-7 print-card space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
@@ -623,13 +643,45 @@
       savedVocab: [],
       activeDict: null,
       reciteZoneOpen: false,
-      isRecitingAll: false
+      isRecitingAll: false,
+      selectedAdminWord: ""
     };
 
     let savedArticles = [];
     let currentArticleId = "sample_john_wallet";
 
     const $ = (id) => document.getElementById(id);
+
+    function setSelectedAdminWord(word) {
+      const clean = (word || "").replace(/^[^A-Za-z0-9'-]+|[^A-Za-z0-9'-]+$/g, "").trim();
+      state.selectedAdminWord = clean;
+      const el = $("selectedWordDisplay");
+      if (el) {
+        el.textContent = clean ? `「${clean}」` : "尚未點選或反白詞彙";
+      }
+      document.querySelectorAll(".word-chip.admin-picked-word").forEach((node) => {
+        node.classList.remove("admin-picked-word");
+      });
+      if (clean) {
+        document.querySelectorAll("#interactivePassage .word-chip").forEach((node) => {
+          if ((node.textContent || "").toLowerCase() === clean.toLowerCase()) {
+            node.classList.add("admin-picked-word");
+          }
+        });
+      }
+    }
+
+    // 監聽管理者反白選取的文字（包含文章區或原文輸入框）
+    document.addEventListener("selectionchange", () => {
+      if (!state.isAdmin) return;
+      const sel = window.getSelection ? window.getSelection().toString().trim() : "";
+      if (sel && /[A-Za-z0-9]/.test(sel)) {
+        const firstToken = sel.match(/[A-Za-z][A-Za-z'-]*/)?.[0] || sel;
+        if (firstToken && firstToken.length <= 40) {
+          setSelectedAdminWord(firstToken);
+        }
+      }
+    });
 
     function loadSavedVocabFromStorage() {
       try {
@@ -741,6 +793,7 @@
       const target = savedArticles.find((a) => a.id === articleId);
       if (!target) return;
       stopReciting();
+      setSelectedAdminWord("");
       currentArticleId = target.id;
       $("metaLevel").value = target.level || "一般程度";
       $("metaTopic").value = target.topic || "閱讀測驗";
@@ -753,7 +806,7 @@
       state.readingQuestions = (target.readingQuestions || []).map((q) => ({ ...q, options: [...(q.options || [])] }));
       state.readingAnswers = {};
 
-      applyInputsAndGenerate(false);
+      applyInputsAndGenerate(false, false);
       renderSavedArticlesLibrary();
       $("passageAnchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -793,7 +846,7 @@
 
       currentArticleId = record.id;
       persistSavedArticles();
-      applyInputsAndGenerate(false);
+      applyInputsAndGenerate(false, false);
       renderSavedArticlesLibrary();
       setStatus(`已儲存「${record.title}」並同步至前台文章庫，學生可直接點選開始練習！`, "success");
     }
@@ -803,7 +856,7 @@
       if (!box) return;
 
       if (!state.inlineBlanks.length) {
-        box.innerHTML = '<div class="text-xs text-slate-400 bg-slate-50 rounded-xl p-3 border border-slate-200">目前沒有文內挖空題；可點右上「＋ 新增一格挖空」或由文章中插入 [1] 標記。</div>';
+        box.innerHTML = '<div class="text-xs text-slate-400 bg-slate-50 rounded-xl p-3 border border-slate-200">目前沒有文內挖空題；可在文章中點字／反白後按「＋ 新增一格挖空」，或按「⚡ 原文有挖空自動挖」。</div>';
         return;
       }
 
@@ -880,39 +933,36 @@
       setStatus(`已移除第 ${blankIdx + 1} 格挖空並還原文內詞彙。`, "success");
     }
 
+    // 點字或反白後，按「＋ 新增一格挖空」
     function addManualInlineBlank() {
       let text = ($("sourceTextInput").value || state.passage || "");
-      const usedWords = new Set(
-        state.inlineBlanks.map((b) => (b.options?.[b.answer] || "").toLowerCase()).filter(Boolean)
-      );
+      let pickedWord = (state.selectedAdminWord || "").trim();
 
-      const lines = text.split("\n");
-      let pickedWord = "";
-      let pickedLineIdx = -1;
-
-      for (let i = 0; i < lines.length; i++) {
-        const words = (lines[i].match(/\b[A-Za-z]{4,}\b/g) || []).filter(
-          (w) =>
-            !usedWords.has(w.toLowerCase()) &&
-            !["john", "there", "where", "what", "when", "with", "from", "have", "some", "your", "this", "that", "they", "them", "into"].includes(w.toLowerCase())
-        );
-        if (words.length > 0) {
-          pickedWord = words[0];
-          pickedLineIdx = i;
-          break;
-        }
+      // 若管理者在 textarea 中反白了文字，優先使用該反白詞彙
+      const ta = $("sourceTextInput");
+      if (ta && document.activeElement === ta && ta.selectionStart !== ta.selectionEnd) {
+        const selectedInTa = ta.value.slice(ta.selectionStart, ta.selectionEnd).trim();
+        const token = selectedInTa.match(/[A-Za-z][A-Za-z'-]*/)?.[0] || selectedInTa;
+        if (token) pickedWord = token;
       }
 
-      if (!pickedWord || pickedLineIdx === -1) {
-        setStatus("文章中找不到適合新增挖空的詞彙，或可直接在英文原文手動輸入 [4] 等標記。", "warn");
+      if (!pickedWord) {
+        setStatus("請先在文章中「點選單字」或「反白詞彙」，再按「＋ 新增一格挖空」。", "warn");
+        return;
+      }
+
+      const escapedWord = pickedWord.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const wordRegex = new RegExp(`\\b${escapedWord}\\b`);
+
+      if (!wordRegex.test(text)) {
+        setStatus(`英文原文中找不到詞彙「${pickedWord}」，請重新點選或反白原文中的字。`, "warn");
         return;
       }
 
       const newNum = state.inlineBlanks.length + 1;
-      lines[pickedLineIdx] = lines[pickedLineIdx].replace(new RegExp(`\\b${pickedWord}\\b`), `[${newNum}]`);
-      const updatedText = lines.join("\n");
+      const updatedText = text.replace(wordRegex, `[${newNum}]`);
 
-      const pool = [...new Set((updatedText.match(/\b[A-Za-z]{4,}\b/g) || []).map((w) => w.toLowerCase()))]
+      const pool = [...new Set((updatedText.match(/\b[A-Za-z]{3,}\b/g) || []).map((w) => w.toLowerCase()))]
         .filter((w) => w !== pickedWord.toLowerCase());
       const distractors = pool.slice(0, 3);
       while (distractors.length < 3) {
@@ -921,7 +971,7 @@
       const options = [pickedWord, ...distractors];
       const dictInfo = BUILTIN_DICT[pickedWord.toLowerCase()];
 
-      const sent = splitSentences(updatedText).find((s) => s.includes(`[${newNum}]`)) || lines[pickedLineIdx];
+      const sent = splitSentences(updatedText).find((s) => s.includes(`[${newNum}]`)) || updatedText;
 
       state.inlineBlanks.push({
         num: newNum,
@@ -936,9 +986,78 @@
       state.passage = updatedText;
       state.inlineAnswers = {};
       $("sourceTextInput").value = updatedText;
+      setSelectedAdminWord("");
       renderPassageInteractive();
       renderAdminBlankManager();
-      setStatus(`已新增第 ${newNum} 格文內挖空（詞彙：${pickedWord}），可直接在下方調整選項與答案。`, "success");
+      setStatus(`已將「${pickedWord}」設為第 ${newNum} 格文內挖空！`, "success");
+    }
+
+    // 自動偵測英文原文中已有的挖空（如 [1]、(1)____、___1___、____ 等）並轉為可作答挖空
+    function autoDetectAndBuildBlanksFromPassage(showFeedback = true) {
+      let text = ($("sourceTextInput").value || state.passage || "");
+      if (!text.trim()) return 0;
+
+      // 先將各種底線／括號空格統一轉為 [n]
+      let seq = 0;
+      const existingNums = new Set([...text.matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1])));
+      const nextNum = () => {
+        seq += 1;
+        while (existingNums.has(seq)) seq += 1;
+        existingNums.add(seq);
+        return seq;
+      };
+
+      const rawBlankPattern = /(?:\(\s*(\d{1,2})\s*\)\s*_{2,}|_{2,}\s*(\d{1,2})\s*_{2,}|_{3,})/g;
+      const matches = [...text.matchAll(rawBlankPattern)];
+      if (matches.length === 0 && existingNums.size === 0) {
+        if (showFeedback) setStatus("英文原文中未偵測到現成挖空（如 [1] 或 ____）。", "warn");
+        return 0;
+      }
+
+      text = text.replace(rawBlankPattern, (_, g1, g2) => {
+        const num = parseInt(g1 || g2, 10) || nextNum();
+        existingNums.add(num);
+        return `[${num}]`;
+      });
+
+      const allMarkers = [...new Set([...text.matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1])))].sort((a, b) => a - b);
+      const wordPool = [...new Set((text.match(/\b[A-Za-z]{3,}\b/g) || []).map((w) => w.toLowerCase()))];
+
+      const newBlanks = allMarkers.map((num, idx) => {
+        const prev = state.inlineBlanks.find((b) => b.num === num);
+        const sent = splitSentences(text).find((s) => s.includes(`[${num}]`)) || text;
+        if (prev) {
+          return {
+            ...prev,
+            num,
+            contextSentence: sent,
+            options: [...prev.options]
+          };
+        }
+        const cand = wordPool[idx % Math.max(wordPool.length, 1)] || "word";
+        const distractors = wordPool.filter((w) => w !== cand).slice(0, 3);
+        while (distractors.length < 3) {
+          distractors.push(["on", "in", "at", "to"][distractors.length] || "for");
+        }
+        return {
+          num,
+          contextSentence: sent,
+          options: [cand, ...distractors],
+          answer: 0,
+          explanation: `此格為系統自動偵測到的文內挖空 [${num}]，可於左側「文內挖空管理」調整選項與解析。`
+        };
+      });
+
+      state.passage = text;
+      state.inlineBlanks = newBlanks;
+      state.inlineAnswers = {};
+      $("sourceTextInput").value = text;
+      renderPassageInteractive();
+      renderAdminBlankManager();
+      if (showFeedback) {
+        setStatus(`已自動辨識並建立 ${newBlanks.length} 格文內挖空！`, "success");
+      }
+      return newBlanks.length;
     }
 
     function applyRoleLayout(isAdmin) {
@@ -957,9 +1076,10 @@
         studentMain.classList.add("lg:col-span-8");
         badge.textContent = "管理者上傳模式";
         badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/30 font-semibold";
-        subtitle.textContent = "上傳 Word / PDF / ODT 學習單自動拆分文內挖空題與下方閱讀測驗";
+        subtitle.textContent = "點單字／反白後按「＋ 新增一格挖空」，或讓原文現有挖空自動挖空";
         toggleBtn.textContent = "退出管理者模式";
       } else {
+        setSelectedAdminWord("");
         mainGrid.classList.remove("max-w-7xl", "lg:grid-cols-12");
         mainGrid.classList.add("max-w-5xl");
         sidebar.classList.add("hidden");
@@ -1144,8 +1264,8 @@
       const inlineBlanks = [];
       const readingQuestions = [];
 
-      articleText = articleText.replace(/(?:\(\s*(\d{1,2})\s*\)\s*_{2,}|\[\s*(\d{1,2})\s*\]|_{2,}\s*(\d{1,2})\s*_{2,})/g, (match, g1, g2, g3) => {
-        const num = parseInt(g1 || g2 || g3, 10);
+      articleText = articleText.replace(/(?:\(\s*(\d{1,2})\s*\)\s*_{2,}|\[\s*(\d{1,2})\s*\]|_{2,}\s*(\d{1,2})\s*_{2,}|_{3,})/g, (match, g1, g2, g3, offset, fullStr) => {
+        const num = parseInt(g1 || g2 || g3, 10) || (inlineBlanks.length + readingQuestions.length + 1);
         return `[${num}]`;
       });
 
@@ -1256,11 +1376,21 @@
                 if (prefix) sentSpan.appendChild(document.createTextNode(prefix));
                 const wordSpan = document.createElement("span");
                 wordSpan.className = "word-chip";
+                if (state.isAdmin && state.selectedAdminWord && coreWord.toLowerCase() === state.selectedAdminWord.toLowerCase()) {
+                  wordSpan.classList.add("admin-picked-word");
+                }
                 wordSpan.textContent = coreWord;
-                wordSpan.title = `點擊查詢「${coreWord}」中文翻譯與發音`;
+                wordSpan.title = state.isAdmin
+                  ? `點擊選取「${coreWord}」準備新增挖空（或按住拖曳反白）`
+                  : `點擊查詢「${coreWord}」中文翻譯與發音`;
                 wordSpan.addEventListener("click", (ev) => {
                   ev.stopPropagation();
-                  openWordDictionary(coreWord, sentence);
+                  if (state.isAdmin) {
+                    setSelectedAdminWord(coreWord);
+                    speakText(coreWord, "en-US");
+                  } else {
+                    openWordDictionary(coreWord, sentence);
+                  }
                 });
                 sentSpan.appendChild(wordSpan);
                 if (suffix) sentSpan.appendChild(document.createTextNode(suffix));
@@ -1872,20 +2002,25 @@
         $("metaTitle").value = file.name.replace(/\.[^.]+$/, "");
 
         setStatus(`已成功讀取「${file.name}」（文內挖空 ${parsed.inlineBlanks.length} 格、下方閱讀題 ${parsed.readingQuestions.length} 題），正在自動翻譯...`, "success");
-        await applyInputsAndGenerate(true);
+        await applyInputsAndGenerate(true, true);
         setStatus(`完成！「${file.name}」已完成中文翻譯與互動題型建立。`, "success");
       } catch (err) {
         setStatus(`檔案處理失敗：${err.message || err}`, "error");
       }
     }
 
-    async function applyInputsAndGenerate(autoTranslateMissing = false) {
+    async function applyInputsAndGenerate(autoTranslateMissing = false, autoDetectRawBlanks = true) {
       state.level = ($("metaLevel").value || "一般程度").trim();
       state.topic = ($("metaTopic").value || "閱讀測驗").trim();
       state.title = ($("metaTitle").value || "互動閱讀文章").trim();
       state.passage = ($("sourceTextInput").value || "").trim();
       state.translation = ($("translationTextInput").value || "").trim();
       state.sentenceTranslations = [];
+
+      // 若原文有 ____ 或 (1)____ 等現成挖空，自動轉換並建立挖空題
+      if (autoDetectRawBlanks && /(?:_{3,}|\(\s*\d{1,2}\s*\)\s*_{2,})/.test(state.passage)) {
+        autoDetectAndBuildBlanksFromPassage(false);
+      }
 
       // 若管理者直接在英文原文手動刪除 [n] 標記，同步移除對應的 inlineBlanks 項目
       const existingMarkers = new Set([...state.passage.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])));
@@ -1930,6 +2065,7 @@
 
     function loadSample() {
       currentArticleId = "sample_john_wallet";
+      setSelectedAdminWord("");
       $("metaLevel").value = SAMPLE_DATA.level;
       $("metaTopic").value = SAMPLE_DATA.topic;
       $("metaTitle").value = SAMPLE_DATA.title;
@@ -1940,14 +2076,15 @@
       state.readingQuestions = SAMPLE_DATA.readingQuestions.map((q) => ({ ...q, options: [...q.options] }));
       state.readingAnswers = {};
       setStatus("已載入「Where Is John's Wallet?」（文內 3 格點擊作答＋下方 5 題閱讀測驗）。", "success");
-      applyInputsAndGenerate(false);
+      applyInputsAndGenerate(false, false);
       renderSavedArticlesLibrary();
     }
 
     $("btnLoadSample").addEventListener("click", loadSample);
-    $("btnBuildInteractive").addEventListener("click", () => applyInputsAndGenerate(false));
+    $("btnBuildInteractive").addEventListener("click", () => applyInputsAndGenerate(false, true));
     $("btnAddInlineCloze").addEventListener("click", () => generateInlineClozeFromPassage(4));
     $("btnAddManualBlank").addEventListener("click", addManualInlineBlank);
+    $("btnAutoDetectBlanks").addEventListener("click", () => autoDetectAndBuildBlanksFromPassage(true));
     $("btnSaveArticleToLibrary").addEventListener("click", saveCurrentArticleToLibrary);
 
     $("btnResetInlineCloze").addEventListener("click", () => {
