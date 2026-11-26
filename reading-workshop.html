@@ -47,6 +47,40 @@
     .sentence-block.active-sentence {
       background-color: #fef3c7;
     }
+    /* 文內挖空克漏字按鈕樣式 */
+    .inline-blank-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 10px;
+      margin: 0 3px;
+      border-radius: 8px;
+      border: 2px dashed #0d9488;
+      background-color: #f0fdfa;
+      color: #0f766e;
+      font-weight: 800;
+      font-size: 0.92em;
+      cursor: pointer;
+      vertical-align: baseline;
+      transition: all 0.15s ease;
+    }
+    .inline-blank-btn:hover {
+      background-color: #ccfbf1;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(13, 148, 136, 0.2);
+    }
+    .inline-blank-btn.correct {
+      border-style: solid;
+      border-color: #059669;
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    .inline-blank-btn.wrong {
+      border-style: solid;
+      border-color: #e11d48;
+      background-color: #ffe4e6;
+      color: #9f1239;
+    }
     @media print {
       .no-print { display: none !important; }
       body { background: #fff !important; }
@@ -67,13 +101,18 @@
             <h1 class="text-base sm:text-lg font-extrabold tracking-wide">優華數位版權所有｜互動閱讀練習</h1>
             <span id="roleModeBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-200 border border-teal-300/30 font-semibold">學生練習模式</span>
           </div>
-          <p id="headerSubtitle" class="text-xs text-slate-300">點單字查小字典｜點整句看中文翻譯｜互動選擇題即時批改</p>
+          <p id="headerSubtitle" class="text-xs text-slate-300">點單字查詞義發音｜點整句看中文翻譯｜點文內空格直接作答</p>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
+        <!-- 1. 管理者與使用者介面皆具備回主頁測驗 (index.html) 的入口 -->
+        <a href="index.html" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-extrabold transition flex items-center gap-1 shadow-sm">
+          <span>🏠</span>
+          <span>回主頁測驗</span>
+        </a>
         <button id="btnLoadSample" type="button" class="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm font-bold transition">
-          載入範例（John 找錢包對話＋5題）
+          載入範例（John 找錢包）
         </button>
         <button id="btnPrintPage" type="button" onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100 text-xs sm:text-sm font-semibold transition">
           列印 / 存 PDF
@@ -94,13 +133,13 @@
             <span class="w-2 h-5 rounded-full bg-teal-600"></span>
             管理者檔案上傳區
           </h2>
-          <span class="text-xs text-slate-400">PDF · DOCX · ODT · 圖片</span>
+          <a href="index.html" class="text-xs font-bold text-emerald-700 hover:underline">🏠 回主頁測驗</a>
         </div>
 
         <label id="dropZone" for="fileInput" class="block border-2 border-dashed border-teal-300 hover:border-teal-500 bg-teal-50/40 hover:bg-teal-50/80 rounded-2xl p-5 text-center cursor-pointer transition">
           <div class="text-2xl mb-1">📄🖼️📝</div>
           <div class="text-sm font-bold text-slate-700">點擊選擇或拖曳學習單檔案至此</div>
-          <div class="text-xs text-slate-500 mt-1">自動辨識「文章＋選擇題＋Answer Key 解析」並自動中文翻譯</div>
+          <div class="text-xs text-slate-500 mt-1">自動辨識「文章＋文內挖空題＋下方閱讀測驗＋解析」</div>
           <input id="fileInput" type="file" accept=".pdf,.docx,.odt,.jpg,.jpeg,.png,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,image/*" class="hidden" />
         </label>
 
@@ -114,7 +153,7 @@
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 mb-1">題型／主題標籤</label>
-            <input id="metaTopic" type="text" value="對話閱讀測驗" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            <input id="metaTopic" type="text" value="克漏字＋閱讀測驗" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
           </div>
         </div>
 
@@ -125,26 +164,26 @@
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-bold text-slate-600">英文原文（完整保留換行與斷句）</label>
+            <label class="text-xs font-bold text-slate-600">英文原文（支援 [1] 挖空標記）</label>
             <button id="btnAutoTranslate" type="button" class="text-xs font-bold text-teal-700 hover:text-teal-900 underline">
               依原文斷句自動翻譯
             </button>
           </div>
-          <textarea id="sourceTextInput" rows="7" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或上傳英文文章..."></textarea>
+          <textarea id="sourceTextInput" rows="7" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或上傳英文文章（可用 [1] 代表第1題文內空格）..."></textarea>
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1">全文中文翻譯（依英文斷句對齊）</label>
-          <textarea id="translationTextInput" rows="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或自動生成全文中文翻譯..."></textarea>
+          <textarea id="translationTextInput" rows="5" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或自動生成全文中文翻譯..."></textarea>
         </div>
 
         <div class="grid grid-cols-2 gap-3 items-center">
           <div>
-            <label class="block text-xs font-bold text-slate-600 mb-1">題目來源模式</label>
-            <select id="quizCountSelect" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
-              <option value="auto" selected>優先使用檔案內附題目</option>
-              <option value="5">強制自動出 5 題</option>
-              <option value="8">強制自動出 8 題</option>
+            <label class="block text-xs font-bold text-slate-600 mb-1">出題互動模式</label>
+            <select id="quizModeSelect" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="mixed" selected>文內挖空＋下方閱讀題</option>
+              <option value="cloze_only">自動生成 5 題文內挖空</option>
+              <option value="reading_only">純下方閱讀測驗題</option>
             </select>
           </div>
           <div class="pt-5">
@@ -156,90 +195,128 @@
       </section>
     </aside>
 
-    <!-- 右側：學生互動練習主區（同視窗可上下捲動對照文章與題目） -->
+    <!-- 右側：學生互動練習主區 -->
     <section id="studentMainSection" class="space-y-6">
-      <!-- 文章區（設定 anchor id="passageAnchor" 方便學生隨時滑回來對照） -->
+      <!-- 文章與文內挖空作答區 -->
       <article id="passageAnchor" class="scroll-mt-20 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-7 print-card space-y-6">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
           <div class="space-y-1">
             <div class="flex flex-wrap items-center gap-2">
               <span id="badgeLevel" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">國七／基礎閱讀</span>
-              <span id="badgeTopic" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">對話閱讀測驗</span>
-              <span class="text-xs font-semibold text-slate-400">優華數位版權所有</span>
+              <span id="badgeTopic" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">克漏字＋閱讀測驗</span>
+              <span id="inlineClozeScoreBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800">文內挖空：0 / 0</span>
             </div>
             <h2 id="displayTitle" class="text-xl sm:text-2xl font-black text-slate-900">Where Is John's Wallet?</h2>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 no-print text-xs">
             <span class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-700 border border-teal-200 font-semibold">
-              💡 點「單字」查詞義
+              💡 點單字查詞義發音
             </span>
             <span class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
-              💬 點「整句」翻句子
+              💬 點整句看中文翻譯
             </span>
-            <a href="#quizAnchor" class="px-2.5 py-1 rounded-lg bg-slate-900 text-white font-bold hover:bg-slate-700 transition">
-              ↓ 前往選擇題
+            <a href="#reciteSectionAnchor" class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-200 font-bold hover:bg-indigo-100 transition">
+              🎙️ 課文朗誦區
             </a>
           </div>
         </div>
 
-        <!-- 上：英文原文互動區 -->
+        <!-- 上：英文原文互動區（含文內可直接點擊做答的挖空題） -->
         <div class="space-y-2.5">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-extrabold uppercase tracking-wider text-teal-800 bg-teal-50 px-3 py-1 rounded-lg border border-teal-200/70">
-              ▲ 英文原文（點擊任一單字查字典；點擊整句看句意）
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-sm font-extrabold tracking-wider text-teal-800 bg-teal-50 px-3 py-1 rounded-lg border border-teal-200/70">
+              ▲ 英文原文（點擊文內 [ 空格 ] 直接彈窗選答案；點單字／整句看中文與發音）
             </h3>
-            <button id="btnSpeakPassage" type="button" class="no-print text-xs font-bold text-teal-700 hover:bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200 transition">
-              🔊 朗讀原文
+            <button id="btnResetInlineCloze" type="button" class="hidden no-print text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">
+              重設文內空格
             </button>
           </div>
-          <div id="interactivePassage" class="text-base sm:text-[17px] leading-[2.05] text-slate-800 space-y-2 pt-1"></div>
+          <div id="interactivePassage" class="text-base sm:text-[17px] leading-[2.15] text-slate-800 space-y-2 pt-1"></div>
         </div>
 
-        <!-- 下：全文中文翻譯區 -->
+        <!-- 下：全文中文翻譯區（預設可摺疊或直接對照，附單句發音） -->
         <div class="border-t-2 border-dashed border-slate-200 pt-5 space-y-2.5">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-extrabold uppercase tracking-wider text-amber-900 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200/80">
+            <h3 class="text-sm font-extrabold tracking-wider text-amber-900 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200/80">
               ▼ 全文中文翻譯（依英文斷句對齊）
             </h3>
-            <span class="text-xs text-slate-400">原文斷句對照譯文</span>
+            <button id="btnToggleFullTrans" type="button" class="no-print text-xs font-bold text-amber-800 hover:underline">
+              收合 / 展開譯文
+            </button>
           </div>
           <div id="displayTranslation" class="text-sm sm:text-base leading-[1.95] text-slate-700 bg-amber-50/40 rounded-2xl p-4 sm:p-5 border border-amber-200/60 space-y-2"></div>
         </div>
       </article>
 
-      <!-- 我的收藏單字庫 -->
-      <section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-3 no-print">
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-extrabold text-slate-800">我的收藏單字庫 (<span id="savedVocabCount">0</span>)</h3>
-          <button id="btnClearVocab" type="button" class="text-xs text-rose-600 hover:underline font-semibold">清空</button>
+      <!-- 5. 獨立課文朗誦區（必須進入此區並主動點擊才開始朗誦，避免誤觸太吵） -->
+      <section id="reciteSectionAnchor" class="scroll-mt-20 bg-white rounded-2xl border border-indigo-200/90 shadow-sm p-5 space-y-4 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-base font-extrabold text-indigo-950 flex items-center gap-2">
+              <span>🎙️</span>
+              <span>課文朗誦區（進入此區手動啟動，平時保持安靜）</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">點擊下方「展開並進入朗誦模式」後，可逐句跟讀或播放整篇課文語音。</p>
+          </div>
+          <button id="btnEnterReciteZone" type="button" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-extrabold shadow-sm transition">
+            進入課文朗誦區
+          </button>
         </div>
-        <div id="savedVocabList" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto text-xs">
-          <span class="text-slate-400">點選文章中的單字後可加入收藏</span>
+
+        <div id="reciteZoneBody" class="hidden space-y-4 pt-1">
+          <div class="flex flex-wrap items-center gap-2 bg-indigo-50/70 p-3.5 rounded-2xl border border-indigo-200/80">
+            <button id="btnReciteStartAll" type="button" class="px-4 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-600 text-white text-xs sm:text-sm font-extrabold transition">
+              ▶ 從頭朗誦全文
+            </button>
+            <button id="btnReciteStop" type="button" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs sm:text-sm font-bold transition">
+              ■ 停止朗誦
+            </button>
+            <label class="flex items-center gap-1.5 text-xs font-bold text-indigo-950 ml-auto">
+              <span>語速：</span>
+              <select id="reciteRateSelect" class="px-2.5 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs font-bold">
+                <option value="0.75">0.75x 慢速跟讀</option>
+                <option value="0.95" selected>0.95x 標準自然</option>
+                <option value="1.15">1.15x 進階流利</option>
+              </select>
+            </label>
+          </div>
+          <div id="reciteSentenceList" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
         </div>
       </section>
 
-      <!-- 互動式選擇題區（同視窗內可隨時往上滑或點「回文章找線索」） -->
+      <!-- 4. 我的收藏單字庫（含發音與中文翻譯） -->
+      <section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-3 no-print">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-extrabold text-slate-800">📚 我的收藏單字庫 (<span id="savedVocabCount">0</span>)</h3>
+          <button id="btnClearVocab" type="button" class="text-xs text-rose-600 hover:underline font-semibold">清空單字庫</button>
+        </div>
+        <div id="savedVocabList" class="flex flex-wrap gap-2 max-h-44 overflow-y-auto text-xs">
+          <span class="text-slate-400">點選文章中的單字或句子查看中文翻譯與發音後，可加入此單字庫複習</span>
+        </div>
+      </section>
+
+      <!-- 3. 單純的閱讀測驗題目區（做在文章下面） -->
       <section id="quizAnchor" class="scroll-mt-20 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-7 print-card space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <div class="flex flex-wrap items-center gap-2">
-              <h3 class="text-lg sm:text-xl font-black text-slate-900">互動式選擇題測驗</h3>
+              <h3 class="text-lg sm:text-xl font-black text-slate-900">閱讀理解測驗題</h3>
               <span id="quizSourceBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
-                學習單原題解析
+                閱讀理解題組
               </span>
               <span id="quizScoreBadge" class="text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
                 作答進度：0 / 5
               </span>
             </div>
-            <p class="text-xs text-slate-500 mt-1">點擊選項立即顯示對錯與中文解析；隨時可往上滑動或點擊「回文章」對照原文。</p>
+            <p class="text-xs text-slate-500 mt-1">針對文章主旨與細節的閱讀測驗題，作答後立即顯示對錯與中文解析。</p>
           </div>
           <div class="flex items-center gap-2 no-print">
             <a href="#passageAnchor" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs sm:text-sm font-bold transition">
               ↑ 回文章找線索
             </a>
-            <button id="btnRegenQuiz" type="button" class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm font-bold transition">
-              AI 加練新題
+            <button id="btnAddInlineCloze" type="button" class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm font-bold transition">
+              ＋ 文內挖空加練
             </button>
             <button id="btnResetQuiz" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold transition">
               清除作答
@@ -252,13 +329,52 @@
     </section>
   </main>
 
-  <!-- 右下角懸浮快速回文章按鈕（作答時隨時一鍵滑回文章） -->
-  <a href="#passageAnchor" class="no-print fixed bottom-5 right-5 z-40 px-4 py-2.5 rounded-full bg-slate-900/90 hover:bg-teal-700 text-white text-xs sm:text-sm font-extrabold shadow-lg border border-white/15 backdrop-blur transition flex items-center gap-1.5">
-    <span>↑</span>
-    <span>回文章對照</span>
-  </a>
+  <!-- 右下角懸浮快速按鈕 -->
+  <div class="no-print fixed bottom-5 right-5 z-40 flex items-center gap-2">
+    <a href="index.html" class="px-3.5 py-2.5 rounded-full bg-emerald-700/95 hover:bg-emerald-600 text-white text-xs sm:text-sm font-extrabold shadow-lg border border-white/15 backdrop-blur transition flex items-center gap-1">
+      <span>🏠</span>
+      <span>回主頁測驗</span>
+    </a>
+    <a href="#passageAnchor" class="px-4 py-2.5 rounded-full bg-slate-900/90 hover:bg-teal-700 text-white text-xs sm:text-sm font-extrabold shadow-lg border border-white/15 backdrop-blur transition flex items-center gap-1.5">
+      <span>↑</span>
+      <span>回文章</span>
+    </a>
+  </div>
 
-  <!-- 區塊 1：小字典彈出視窗（查單字 / 查句子） -->
+  <!-- 2. 文內挖空題即時作答小視窗（點擊文章內空格時彈出） -->
+  <div id="clozeModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 backdrop-blur-[2px] p-4" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="bg-teal-900 text-white px-5 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span id="clozeModalBadge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-teal-400/20 text-teal-200 border border-teal-300/30">文內克漏字第 1 題</span>
+          <span class="text-xs text-teal-200/80">請選出最適合填入空格的答案</span>
+        </div>
+        <button id="btnCloseClozeModal" type="button" class="text-teal-200 hover:text-white text-xl font-bold leading-none px-1.5">×</button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div class="bg-slate-50 rounded-2xl p-3.5 border border-slate-200">
+          <div class="text-[11px] font-bold text-slate-400 mb-1">上下文原句</div>
+          <div id="clozeContextSentence" class="text-sm sm:text-base font-bold text-slate-800 leading-relaxed"></div>
+        </div>
+
+        <div id="clozeModalOptions" class="space-y-2"></div>
+
+        <div id="clozeModalFeedback" class="hidden rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed"></div>
+
+        <div class="flex items-center justify-between pt-1">
+          <button id="btnPrevCloze" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+            ← 上一格
+          </button>
+          <button id="btnNextCloze" type="button" class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition">
+            下一格 →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 小字典彈出視窗（單字及句子的中文翻譯、發音與加入單字庫） -->
   <div id="dictModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 backdrop-blur-[2px] p-4" role="dialog" aria-modal="true">
     <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
       <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
@@ -275,9 +391,14 @@
             <div id="dictQueryText" class="text-xl sm:text-2xl font-black text-slate-900 break-words"></div>
             <div id="dictPhonetic" class="text-xs text-teal-700 font-semibold mt-0.5"></div>
           </div>
-          <button id="btnSpeakDict" type="button" class="shrink-0 px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition">
-            🔊 發音
-          </button>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button id="btnSpeakDict" type="button" class="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold transition">
+              🔊 英文發音
+            </button>
+            <button id="btnSpeakDictZh" type="button" class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition">
+              🔊 中文朗讀
+            </button>
+          </div>
         </div>
 
         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2">
@@ -289,7 +410,7 @@
 
         <div class="flex items-center justify-between gap-2 pt-2">
           <button id="btnSaveWord" type="button" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-extrabold transition">
-            ★ 加入單字庫
+            ★ 存入單字庫
           </button>
           <button id="btnOkDict" type="button" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold transition">
             知道了
@@ -306,11 +427,12 @@
 
     const ADMIN_EMAIL = "yhstella2@gmail.com";
     const ADMIN_PASS = "a18177300";
+    const SAVED_VOCAB_STORAGE_KEY = "yh_reading_saved_vocab_v1";
 
-    // 預設範例直接採用你上傳的 John 找錢包對話與 5 題選擇題＋中文解析
+    // 預設範例：包含文內挖空題（[1]~[3] 直接在文章內點擊作答）＋下方 5 題閱讀理解測驗
     const SAMPLE_DATA = {
       level: "國七／基礎閱讀",
-      topic: "對話閱讀測驗",
+      topic: "文內挖空＋閱讀測驗",
       title: "Where Is John's Wallet?",
       passage: [
         "Mom: John, where is your wallet? You need it to buy lunch.",
@@ -321,14 +443,14 @@
         "John: No. There is a pencil case on my desk, but no wallet.",
         "Mom: What about under your bed?",
         "John: Let me see. No, it isn't under your bed. There are some shoes under it.",
-        "Mom: Is it behind the sofa in the living room?",
+        "Mom: Is it [1] the sofa in the living room?",
         "John: Wait! I can see something black behind the sofa. But it's not my wallet. It's Dad's hat!",
         "Mom: Did you put your wallet next to the TV last night?",
         "John: Oh, I remember! I was watching TV with Dad. I put my wallet on the table in front of the TV.",
         "Mom: But there is nothing on that table now.",
-        "John: Maybe it's between the sofa and the small table.",
+        "John: Maybe it's [2] the sofa and the small table.",
         "Mom: Look! There it is! Your wallet is between the two tables, next to Dad's glasses.",
-        "John: Great! Thank you, Mom. Now I can go to the store across from our house.",
+        "John: Great! Thank you, Mom. Now I can go to the store [3] our house.",
         "Mom: Don't forget to put your wallet in your schoolbag next time!"
       ].join("\n"),
       translation: [
@@ -350,7 +472,30 @@
         "John：太棒了！謝謝媽媽。現在我可以去我們家對面的商店了。",
         "媽媽：下次別忘了把錢包放進你的書包裡！"
       ].join("\n"),
-      questions: [
+      inlineBlanks: [
+        {
+          num: 1,
+          contextSentence: "Mom: Is it [ 1 ] the sofa in the living room?",
+          options: ["behind", "under", "between", "across"],
+          answer: 0,
+          explanation: "根據下一句 John 回答 'I can see something black behind the sofa.' 可知，媽媽問的是在沙發「後面」（behind）。"
+        },
+        {
+          num: 2,
+          contextSentence: "John: Maybe it's [ 2 ] the sofa and the small table.",
+          options: ["in front of", "between", "next", "under"],
+          answer: 1,
+          explanation: "後面有 'the sofa and the small table'（兩者之間），固定搭配介系詞 between A and B。"
+        },
+        {
+          num: 3,
+          contextSentence: "John: Now I can go to the store [ 3 ] our house.",
+          options: ["between", "behind", "across from", "under"],
+          answer: 2,
+          explanation: "表示「在我們家對面的商店」，英文用 across from our house。"
+        }
+      ],
+      readingQuestions: [
         {
           id: "sample_q1",
           questionText: "1. What is the dialogue mainly about?",
@@ -436,14 +581,34 @@
       translation: SAMPLE_DATA.translation,
       sentences: [],
       sentenceTranslations: [],
-      parsedQuestions: [],
-      questions: [],
-      answers: {},
+      inlineBlanks: [],
+      inlineAnswers: {},
+      activeBlankIdx: 0,
+      readingQuestions: [],
+      readingAnswers: {},
       savedVocab: [],
-      activeDict: null
+      activeDict: null,
+      reciteZoneOpen: false,
+      isRecitingAll: false
     };
 
     const $ = (id) => document.getElementById(id);
+
+    function loadSavedVocabFromStorage() {
+      try {
+        const raw = localStorage.getItem(SAVED_VOCAB_STORAGE_KEY);
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) state.savedVocab = arr;
+        }
+      } catch (e) {}
+    }
+
+    function persistSavedVocab() {
+      try {
+        localStorage.setItem(SAVED_VOCAB_STORAGE_KEY, JSON.stringify(state.savedVocab));
+      } catch (e) {}
+    }
 
     function applyRoleLayout(isAdmin) {
       state.isAdmin = Boolean(isAdmin);
@@ -461,7 +626,7 @@
         studentMain.classList.add("lg:col-span-8");
         badge.textContent = "管理者上傳模式";
         badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/30 font-semibold";
-        subtitle.textContent = "上傳 Word / PDF / ODT 學習單自動拆分文章與選擇題＋中文翻譯";
+        subtitle.textContent = "上傳 Word / PDF / ODT 學習單自動拆分文內挖空題與下方閱讀測驗";
         toggleBtn.textContent = "退出管理者模式";
       } else {
         mainGrid.classList.remove("max-w-7xl", "lg:grid-cols-12");
@@ -470,7 +635,7 @@
         studentMain.classList.remove("lg:col-span-8");
         badge.textContent = "學生練習模式";
         badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-200 border border-teal-300/30 font-semibold";
-        subtitle.textContent = "點單字查小字典｜點整句看中文翻譯｜互動選擇題即時批改";
+        subtitle.textContent = "點單字查詞義發音｜點整句看中文翻譯｜點文內空格直接作答";
         toggleBtn.textContent = "🔒 管理者模式";
       }
     }
@@ -536,12 +701,11 @@
     }
 
     // =========================================================================
-    // 核心解析器：自動從上傳的學習單拆出「英文文章」、「選擇題(A)(B)(C)(D)」與「Answer Key & 中文解析」
+    // 核心解析器：自動區分「文內挖空題（克漏字）」與「下方純閱讀測驗題」
     // =========================================================================
     function parseWorksheetContent(rawText) {
       let normalized = (rawText || "").replace(/\r\n/g, "\n").trim();
 
-      // 若 PDF/Word 匯出時將題號或選項黏在同一行，先做智慧斷行整理
       normalized = normalized
         .replace(/([.!?？”"'])\s*(?=\d{1,2}\.\s+[A-Za-z"'(])/g, "$1\n")
         .replace(/\s+(?=\([A-D]\)\s*)/g, "\n")
@@ -549,7 +713,6 @@
 
       const lines = normalized.split("\n").map((l) => l.trim());
 
-      // 偵測第一題開始的位置（符合 "1. ..." 且後面附近有 "(A)"）
       let firstQuestionIdx = -1;
       for (let i = 0; i < lines.length; i++) {
         if (/^1\.\s+/.test(lines[i])) {
@@ -564,14 +727,14 @@
       if (firstQuestionIdx === -1) {
         return {
           articleText: rawText.trim(),
-          questions: []
+          inlineBlanks: [],
+          readingQuestions: []
         };
       }
 
-      const articleText = lines.slice(0, firstQuestionIdx).join("\n").trim();
+      let articleText = lines.slice(0, firstQuestionIdx).join("\n").trim();
       const restLines = lines.slice(firstQuestionIdx);
 
-      // 偵測解答解析區（Answer Key / 解答 / 中文解析）
       let answerSectionIdx = restLines.findIndex((l) =>
         /^(Answer\s*Key|Answers?|解答|答案|中文解析)/i.test(l)
       );
@@ -579,7 +742,6 @@
       const questionLines = answerSectionIdx === -1 ? restLines : restLines.slice(0, answerSectionIdx);
       const answerLines = answerSectionIdx === -1 ? [] : restLines.slice(answerSectionIdx + 1);
 
-      // 解析每題題幹與 (A)(B)(C)(D) 選項
       const parsedQuestions = [];
       let currentQ = null;
 
@@ -604,7 +766,6 @@
           continue;
         }
 
-        // 處理同一行內含多個選項的情況，例如 "(A) xxx (B) yyy"
         if (currentQ && /\([A-D]\)/i.test(line)) {
           const inlineOpts = [...line.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)];
           if (inlineOpts.length > 0) {
@@ -619,7 +780,6 @@
       }
       if (currentQ) parsedQuestions.push(currentQ);
 
-      // 解析 Answer Key & 中文解析（支援 "1. B — 解析" 或無題號依序排列 "B — 解析"）
       const answerEntries = [];
       for (const line of answerLines) {
         if (!line) continue;
@@ -631,7 +791,6 @@
             explanation: (m[3] || "").trim()
           });
         } else if (answerEntries.length > 0) {
-          // 若解析跨行，接續到上一題的解析後面
           answerEntries[answerEntries.length - 1].explanation += " " + line;
         }
       }
@@ -646,17 +805,46 @@
         }
         if (!q.explanation) {
           const correctLetter = ["A", "B", "C", "D"][q.answer] || "A";
-          q.explanation = `正確答案為 (${correctLetter}) ${q.options[q.answer] || ""}，可點「↑ 回文章找線索」對照原文細節。`;
+          q.explanation = `正確答案為 (${correctLetter}) ${q.options[q.answer] || ""}，可對照文章前後文線索。`;
         }
       });
 
       const validQuestions = parsedQuestions.filter((q) => q.options.length >= 2);
+
+      // 檢查文章內是否已有挖空標記，例如 (1)____ 或 [1] 或 __1__
+      const inlineBlanks = [];
+      const readingQuestions = [];
+
+      articleText = articleText.replace(/(?:\(\s*(\d{1,2})\s*\)\s*_{2,}|\[\s*(\d{1,2})\s*\]|_{2,}\s*(\d{1,2})\s*_{2,})/g, (match, g1, g2, g3) => {
+        const num = parseInt(g1 || g2 || g3, 10);
+        return `[${num}]`;
+      });
+
+      validQuestions.forEach((q) => {
+        const marker = `[${q.num}]`;
+        if (articleText.includes(marker)) {
+          // 找出包含該空格的原文句子
+          const foundSent = splitSentences(articleText).find((s) => s.includes(marker)) || articleText;
+          inlineBlanks.push({
+            num: q.num,
+            contextSentence: foundSent,
+            options: q.options,
+            answer: q.answer,
+            explanation: q.explanation
+          });
+        } else {
+          readingQuestions.push(q);
+        }
+      });
+
       return {
         articleText,
-        questions: validQuestions
+        inlineBlanks,
+        readingQuestions
       };
     }
 
+    // 渲染英文原文（支援單字點擊查字典＋文內 [n] 挖空直接點擊做答）
     function renderPassageInteractive() {
       const container = $("interactivePassage");
       container.innerHTML = "";
@@ -682,7 +870,7 @@
         }
 
         const p = document.createElement("p");
-        p.className = "leading-[2.05] text-slate-800";
+        p.className = "leading-[2.15] text-slate-800";
 
         const lineSentences = splitSentencesInLine(trimmedLine);
 
@@ -693,32 +881,67 @@
           const sentSpan = document.createElement("span");
           sentSpan.className = "sentence-block inline";
           sentSpan.dataset.sIdx = String(currentIdx);
-          sentSpan.title = "點擊此句可查看整句翻譯";
+          sentSpan.title = "點擊此句可查看整句翻譯與發音";
 
-          const tokens = sentence.split(/(\s+)/);
-          tokens.forEach((tok) => {
-            if (!tok) return;
-            if (/^\s+$/.test(tok)) {
-              sentSpan.appendChild(document.createTextNode(tok));
+          // 先切出文內挖空標記 [1], [2]...
+          const parts = sentence.split(/(\[\d+\])/g);
+          parts.forEach((part) => {
+            if (!part) return;
+            const blankMatch = part.match(/^\[(\d+)\]$/);
+            if (blankMatch) {
+              const bNum = parseInt(blankMatch[1], 10);
+              const blankIdx = state.inlineBlanks.findIndex((b) => b.num === bNum);
+              const blankObj = blankIdx !== -1 ? state.inlineBlanks[blankIdx] : null;
+              const pickedOptIdx = blankObj ? state.inlineAnswers[blankIdx] : undefined;
+
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "inline-blank-btn no-print-border";
+              if (blankObj && pickedOptIdx !== undefined) {
+                const isCorrect = pickedOptIdx === blankObj.answer;
+                btn.classList.add(isCorrect ? "correct" : "wrong");
+                const optText = blankObj.options[pickedOptIdx] || "";
+                btn.innerHTML = `<span>(${bNum}) ${escapeHtml(optText)}</span><span>${isCorrect ? "✓" : "✗"}</span>`;
+              } else {
+                btn.innerHTML = `<span>(${bNum}) 點此作答</span>`;
+              }
+              btn.title = `點擊開啟第 ${bNum} 格選項小視窗`;
+              btn.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                if (blankIdx !== -1) {
+                  openClozeModal(blankIdx);
+                }
+              });
+              sentSpan.appendChild(btn);
               return;
             }
-            const wordMatch = tok.match(/^([^A-Za-z']*)([A-Za-z][A-Za-z'-]*)([^A-Za-z']*)$/);
-            if (wordMatch) {
-              const [, prefix, coreWord, suffix] = wordMatch;
-              if (prefix) sentSpan.appendChild(document.createTextNode(prefix));
-              const wordSpan = document.createElement("span");
-              wordSpan.className = "word-chip";
-              wordSpan.textContent = coreWord;
-              wordSpan.title = `點擊查詢「${coreWord}」`;
-              wordSpan.addEventListener("click", (ev) => {
-                ev.stopPropagation();
-                openWordDictionary(coreWord, sentence);
-              });
-              sentSpan.appendChild(wordSpan);
-              if (suffix) sentSpan.appendChild(document.createTextNode(suffix));
-            } else {
-              sentSpan.appendChild(document.createTextNode(tok));
-            }
+
+            // 一般英文單字與標點切分
+            const tokens = part.split(/(\s+)/);
+            tokens.forEach((tok) => {
+              if (!tok) return;
+              if (/^\s+$/.test(tok)) {
+                sentSpan.appendChild(document.createTextNode(tok));
+                return;
+              }
+              const wordMatch = tok.match(/^([^A-Za-z']*)([A-Za-z][A-Za-z'-]*)([^A-Za-z']*)$/);
+              if (wordMatch) {
+                const [, prefix, coreWord, suffix] = wordMatch;
+                if (prefix) sentSpan.appendChild(document.createTextNode(prefix));
+                const wordSpan = document.createElement("span");
+                wordSpan.className = "word-chip";
+                wordSpan.textContent = coreWord;
+                wordSpan.title = `點擊查詢「${coreWord}」中文翻譯與發音`;
+                wordSpan.addEventListener("click", (ev) => {
+                  ev.stopPropagation();
+                  openWordDictionary(coreWord, sentence);
+                });
+                sentSpan.appendChild(wordSpan);
+                if (suffix) sentSpan.appendChild(document.createTextNode(suffix));
+              } else {
+                sentSpan.appendChild(document.createTextNode(tok));
+              }
+            });
           });
 
           sentSpan.addEventListener("click", () => {
@@ -735,6 +958,162 @@
 
         container.appendChild(p);
       });
+
+      updateInlineClozeScoreBadge();
+      if (state.reciteZoneOpen) {
+        renderReciteZoneSentences();
+      }
+    }
+
+    function updateInlineClozeScoreBadge() {
+      const badge = $("inlineClozeScoreBadge");
+      const resetBtn = $("btnResetInlineCloze");
+      const total = state.inlineBlanks.length;
+      if (total === 0) {
+        badge.classList.add("hidden");
+        resetBtn.classList.add("hidden");
+        return;
+      }
+      const answered = Object.keys(state.inlineAnswers).length;
+      const correct = Object.entries(state.inlineAnswers).filter(([idx, optIdx]) => state.inlineBlanks[Number(idx)]?.answer === optIdx).length;
+      badge.textContent = `文內挖空：已答 ${answered}/${total}（對 ${correct} 題）`;
+      badge.classList.remove("hidden");
+      resetBtn.classList.remove("hidden");
+    }
+
+    // =========================================================================
+    // 2. 文內挖空小視窗控制邏輯
+    // =========================================================================
+    function openClozeModal(blankIdx) {
+      if (blankIdx < 0 || blankIdx >= state.inlineBlanks.length) return;
+      state.activeBlankIdx = blankIdx;
+      const item = state.inlineBlanks[blankIdx];
+      const picked = state.inlineAnswers[blankIdx];
+      const hasPicked = picked !== undefined;
+      const labels = ["A", "B", "C", "D"];
+
+      $("clozeModalBadge").textContent = `文內挖空第 ${item.num} 題（共 ${state.inlineBlanks.length} 格）`;
+
+      // 高亮顯示句中的空格位置
+      const formattedContext = escapeHtml(item.contextSentence).replace(
+        `[${item.num}]`,
+        `<span class="px-2 py-0.5 mx-1 rounded bg-teal-100 text-teal-900 border border-teal-400 font-black">[ ${hasPicked ? escapeHtml(item.options[picked]) : item.num} ]</span>`
+      );
+      $("clozeContextSentence").innerHTML = formattedContext;
+
+      $("clozeModalOptions").innerHTML = item.options.map((opt, oIdx) => {
+        let cls = "border-slate-200 bg-white hover:bg-teal-50/60 text-slate-800";
+        if (hasPicked) {
+          if (oIdx === item.answer) {
+            cls = "border-emerald-500 bg-emerald-50 text-emerald-950 font-extrabold";
+          } else if (oIdx === picked && oIdx !== item.answer) {
+            cls = "border-rose-400 bg-rose-50 text-rose-900 font-bold";
+          } else {
+            cls = "border-slate-200 bg-slate-50 text-slate-400";
+          }
+        }
+        return `
+          <button type="button" onclick="pickInlineClozeAnswer(${blankIdx}, ${oIdx})" class="w-full text-left px-4 py-2.5 rounded-xl border text-sm transition flex items-center justify-between gap-2 ${cls}">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded-full border border-current flex items-center justify-center text-xs font-extrabold shrink-0">${labels[oIdx]}</span>
+              <span>${escapeHtml(opt)}</span>
+            </div>
+            <span onclick="event.stopPropagation(); speakText('${escapeHtml(opt).replace(/'/g, "\\'")}')" title="聽發音" class="text-xs px-2 py-0.5 rounded bg-slate-100 hover:bg-teal-100 text-slate-600">🔊</span>
+          </button>
+        `;
+      }).join("");
+
+      const fb = $("clozeModalFeedback");
+      if (hasPicked) {
+        const isCorrect = picked === item.answer;
+        fb.classList.remove("hidden", "bg-emerald-50", "text-emerald-900", "border-emerald-200", "bg-amber-50", "text-amber-950", "border-amber-200");
+        fb.classList.add("border", ...(isCorrect ? ["bg-emerald-50", "text-emerald-900", "border-emerald-200"] : ["bg-amber-50", "text-amber-950", "border-amber-200"]));
+        fb.innerHTML = `
+          <div class="font-extrabold mb-1">${isCorrect ? "✓ 答對了！已自動填入文章空格" : `✗ 答錯囉，正確答案是 (${labels[item.answer]}) ${escapeHtml(item.options[item.answer])}`}</div>
+          <div><strong>中文解析：</strong>${escapeHtml(item.explanation)}</div>
+        `;
+      } else {
+        fb.classList.add("hidden");
+      }
+
+      $("btnPrevCloze").disabled = blankIdx === 0;
+      $("btnPrevCloze").classList.toggle("opacity-40", blankIdx === 0);
+      $("btnNextCloze").disabled = blankIdx >= state.inlineBlanks.length - 1;
+      $("btnNextCloze").classList.toggle("opacity-40", blankIdx >= state.inlineBlanks.length - 1);
+
+      $("clozeModal").classList.remove("hidden");
+      $("clozeModal").classList.add("flex");
+    }
+
+    function pickInlineClozeAnswer(blankIdx, optIdx) {
+      state.inlineAnswers[blankIdx] = optIdx;
+      renderPassageInteractive();
+      openClozeModal(blankIdx);
+    }
+
+    function closeClozeModal() {
+      $("clozeModal").classList.add("hidden");
+      $("clozeModal").classList.remove("flex");
+    }
+
+    // 自動從文章中挑選關鍵字生成文內挖空題（供「＋文內挖空加練」使用）
+    function generateInlineClozeFromPassage(count = 4) {
+      // 先還原既有的 [n] 標記
+      let cleanPassage = state.passage;
+      state.inlineBlanks.forEach((b) => {
+        const ansWord = b.options[b.answer] || "";
+        cleanPassage = cleanPassage.replace(`[${b.num}]`, ansWord);
+      });
+
+      const lines = cleanPassage.split("\n");
+      const candidates = [];
+      lines.forEach((line, lineIdx) => {
+        const words = line.match(/\b[A-Za-z]{4,}\b/g) || [];
+        const validWords = words.filter((w) => !["john", "there", "these", "those", "where", "what", "when", "with", "from", "have", "some", "your", "this", "that"].includes(w.toLowerCase()));
+        if (validWords.length > 0 && !line.trim().startsWith("[")) {
+          const chosen = validWords[Math.floor(Math.random() * validWords.length)];
+          candidates.push({ lineIdx, word: chosen });
+        }
+      });
+
+      const picked = candidates.sort(() => Math.random() - 0.5).slice(0, count).sort((a, b) => a.lineIdx - b.lineIdx);
+      const allPool = [...new Set((cleanPassage.match(/\b[A-Za-z]{4,}\b/g) || []).map((w) => w.toLowerCase()))];
+
+      const newBlanks = [];
+      picked.forEach((item, idx) => {
+        const num = idx + 1;
+        const targetLower = item.word.toLowerCase();
+        lines[item.lineIdx] = lines[item.lineIdx].replace(new RegExp(`\\b${item.word}\\b`), `[${num}]`);
+
+        const distractors = allPool
+          .filter((w) => w !== targetLower && Math.abs(w.length - targetLower.length) <= 4)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+        while (distractors.length < 3) {
+          const fb = ["wallet", "schoolbag", "behind", "between", "glasses", "across", "table", "bedroom"].find((f) => f !== targetLower && !distractors.includes(f)) || "store";
+          distractors.push(fb);
+        }
+
+        const options = [item.word, ...distractors].sort(() => Math.random() - 0.5);
+        const answer = options.indexOf(item.word);
+        const dictInfo = BUILTIN_DICT[targetLower];
+
+        newBlanks.push({
+          num,
+          contextSentence: lines[item.lineIdx].trim(),
+          options,
+          answer,
+          explanation: dictInfo
+            ? `此格應填入「${item.word}」（${dictInfo.zh}）。${dictInfo.note}`
+            : `根據上下文語意，此格最適合填入「${item.word}」。`
+        });
+      });
+
+      state.passage = lines.join("\n");
+      state.inlineBlanks = newBlanks;
+      state.inlineAnswers = {};
+      $("sourceTextInput").value = state.passage;
+      renderPassageInteractive();
     }
 
     function renderTranslation() {
@@ -762,14 +1141,97 @@
         .replace(/"/g, "&quot;");
     }
 
-    function speakText(text) {
+    function speakText(text, forceLang = null, rate = 0.95) {
       if (!("speechSynthesis" in window) || !text) return;
       window.speechSynthesis.cancel();
-      const hasEnglish = /[A-Za-z]/.test(text);
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = hasEnglish ? "en-US" : "zh-TW";
-      utter.rate = 0.95;
+      const cleaned = text.replace(/\[\d+\]/g, "blank");
+      const hasEnglish = /[A-Za-z]/.test(cleaned);
+      const utter = new SpeechSynthesisUtterance(cleaned);
+      utter.lang = forceLang || (hasEnglish ? "en-US" : "zh-TW");
+      utter.rate = rate;
       window.speechSynthesis.speak(utter);
+    }
+
+    // =========================================================================
+    // 5. 課文朗誦區控制（僅在進入朗誦區後手動點擊才播放，平時安靜）
+    // =========================================================================
+    function renderReciteZoneSentences() {
+      const list = $("reciteSentenceList");
+      if (!state.sentences.length) {
+        list.innerHTML = '<p class="text-xs text-slate-400">目前尚無可朗誦的課文句子。</p>';
+        return;
+      }
+      list.innerHTML = state.sentences.map((sent, idx) => {
+        const cleanSent = sent.replace(/\[(\d+)\]/g, (_, n) => {
+          const b = state.inlineBlanks.find((item) => item.num === Number(n));
+          return b ? b.options[b.answer] : "___";
+        });
+        return `
+          <div id="recite_row_${idx}" class="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-indigo-50/60 transition">
+            <div class="text-xs sm:text-sm text-slate-800 leading-relaxed">
+              <span class="font-extrabold text-indigo-700 mr-1.5">${idx + 1}.</span>
+              <span>${escapeHtml(cleanSent)}</span>
+            </div>
+            <button type="button" onclick="reciteSingleSentence(${idx})" class="shrink-0 px-3 py-1.5 rounded-lg bg-white hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-xs font-bold transition">
+              🔊 朗讀此句
+            </button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function reciteSingleSentence(idx) {
+      state.isRecitingAll = false;
+      const sent = state.sentences[idx];
+      if (!sent) return;
+      const cleanSent = sent.replace(/\[(\d+)\]/g, (_, n) => {
+        const b = state.inlineBlanks.find((item) => item.num === Number(n));
+        return b ? b.options[b.answer] : "blank";
+      });
+      document.querySelectorAll("[id^='recite_row_']").forEach((el) => el.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50"));
+      const row = $(`recite_row_${idx}`);
+      if (row) row.classList.add("ring-2", "ring-indigo-500", "bg-indigo-50");
+      const rate = parseFloat($("reciteRateSelect")?.value || "0.95");
+      speakText(cleanSent, "en-US", rate);
+    }
+
+    function reciteAllFromStart(idx = 0) {
+      if (!("speechSynthesis" in window) || idx >= state.sentences.length) {
+        state.isRecitingAll = false;
+        return;
+      }
+      state.isRecitingAll = true;
+      window.speechSynthesis.cancel();
+
+      document.querySelectorAll("[id^='recite_row_']").forEach((el) => el.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50"));
+      const row = $(`recite_row_${idx}`);
+      if (row) {
+        row.classList.add("ring-2", "ring-indigo-500", "bg-indigo-50");
+        row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      const cleanSent = state.sentences[idx].replace(/\[(\d+)\]/g, (_, n) => {
+        const b = state.inlineBlanks.find((item) => item.num === Number(n));
+        return b ? b.options[b.answer] : "blank";
+      });
+
+      const utter = new SpeechSynthesisUtterance(cleanSent);
+      utter.lang = "en-US";
+      utter.rate = parseFloat($("reciteRateSelect")?.value || "0.95");
+      utter.onend = () => {
+        if (state.isRecitingAll) {
+          reciteAllFromStart(idx + 1);
+        }
+      };
+      window.speechSynthesis.speak(utter);
+    }
+
+    function stopReciting() {
+      state.isRecitingAll = false;
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.querySelectorAll("[id^='recite_row_']").forEach((el) => el.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50"));
     }
 
     async function translateSingleChunk(chunk, sl = "en", tl = "zh-TW") {
@@ -780,7 +1242,6 @@
       return (data[0] || []).map((item) => item[0] || "").join("").trim();
     }
 
-    // 嚴格依照英文原文的每一行與斷句來自動翻譯
     async function translateAlignedByEnglish(text, sl = "en", tl = "zh-TW") {
       const clean = (text || "").replace(/\r\n/g, "\n").trim();
       if (!clean) return { fullText: "", sentencesZh: [] };
@@ -796,7 +1257,6 @@
           continue;
         }
 
-        // 若是對話格式 "Mom: ..."，保留說話者前綴並翻譯後方句子
         const speakerMatch = trimmedLine.match(/^([A-Za-z]+:\s*)(.+)$/);
         const prefix = speakerMatch ? speakerMatch[1] : "";
         const bodyText = speakerMatch ? speakerMatch[2] : trimmedLine;
@@ -805,8 +1265,12 @@
         const translatedLineSents = [];
 
         for (const sent of lineSents) {
-          const zhSent = await translateSingleChunk(sent, sl, tl);
-          const finalSent = zhSent || sent;
+          const resolvedSent = sent.replace(/\[(\d+)\]/g, (_, n) => {
+            const b = state.inlineBlanks.find((item) => item.num === Number(n));
+            return b ? b.options[b.answer] : "___";
+          });
+          const zhSent = await translateSingleChunk(resolvedSent, sl, tl);
+          const finalSent = zhSent || resolvedSent;
           translatedLineSents.push(finalSent);
           sentencesZh.push(finalSent);
         }
@@ -820,6 +1284,9 @@
       };
     }
 
+    // =========================================================================
+    // 4. 單字與句子中文翻譯、發音與單字庫收藏
+    // =========================================================================
     async function openWordDictionary(word, contextSentence = "") {
       const lower = word.toLowerCase();
       state.activeDict = { mode: "word", query: word, meaning: "查詢中...", note: "" };
@@ -829,11 +1296,11 @@
       $("dictPhonetic").textContent = contextSentence ? `例句：${contextSentence}` : "";
       $("dictMeaning").textContent = "查詢中文釋義中...";
       $("dictNoteBox").textContent = "正在載入詞性與學習提示...";
-      $("btnSaveWord").classList.remove("hidden");
+      $("btnSaveWord").textContent = "★ 存入單字庫";
       $("dictModal").classList.remove("hidden");
       $("dictModal").classList.add("flex");
 
-      speakText(word);
+      speakText(word, "en-US");
 
       if (BUILTIN_DICT[lower]) {
         const entry = BUILTIN_DICT[lower];
@@ -847,11 +1314,11 @@
       try {
         const zh = await translateSingleChunk(word, "en", "zh-TW");
         state.activeDict.meaning = zh || "查無中文釋義";
-        state.activeDict.note = `已為您查詢「${word}」的中文意思，可按「加入單字庫」收藏複習。`;
+        state.activeDict.note = `已為您查詢「${word}」的中文意思，可按「存入單字庫」收藏複習。`;
         $("dictMeaning").textContent = state.activeDict.meaning;
         $("dictNoteBox").textContent = state.activeDict.note;
       } catch {
-        state.activeDict.meaning = "目前離線或無法連線線上詞典，可按上方「發音」聆聽讀音。";
+        state.activeDict.meaning = "目前離線或無法連線線上詞典，可按上方「英文發音」聆聽讀音。";
         state.activeDict.note = "建議連接網路以使用即時中英翻譯。";
         $("dictMeaning").textContent = state.activeDict.meaning;
         $("dictNoteBox").textContent = state.activeDict.note;
@@ -859,30 +1326,35 @@
     }
 
     async function openSentenceDictionary(sentence, sIdx) {
-      state.activeDict = { mode: "sentence", query: sentence, meaning: "翻譯整句中...", note: "" };
+      const cleanSentence = sentence.replace(/\[(\d+)\]/g, (_, n) => {
+        const b = state.inlineBlanks.find((item) => item.num === Number(n));
+        return b ? b.options[b.answer] : "___";
+      });
 
-      $("dictModeBadge").textContent = "句子小字典";
-      $("dictQueryText").textContent = sentence;
+      state.activeDict = { mode: "sentence", query: cleanSentence, meaning: "翻譯整句中...", note: "" };
+
+      $("dictModeBadge").textContent = "句子中文翻譯與發音";
+      $("dictQueryText").textContent = cleanSentence;
       $("dictPhonetic").textContent = `第 ${sIdx + 1} 句`;
       $("dictMeaning").textContent = "正在翻譯此句...";
-      $("dictNoteBox").textContent = "點擊「發音」可朗讀整句英文。";
-      $("btnSaveWord").classList.add("hidden");
+      $("dictNoteBox").textContent = "可點擊上方「英文發音」或「中文朗讀」，也可將此句存入單字庫。";
+      $("btnSaveWord").textContent = "★ 句型存入單字庫";
       $("dictModal").classList.remove("hidden");
       $("dictModal").classList.add("flex");
+
+      speakText(cleanSentence, "en-US");
 
       if (state.sentenceTranslations[sIdx]) {
         state.activeDict.meaning = state.sentenceTranslations[sIdx];
         $("dictMeaning").textContent = state.activeDict.meaning;
-        $("dictNoteBox").textContent = "已依英文斷句對應中文翻譯；若想查其中某個單字，可單獨點選該單字。";
         return;
       }
 
       try {
-        const zhSentence = await translateSingleChunk(sentence, "en", "zh-TW");
+        const zhSentence = await translateSingleChunk(cleanSentence, "en", "zh-TW");
         state.activeDict.meaning = zhSentence || "無法取得句意翻譯";
         state.sentenceTranslations[sIdx] = state.activeDict.meaning;
         $("dictMeaning").textContent = state.activeDict.meaning;
-        $("dictNoteBox").textContent = "已依照此句英文斷句翻譯；點選單字可查詢個別詞彙釋義。";
       } catch {
         state.activeDict.meaning = "目前無法連線翻譯服務，請稍後再試。";
         $("dictMeaning").textContent = state.activeDict.meaning;
@@ -899,93 +1371,44 @@
       const wrap = $("savedVocabList");
       $("savedVocabCount").textContent = String(state.savedVocab.length);
       if (state.savedVocab.length === 0) {
-        wrap.innerHTML = '<span class="text-slate-400">點選文章中的單字後可加入收藏</span>';
+        wrap.innerHTML = '<span class="text-slate-400">點選文章中的單字或句子查看中文翻譯與發音後，可加入此單字庫複習</span>';
         return;
       }
       wrap.innerHTML = state.savedVocab.map((item, idx) => `
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50 text-teal-900 border border-teal-200 font-semibold">
-          <button type="button" onclick="openWordDictionary('${escapeHtml(item.word)}')" class="hover:underline">${escapeHtml(item.word)}</button>
-          <span class="text-slate-500 font-normal">· ${escapeHtml(item.meaning.slice(0, 12))}</span>
-          <button type="button" onclick="removeSavedVocab(${idx})" class="text-rose-500 hover:text-rose-700 font-bold">×</button>
-        </span>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 text-teal-950 border border-teal-200 font-semibold shadow-2xs">
+          <button type="button" onclick="speakText('${escapeHtml(item.word).replace(/'/g, "\\'")}')" title="點擊發音" class="text-teal-700 hover:scale-110 transition">🔊</button>
+          <button type="button" onclick="openWordDictionary('${escapeHtml(item.word).replace(/'/g, "\\'")}')" class="hover:underline font-extrabold">${escapeHtml(item.word)}</button>
+          <span class="text-slate-600 font-normal">· ${escapeHtml(item.meaning)}</span>
+          <button type="button" onclick="removeSavedVocab(${idx})" class="text-rose-500 hover:text-rose-700 font-bold ml-1">×</button>
+        </div>
       `).join("");
     }
 
     function removeSavedVocab(idx) {
       state.savedVocab.splice(idx, 1);
+      persistSavedVocab();
       renderSavedVocab();
     }
 
-    function generateAutoQuestions(forceCount = 5) {
-      const sentences = splitSentences(state.passage);
-      const allWords = (state.passage.match(/[A-Za-z]{4,}/g) || [])
-        .map((w) => w.toLowerCase())
-        .filter((w) => !["that", "this", "with", "from", "they", "them", "their", "there", "were", "have", "what", "when", "into", "some", "very", "after", "before", "about", "could", "would", "should", "john"].includes(w));
-
-      const uniquePool = [...new Set(allWords)];
-      const candidates = sentences.filter((s) => {
-        const ws = s.match(/[A-Za-z]{4,}/g) || [];
-        return ws.length >= 4 && uniquePool.some((u) => s.toLowerCase().includes(u));
-      });
-
-      const chosenSentences = [...candidates].sort(() => Math.random() - 0.5).slice(0, forceCount);
-      const questions = [];
-
-      chosenSentences.forEach((sent, idx) => {
-        const sentWords = (sent.match(/\b[A-Za-z]{4,}\b/g) || [])
-          .filter((w) => uniquePool.includes(w.toLowerCase()));
-        const targetWord = (sentWords[Math.floor(Math.random() * sentWords.length)] || "wallet");
-        const targetLower = targetWord.toLowerCase();
-
-        const distractors = uniquePool
-          .filter((w) => w !== targetLower && Math.abs(w.length - targetLower.length) <= 4)
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 3);
-
-        while (distractors.length < 3) {
-          const fallback = ["wallet", "schoolbag", "behind", "between", "glasses", "across", "table", "bedroom"]
-            .find((f) => f !== targetLower && !distractors.includes(f)) || "story";
-          distractors.push(fallback);
-        }
-
-        const options = [targetLower, ...distractors].sort(() => Math.random() - 0.5);
-        const answer = options.indexOf(targetLower);
-        const clozeSentence = sent.replace(new RegExp(`\\b${targetWord}\\b`, "i"), "_____");
-        const dictInfo = BUILTIN_DICT[targetLower];
-
-        questions.push({
-          id: `ai_q_${Date.now()}_${idx}`,
-          questionText: `${idx + 1}. ${clozeSentence}`,
-          options,
-          answer,
-          explanation: dictInfo
-            ? `正確答案為「${targetLower}」（${dictInfo.zh}）。${dictInfo.note}`
-            : `正確答案為「${targetLower}」，可點「↑ 回文章找線索」對照上下文句意。`
-        });
-      });
-
-      state.questions = questions;
-      state.answers = {};
-      $("quizSourceBadge").textContent = "AI 詞彙克漏字練習";
-      renderQuizList();
-    }
-
+    // =========================================================================
+    // 3. 下方單純閱讀測驗題組渲染
+    // =========================================================================
     function renderQuizList() {
       const listEl = $("quizList");
-      const total = state.questions.length;
-      const answeredCount = Object.keys(state.answers).length;
-      const correctCount = Object.entries(state.answers).filter(([qIdx, optIdx]) => state.questions[Number(qIdx)]?.answer === optIdx).length;
+      const total = state.readingQuestions.length;
+      const answeredCount = Object.keys(state.readingAnswers).length;
+      const correctCount = Object.entries(state.readingAnswers).filter(([qIdx, optIdx]) => state.readingQuestions[Number(qIdx)]?.answer === optIdx).length;
 
       $("quizScoreBadge").textContent = `作答進度：${answeredCount} / ${total}（答對 ${correctCount} 題）`;
 
       if (total === 0) {
-        listEl.innerHTML = '<p class="text-slate-400 text-sm">目前尚無選擇題。</p>';
+        listEl.innerHTML = '<p class="text-slate-400 text-sm">目前此篇為純文內挖空練習，下方無額外閱讀測驗題。</p>';
         return;
       }
 
       const labels = ["A", "B", "C", "D"];
-      listEl.innerHTML = state.questions.map((q, qIdx) => {
-        const picked = state.answers[qIdx];
+      listEl.innerHTML = state.readingQuestions.map((q, qIdx) => {
+        const picked = state.readingAnswers[qIdx];
         const hasPicked = picked !== undefined;
         const isCorrect = hasPicked && picked === q.answer;
 
@@ -1021,8 +1444,11 @@
         return `
           <div class="rounded-2xl border border-slate-200/90 bg-slate-50/40 p-4 sm:p-5">
             <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="text-xs font-bold text-teal-700">第 ${qIdx + 1} 題</span>
-              <a href="#passageAnchor" class="no-print text-xs font-semibold text-slate-500 hover:text-teal-700 transition">↑ 回文章對照</a>
+              <span class="text-xs font-bold text-teal-700">閱讀測驗第 ${qIdx + 1} 題</span>
+              <div class="flex items-center gap-3 no-print">
+                <button type="button" onclick="speakText('${escapeHtml(q.questionText).replace(/'/g, "\\'")}')" class="text-xs font-semibold text-slate-500 hover:text-teal-700">🔊 唸題目</button>
+                <a href="#passageAnchor" class="text-xs font-semibold text-slate-500 hover:text-teal-700 transition">↑ 回文章對照</a>
+              </div>
             </div>
             <div class="text-sm sm:text-base font-bold text-slate-900 mb-3 leading-relaxed">${escapeHtml(q.questionText)}</div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -1035,7 +1461,7 @@
     }
 
     function selectAnswer(qIdx, oIdx) {
-      state.answers[qIdx] = oIdx;
+      state.readingAnswers[qIdx] = oIdx;
       renderQuizList();
     }
 
@@ -1095,7 +1521,7 @@
     async function handleFileUpload(file) {
       if (!file) return;
       const name = file.name.toLowerCase();
-      setStatus(`正在讀取檔案「${file.name}」並解析文章與題目...`, "info");
+      setStatus(`正在讀取檔案「${file.name}」並解析文內挖空與閱讀題...`, "info");
 
       try {
         let extracted = "";
@@ -1124,20 +1550,18 @@
           .trim();
 
         const parsed = parseWorksheetContent(cleaned);
-        state.parsedQuestions = parsed.questions;
+        state.inlineBlanks = parsed.inlineBlanks;
+        state.inlineAnswers = {};
+        state.readingQuestions = parsed.readingQuestions;
+        state.readingAnswers = {};
 
         $("sourceTextInput").value = parsed.articleText;
         $("translationTextInput").value = "";
-        const firstLine = file.name.replace(/\.[^.]+$/, "");
-        $("metaTitle").value = firstLine;
+        $("metaTitle").value = file.name.replace(/\.[^.]+$/, "");
 
-        const qMsg = parsed.questions.length > 0
-          ? `並成功偵測到 ${parsed.questions.length} 題原檔選擇題與中文解析`
-          : `未偵測到內附選擇題，將自動生成詞彙測驗題`;
-
-        setStatus(`已成功讀取「${file.name}」（${qMsg}），正在自動進行中文翻譯...`, "success");
+        setStatus(`已成功讀取「${file.name}」（文內挖空 ${parsed.inlineBlanks.length} 格、下方閱讀題 ${parsed.readingQuestions.length} 題），正在自動翻譯...`, "success");
         await applyInputsAndGenerate(true);
-        setStatus(`完成！「${file.name}」已完成中文翻譯與互動選擇題轉換。`, "success");
+        setStatus(`完成！「${file.name}」已完成中文翻譯與互動題型建立。`, "success");
       } catch (err) {
         setStatus(`檔案處理失敗：${err.message || err}`, "error");
       }
@@ -1155,6 +1579,11 @@
       $("badgeTopic").textContent = state.topic;
       $("displayTitle").textContent = state.title;
 
+      const mode = $("quizModeSelect")?.value || "mixed";
+      if (mode === "cloze_only" && state.inlineBlanks.length === 0) {
+        generateInlineClozeFromPassage(5);
+      }
+
       renderPassageInteractive();
 
       if (autoTranslateMissing && state.passage && !state.translation) {
@@ -1168,16 +1597,8 @@
 
       renderTranslation();
 
-      const mode = $("quizCountSelect")?.value || "auto";
-      if (mode === "auto" && state.parsedQuestions.length > 0) {
-        state.questions = state.parsedQuestions.map((q) => ({ ...q }));
-        state.answers = {};
-        $("quizSourceBadge").textContent = `學習單原題解析（共 ${state.questions.length} 題）`;
-        renderQuizList();
-      } else {
-        const count = mode === "auto" ? 5 : parseInt(mode, 10) || 5;
-        generateAutoQuestions(count);
-      }
+      $("quizSourceBadge").textContent = `下方閱讀理解測驗（共 ${state.readingQuestions.length} 題）`;
+      renderQuizList();
     }
 
     function loadSample() {
@@ -1186,18 +1607,62 @@
       $("metaTitle").value = SAMPLE_DATA.title;
       $("sourceTextInput").value = SAMPLE_DATA.passage;
       $("translationTextInput").value = SAMPLE_DATA.translation;
-      state.parsedQuestions = SAMPLE_DATA.questions.map((q) => ({ ...q }));
-      setStatus("已載入「Where Is John's Wallet?」對話＋5題選擇題示範。", "success");
+      state.inlineBlanks = SAMPLE_DATA.inlineBlanks.map((b) => ({ ...b }));
+      state.inlineAnswers = {};
+      state.readingQuestions = SAMPLE_DATA.readingQuestions.map((q) => ({ ...q }));
+      state.readingAnswers = {};
+      setStatus("已載入「Where Is John's Wallet?」（文內 3 格點擊作答＋下方 5 題閱讀測驗）。", "success");
       applyInputsAndGenerate(false);
     }
 
+    // 事件綁定
     $("btnLoadSample").addEventListener("click", loadSample);
     $("btnBuildInteractive").addEventListener("click", () => applyInputsAndGenerate(false));
-    $("btnRegenQuiz").addEventListener("click", () => generateAutoQuestions(5));
+    $("btnAddInlineCloze").addEventListener("click", () => generateInlineClozeFromPassage(4));
+    $("btnResetInlineCloze").addEventListener("click", () => {
+      state.inlineAnswers = {};
+      renderPassageInteractive();
+    });
     $("btnResetQuiz").addEventListener("click", () => {
-      state.answers = {};
+      state.readingAnswers = {};
       renderQuizList();
     });
+
+    $("btnCloseClozeModal").addEventListener("click", closeClozeModal);
+    $("clozeModal").addEventListener("click", (e) => {
+      if (e.target === $("clozeModal")) closeClozeModal();
+    });
+    $("btnPrevCloze").addEventListener("click", () => {
+      if (state.activeBlankIdx > 0) openClozeModal(state.activeBlankIdx - 1);
+    });
+    $("btnNextCloze").addEventListener("click", () => {
+      if (state.activeBlankIdx < state.inlineBlanks.length - 1) openClozeModal(state.activeBlankIdx + 1);
+    });
+
+    $("btnToggleFullTrans").addEventListener("click", () => {
+      $("displayTranslation").classList.toggle("hidden");
+    });
+
+    // 5. 課文朗誦區展開與控制（未點擊進入前絕不自動朗誦）
+    $("btnEnterReciteZone").addEventListener("click", () => {
+      state.reciteZoneOpen = !state.reciteZoneOpen;
+      const body = $("reciteZoneBody");
+      const btn = $("btnEnterReciteZone");
+      if (state.reciteZoneOpen) {
+        body.classList.remove("hidden");
+        btn.textContent = "離開並收合朗誦區";
+        btn.className = "px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-xs sm:text-sm font-bold transition";
+        renderReciteZoneSentences();
+      } else {
+        stopReciting();
+        body.classList.add("hidden");
+        btn.textContent = "進入課文朗誦區";
+        btn.className = "px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-extrabold shadow-sm transition";
+      }
+    });
+
+    $("btnReciteStartAll").addEventListener("click", () => reciteAllFromStart(0));
+    $("btnReciteStop").addEventListener("click", stopReciting);
 
     $("btnAutoTranslate").addEventListener("click", async () => {
       const src = ($("sourceTextInput").value || "").trim();
@@ -1220,7 +1685,6 @@
       }
     });
 
-    $("btnSpeakPassage").addEventListener("click", () => speakText(state.passage));
     $("btnCloseDict").addEventListener("click", closeDictionary);
     $("btnOkDict").addEventListener("click", closeDictionary);
     $("dictModal").addEventListener("click", (e) => {
@@ -1228,18 +1692,22 @@
     });
 
     $("btnSpeakDict").addEventListener("click", () => {
-      if (state.activeDict?.query) speakText(state.activeDict.query);
+      if (state.activeDict?.query) speakText(state.activeDict.query, "en-US");
+    });
+    $("btnSpeakDictZh").addEventListener("click", () => {
+      if (state.activeDict?.meaning) speakText(state.activeDict.meaning, "zh-TW");
     });
 
     $("btnSaveWord").addEventListener("click", () => {
-      if (!state.activeDict || state.activeDict.mode !== "word") return;
-      const w = state.activeDict.query.toLowerCase();
-      const exists = state.savedVocab.some((item) => item.word.toLowerCase() === w);
+      if (!state.activeDict) return;
+      const w = state.activeDict.query.trim();
+      const exists = state.savedVocab.some((item) => item.word.toLowerCase() === w.toLowerCase());
       if (!exists) {
         state.savedVocab.unshift({
-          word: state.activeDict.query,
+          word: w,
           meaning: state.activeDict.meaning
         });
+        persistSavedVocab();
         renderSavedVocab();
       }
       closeDictionary();
@@ -1247,6 +1715,7 @@
 
     $("btnClearVocab").addEventListener("click", () => {
       state.savedVocab = [];
+      persistSavedVocab();
       renderSavedVocab();
     });
 
@@ -1274,6 +1743,7 @@
       if (f) handleFileUpload(f);
     });
 
+    loadSavedVocabFromStorage();
     initRoleMode();
     loadSample();
     renderSavedVocab();
