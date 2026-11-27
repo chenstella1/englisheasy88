@@ -107,9 +107,6 @@
       <div class="flex flex-wrap items-center gap-3 sm:gap-4">
         <span id="user-status" class="text-sm bg-brand-700 px-3.5 py-1.5 rounded-full font-medium">未登入</span>
         <button id="nav-home-btn" onclick="switchTab('quiz')" class="text-sm font-bold hover:underline">主頁測驗</button>
-        <a href="exam-7a2.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-indigo-100 hover:bg-white text-indigo-950 px-3 py-1 rounded-full shadow-sm transition-colors">
-          七上二段刷題
-        </a>
         <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1 rounded-full shadow-sm transition-colors">
           互動閱讀練習
         </a>
@@ -127,7 +124,7 @@
 
     <!-- 管理者介面 (Admin Dashboard) -->
     <div id="tab-admin" class="hidden space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3 flex flex-col justify-between">
           <div class="space-y-3">
             <div class="text-4xl">📊</div>
@@ -137,20 +134,6 @@
           <div class="pt-2">
             <a href="https://docs.google.com/spreadsheets/d/1RkmaR4D_JgSlDirq6ayIKILnbrIKGqLfHasZu0TOdNs/edit?gid=0#gid=0" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-5 py-3 rounded-xl shadow transition-colors text-base">
               📂 直接打開 Google 成績試算表
-            </a>
-          </div>
-        </div>
-
-        <!-- 七上二段刷題區卡片 -->
-        <div class="bg-white p-7 rounded-3xl shadow-sm border-2 border-indigo-300 text-center space-y-3 flex flex-col justify-between">
-          <div class="space-y-3">
-            <div class="text-4xl">🎯</div>
-            <h2 class="text-xl font-bold text-slate-800">國中段考刷題區（七上二段）</h2>
-            <p class="text-sm text-slate-500">收錄七上第二次段考國文 K 版（42 題精選、200 題綜合測驗、200 題成語測驗）與公民 H 版重點及測驗。</p>
-          </div>
-          <div class="pt-2 flex flex-wrap justify-center gap-2">
-            <a href="exam-7a2.html" target="_blank" rel="noopener noreferrer" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-3 rounded-xl shadow transition-colors text-base">
-              🎯 前往七上二段刷題區
             </a>
           </div>
         </div>
@@ -264,9 +247,6 @@
             <button onclick="loadQuestions()" class="text-sm font-normal text-brand-600 hover:underline">🔄 重新同步 Google Sheet 題庫</button>
           </h2>
           <div class="flex flex-wrap items-center gap-2">
-            <a href="exam-7a2.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-indigo-100 hover:bg-indigo-200 text-indigo-900 border border-indigo-300 px-3.5 py-1.5 rounded-xl transition-colors">
-              🎯 七上二段刷題
-            </a>
             <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3.5 py-1.5 rounded-xl transition-colors">
               📘 互動閱讀練習
             </a>
@@ -316,9 +296,6 @@
           <button onclick="startQuiz('print')" class="bg-slate-800 hover:bg-slate-900 text-white text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
             🖨️ 生成可列印試卷及答案解析 (列印/Word/JPG)
           </button>
-          <a href="exam-7a2.html" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
-            🎯 七上二段刷題
-          </a>
           <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
             📘 互動閱讀練習
           </a>
@@ -1385,7 +1362,7 @@
         }
       } else {
         const isStudentMatch = (rawPass === STUDENT_PASS || compactPass === STUDENT_PASS);
-        const isAdminMatch = (rawPass === ADMIN_PASS || compactPass === ADMIN_PASS);
+        const isAdminMatch = (rawPass === ADMIN_PASS || compactPass !== ADMIN_PASS);
         if (!isStudentMatch && !isAdminMatch) {
           showLoginError('通關密碼錯誤，請輸入正確通關密碼！');
           return;
