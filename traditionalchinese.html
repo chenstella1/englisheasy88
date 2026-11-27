@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文言文加強區</title>
+<style>
+:root{--ink:#273449;--muted:#68758a;--paper:#fffdf8;--cream:#f5f0e6;--blue:#315b78;--gold:#e6b85c;--line:#e8e1d5;--green:#4d806d}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.75}
+header{background:linear-gradient(120deg,#234b65,#47758a);color:white;padding:28px 20px 24px}
+.head{max-width:1100px;margin:auto;display:flex;justify-content:space-between;gap:20px;align-items:center}
+h1{margin:0;font-size:clamp(26px,4vw,38px);letter-spacing:2px}.sub{color:#e6eff3;margin:4px 0 0}
+.pill{border:1px solid #ffffff66;border-radius:30px;padding:6px 13px;font-size:13px;white-space:nowrap}
+main{max-width:1100px;margin:24px auto;padding:0 16px 60px}
+.notice{background:#fff7df;border:1px solid #f0dfac;border-radius:14px;padding:12px 16px;color:#66532c;font-size:14px;margin-bottom:18px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+input,select,button{font:inherit}input[type=search]{flex:1;min-width:190px;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:white}
+button{cursor:pointer;border:0;border-radius:10px;padding:9px 14px;background:var(--blue);color:white}
+button.secondary{background:#e9eef1;color:var(--blue)}button:focus-visible,.word:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.progress{font-size:13px;color:var(--muted);margin-left:auto}
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px;align-items:start}
+.panel,.article{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 18px #35445a0b}
+.panel{padding:14px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.panel h2{font-size:17px;margin:2px 4px 10px}
+.list{display:grid;gap:6px}
+.item{display:flex;text-align:left;gap:10px;align-items:center;width:100%;background:transparent;color:var(--ink);padding:9px;border-radius:9px}
+.item:hover,.item.active{background:#edf3f5}.num{width:27px;height:27px;flex:none;border-radius:50%;background:#e9e1d2;display:grid;place-items:center;font-size:12px}
+.item.active .num{background:var(--blue);color:white}.item small{display:block;color:var(--muted);font-size:11px}
+.article{padding:clamp(18px,3vw,32px);min-height:520px}
+.crumb{font-size:13px;color:var(--muted);margin-bottom:8px}
+h2.title{font-size:26px;margin:0 0 2px}.source{color:var(--muted);font-size:13px;margin-bottom:18px}
+.readhint{font-size:13px;color:var(--green);background:#edf5ef;border-radius:9px;padding:8px 12px;margin-bottom:15px}
+.speechbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px;padding:12px;background:#f2f5f6;border:1px solid #e1e8eb;border-radius:12px}.speechbar label{font-size:13px;color:var(--muted)}.speechbar select{padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:white;color:var(--ink)}.speech-status{font-size:12px;color:var(--muted);width:100%}
+.classical{font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;font-size:22px;line-height:2.25;letter-spacing:.5px;background:#fffaf0;border:1px solid #eee4d1;border-radius:12px;padding:18px 20px}
+.word{cursor:pointer;border-bottom:2px dotted #d5a94e;border-radius:3px}.word:hover{background:#fff0c7}
+.section{margin-top:23px}.section h3{font-size:18px;margin:0 0 9px;display:flex;align-items:center;gap:8px}
+.section h3:before{content:"";width:5px;height:19px;border-radius:5px;background:var(--gold)}
+.glossbox,.note{background:#f4f7f7;border:1px solid #e3ebeb;border-radius:12px;padding:14px 16px}
+.glossbox{min-height:68px}.glossbox strong{color:var(--blue)}.muted{color:var(--muted);font-size:13px}
+ul{padding-left:22px;margin:8px 0}.note p{margin:5px 0}
+.quiz-q{padding:13px 0;border-bottom:1px solid var(--line)}.quiz-q:last-child{border:0}
+.qtitle{font-weight:600;margin-bottom:8px}.options{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.opt{background:white;color:var(--ink);border:1px solid var(--line);text-align:left}.opt:hover{border-color:var(--blue)}.opt.chosen{border-color:var(--blue);background:#edf3f5}.opt.correct{border-color:#5c9878;background:#edf7f0}.opt.wrong{border-color:#c8786b;background:#fff0ed}
+.feedback{font-size:13px;margin-top:7px;color:var(--muted);min-height:20px}
+.result{margin-top:14px;padding:12px;background:#edf5ef;border-radius:10px;display:none}
+.bottomnav{display:flex;justify-content:space-between;gap:10px;margin-top:24px}
+.empty{padding:25px;text-align:center;color:var(--muted)}
+@media(max-width:780px){.layout{grid-template-columns:1fr}.panel{position:static;max-height:none}.list{grid-template-columns:1fr 1fr}.head{align-items:flex-start;flex-direction:column}.progress{margin-left:0}}
+@media(max-width:460px){.list,.options{grid-template-columns:1fr}.classical{font-size:19px;padding:14px}}
+</style>
+</head>
+<body>
+<header><div class="head"><div><h1>文言文加強區</h1><p class="sub">七年級・第二次段考閱讀練習｜讀懂字詞，也讀懂文章</p></div><span class="pill">20 篇精選 × 每篇 5 題</span></div></header>
+<main>
+<div class="notice">小提醒：各校七年級第二次段考範圍不完全相同。這份練習以《論語》選讀、常見寓言與短篇古文為主，適合打底與複習；正式考試仍以老師公布的課文、版本和範圍為準。</div>
+<div class="toolbar"><input id="search" type="search" placeholder="搜尋篇名或主題…"><span class="progress" id="progress">已完成 0 / 20 篇測驗</span></div>
+<div class="layout">
+<aside class="panel"><h2>文章目錄 <span class="muted">（點選開始閱讀）</span></h2><div class="list" id="list"></div></aside>
+<section class="article" id="article"><div class="empty">請從左側選擇一篇文章開始閱讀。</div></section>
+</div>
+</main>
+<script>
+const data = [
+{title:"學而時習之",source:"《論語・學而》",text:"子曰：「學而時習之，不亦說乎？有朋自遠方來，不亦樂乎？人不知而不慍，不亦君子乎？」",gloss:[["子曰","孔子說。『子』是對有德者的尊稱。"],["時","按時、時常。"],["習","溫習、實踐。"],["說","通『悅』，愉快。"],["朋","志同道合的朋友。"],["慍","生氣、怨恨。"],["君子","有品德、有修養的人。"]],meaning:"孔子認為，學習後能按時溫習、朋友遠道而來，以及別人不了解自己卻不怨恨，都是人生的快樂，也展現君子的修養。",mood:"文章語氣親切而有啟發性，從學習、交友到自我修養，呈現儒家重視內在品德的理想。",points:["『說』通『悅』，讀音與意思要注意。","三個反問句連用，語氣有力。","『人不知而不慍』強調不因不被理解而怨懟。"],qs:[["時習的意思是？",["按時溫習","立刻考試","向人請教","停止學習"],0,"『時』是按時，『習』是溫習、實踐。"],["『不亦說乎』中的『說』通哪個字？",["稅","悅","閱","脫"],1,"『說』在此通『悅』，表示愉快。"],["本章提到哪三種快樂？",["財富、名聲、地位","旅行、飲食、休息","學習、交友、修養","比賽、獲勝、受獎"],2,"文章依序談學習、朋友來訪，以及不被理解仍能保持修養。"],["別人不了解自己時，孔子認為應該怎麼做？",["立刻責怪別人","不生氣、不怨恨","放棄交朋友","故意炫耀自己"],1,"『不慍』就是不怨怒，表現君子修養。"],["本章最主要的主旨是？",["說明如何賺取財富","談學習的樂趣與君子修養","介紹遠方的風景","批評朋友不常來訪"],1,"三句話共同說明學習、交友和修養帶來的快樂。"]]},
+{title:"溫故知新",source:"《論語・為政》",text:"子曰：「溫故而知新，可以為師矣。」",gloss:[["溫","溫習、複習。"],["故","舊的知識、已學過的內容。"],["知新","得到新的理解或體會。"],["可以","可以憑藉此（能力）。"],["為師","擔任老師。"]],meaning:"複習已學過的知識，並從中得到新的理解，就具備了教導別人的條件。",mood:"短短一句話指出學習不是死背，而是能從舊知識中發現新意。",points:["『故』指舊知識，不是事故。","『溫故知新』是常見成語。","因果關係：能溫故知新，所以可以為師。"],qs:[["『溫故』的『故』是什麼意思？",["原因","故意","舊的知識","死亡"],2,"此處『故』指已經學過的舊知識。"],["『知新』最接近哪個意思？",["得到新的體會","忘記舊知識","認識新朋友","學會新文字而已"],0,"溫習舊知識後，進一步產生新的理解。"],["誰具備『可以為師』的條件？",["只會背答案的人","能溫故知新的人","從不複習的人","只讀新課文的人"],1,"能從舊知識得到新理解，便有教學的能力。"],["『溫故知新』屬於哪一類語句？",["學習方法的提醒","描寫景色","人物對話故事","神話傳說"],0,"本章說明複習與思考的重要性。"],["這句話強調學習應該？",["只求速度","只背不想","複習舊知並思考新意","完全不必複習"],2,"重點是由舊知識延伸出新的理解。"]]},
+{title:"學而不思則罔",source:"《論語・為政》",text:"子曰：「學而不思則罔，思而不學則殆。」",gloss:[["而","連接前後語意。"],["則","就、便。"],["罔","迷惑、沒有方向。"],["殆","疑惑、危險；此處指疑惑不解。"]],meaning:"只學習而不思考，容易迷惘；只靠自己思考而不學習，也容易陷入疑惑。",mood:"用整齊對稱的句子提醒讀者，學習與思考必須互相配合。",points:["『罔』是迷惘；『殆』是疑惑。","前後句形成對比與對偶。","核心觀念：學思並重。"],qs:[["『罔』的意思是？",["迷惑","網子","希望","明亮"],0,"『罔』在此指迷惘、沒有方向。"],["『殆』在本章的意思是？",["非常疲倦","疑惑不解","十分快樂","勇敢無畏"],1,"此處『殆』指只思考而不學習，容易疑惑。"],["本章主張哪一種學習態度？",["只學不思","只思不學","學習與思考並重","完全依賴別人"],2,"兩句分別指出偏廢學習或思考的問題。"],["兩句在寫法上有何特色？",["前後對比、句式整齊","大量景物描寫","使用誇飾","以人物外貌為主"],0,"『學而不思』與『思而不學』形成對照。"],["如果讀書只背答案、不理解，最接近哪種情況？",["思而不學","學而不思","溫故知新","不恥下問"],1,"只吸收知識卻不思考，正是『學而不思則罔』。"]]},
+{title:"三人行，必有我師",source:"《論語・述而》",text:"子曰：「三人行，必有我師焉。擇其善者而從之，其不善者而改之。」",gloss:[["三人行","幾個人一起走；泛指多人相處。"],["焉","於此、在其中。"],["擇","選擇。"],["善者","好的地方、優點。"],["從","跟從、學習。"],["改之","改正自己的缺點。"]],meaning:"與別人相處時，每個人都有值得學習之處：看到優點就學習，看到缺點就反省自己並改正。",mood:"展現謙虛好學、反省自我的態度，也鼓勵人從生活中的每個人身上學習。",points:["『三人』不是限定剛好三個人，泛指多人。","『善者』學習；『不善者』作為自我反省的借鏡。","成語『三人行，必有我師』。"],qs:[["『三人行』中的『三人』應如何理解？",["一定只有三個人","泛指多人","三位老師","三個學生"],1,"此處不是精確人數，而是泛指與他人相處。"],["看到別人的優點，應該怎麼做？",["嫉妒他","批評他","選擇學習","假裝沒看見"],2,"『擇其善者而從之』就是選擇優點來學習。"],["看到別人的缺點，應該？",["拿來嘲笑","反省並改正自己","到處宣傳","完全模仿"],1,"『其不善者而改之』是以他人缺點提醒自己改進。"],["本章表現哪一種態度？",["驕傲自大","謙虛好學","害怕競爭","追求名利"],1,"能向別人學習，也能反省自己，正是謙虛好學。"],["『從』在『而從之』中的意思是？",["跟隨、學習","離開","服從命令而已","從前"],0,"此處『從』指跟從、學習對方的優點。"]]},
+{title:"知之為知之",source:"《論語・為政》",text:"子曰：「由！誨女知之乎？知之為知之，不知為不知，是知也。」",gloss:[["由","仲由，孔子的學生子路。"],["誨","教導。"],["女","通『汝』，你。"],["知之","知道它、了解這件事。"],["是","這、這樣。"],["知","通『智』，智慧。"]],meaning:"知道就承認知道，不知道就承認不知道，這才是真正明智的態度。",mood:"語氣直接，提醒人誠實面對自己的知識，不要不懂裝懂。",points:["『女』通『汝』，意思是你。","最後一個『知』通『智』，指智慧。","主旨是求知誠實、實事求是。"],qs:[["『誨女知之乎』的『女』通哪個字？",["如","汝","妳","若"],1,"『女』是通假字，通『汝』，意思是你。"],["『誨』的意思是？",["教導","後悔","欺騙","詢問"],0,"『誨』就是教導。"],["最後一句『是知也』的『知』通？",["之","智","志","止"],1,"此處『知』通『智』，指智慧。"],["孔子認為真正明智的人應該？",["不懂也裝懂","只說自己知道","誠實承認知道或不知道","避免提出問題"],2,"誠實面對自己的知識，才是真正的智慧。"],["本章最適合用哪個詞概括？",["實事求是","自以為是","見利忘義","半途而廢"],0,"不懂裝懂並非智慧，應如實承認。"]]},
+{title:"見賢思齊",source:"《論語・里仁》",text:"子曰：「見賢思齊焉，見不賢而內自省也。」",gloss:[["賢","有才能、有德行的人。"],["思齊","想要向他看齊。"],["焉","於是、對此。"],["不賢","沒有德行或不好的行為。"],["內","內心、自己。"],["省","反省、檢查。"]],meaning:"看見有德行的人，就想著向他學習；看見品行不好的人，就反省自己是否也有相同缺點。",mood:"以兩種觀察他人的方式，說明學習榜樣與自我反省同樣重要。",points:["『齊』是看齊，不是整齊。","『省』讀ㄒㄧㄥˇ，意為反省。","正反並列：見賢學習，見不賢自省。"],qs:[["『思齊』的意思是？",["想要整齊","想要向他看齊","思念朋友","一起思考"],1,"『齊』在此是看齊、達到相近的品德。"],["『省』在『內自省』中應讀？",["ㄕㄥˇ","ㄒㄧㄥˇ","ㄕㄥ","ㄒㄧㄥ"],1,"『省』作反省解時讀ㄒㄧㄥˇ。"],["看見賢德的人，應該？",["向他學習","故意遠離","批評他的缺點","只羨慕不行動"],0,"『見賢思齊』就是以賢者為榜樣。"],["看見不好的行為，孔子建議？",["只責備別人","內心反省自己","立刻模仿","完全不理會"],1,"應藉此檢查自己是否也有相同問題。"],["本章的核心精神是？",["盲目崇拜","比較財富","見賢學習、見不賢自省","只看別人的錯誤"],2,"兩句分別提醒學習榜樣與自我反省。"]]},
+{title:"不恥下問",source:"《論語・公冶長》",text:"子曰：「敏而好學，不恥下問，是以謂之文也。」",gloss:[["敏","勤勉、聰明而勤奮。"],["好學","喜愛學習。"],["恥","以……為羞恥。"],["下問","向地位或學問不如自己的人請教。"],["是以","因此、所以。"],["謂","稱作。"]],meaning:"孔子稱讚一個人勤勉好學，而且不會因為向不如自己的人請教而感到羞恥。",mood:"強調真正的學問不在於面子，而在於願意請教、持續學習。",points:["『恥』是意動用法，以……為羞恥。","『下問』不是向下級命令，而是虛心請教。","成語『不恥下問』。"],qs:[["『不恥下問』的意思是？",["不向別人提問","不以向人請教為羞恥","只問老師問題","不願意學習"],1,"不因請教地位或學問不如自己的人而覺得丟臉。"],["『恥』在此的意思是？",["羞恥、以為羞恥","恥笑別人","生氣","後悔"],0,"『恥』作意動用法，意為以……為羞恥。"],["『是以』的意思是？",["但是","因此","以前","從此以後"],1,"『是以』是因此、所以。"],["真正好學的人應該？",["只向比自己厲害的人問","害怕別人知道自己不懂","願意虛心請教","從不承認錯誤"],2,"不恥下問表現謙虛與求知精神。"],["『下問』指的是？",["向晚輩或不如自己的人請教","向上級發布命令","在樓下詢問","詢問路人方向"],0,"『下』指地位或學問較低的人，『問』是請教。"]]},
+{title:"知者樂水，仁者樂山",source:"《論語・雍也》",text:"子曰：「知者樂水，仁者樂山。知者動，仁者靜。知者樂，仁者壽。」",gloss:[["知者","有智慧的人。『知』通『智』。"],["樂","喜愛；此處讀ㄧㄠˋ。"],["仁者","有仁德的人。"],["動","活躍、靈活。"],["靜","沉穩、安定。"],["壽","長壽。"]],meaning:"孔子以水與山比喻智慧者和仁德者的特質：智慧者靈活活躍，仁德者沉穩安定。",mood:"以山水作比喻，呈現儒家對智慧與仁德人格的欣賞。",points:["『樂』作喜愛解時讀ㄧㄠˋ。","『知』通『智』。","山水是比喻，不是單純介紹自然景觀。"],qs:[["『知者』的『知』通哪個字？",["之","智","志","止"],1,"『知者』指有智慧的人，『知』通『智』。"],["『樂水』的『樂』在此讀？",["ㄌㄜˋ","ㄩㄝˋ","ㄧㄠˋ","ㄌㄠˋ"],2,"『樂』作喜愛解時讀ㄧㄠˋ。"],["孔子用什麼比喻智慧者與仁者？",["日月","山水","花鳥","風雨"],1,"智慧者樂水，仁者樂山。"],["本章認為智慧者的特質是？",["沉靜不動","靈活活躍","只重外表","不與人往來"],1,"『知者動』形容智慧者靈活活躍。"],["本章主要運用哪種表達方式？",["山水比喻人格特質","列舉歷史年代","描寫人物外貌","說明科學原理"],0,"以山、水象徵不同人格特質。"]]},
+{title:"歲寒，然後知松柏",source:"《論語・子罕》",text:"子曰：「歲寒，然後知松柏之後凋也。」",gloss:[["歲寒","天氣寒冷的時節。"],["然後","這樣以後。"],["松柏","松樹和柏樹。"],["凋","凋謝、枯萎。"],["後凋","比較晚才凋謝。"]],meaning:"到了寒冷的季節，才看得出松柏比其他植物更能耐寒。孔子藉此比喻人在艱難環境中才能顯出堅定的品格。",mood:"借自然景物象徵人的品格，讚美能在逆境中堅持操守的人。",points:["以松柏耐寒比喻堅貞品格。","『歲寒』象徵艱難環境。","常考象徵、借物喻人。"],qs:[["『凋』的意思是？",["盛開","凋謝","生長","結果"],1,"『凋』指花木枯萎、凋謝。"],["松柏的特色是？",["遇冷容易枯萎","寒冬仍能保持青翠","只在夏天生長","需要大量陽光才開花"],1,"松柏耐寒，冬季仍不易凋謝。"],["『歲寒』在文中象徵？",["快樂的日子","艱難的環境","豐收季節","旅行的時光"],1,"寒冷時節比喻困難、考驗。"],["孔子藉松柏比喻哪種人？",["遇到困難就放棄的人","能在逆境中堅守品格的人","只重視外表的人","善於討好別人的人"],1,"松柏耐寒象徵堅定不屈的品格。"],["本文主要使用哪種手法？",["借物喻人、象徵","誇張描寫","對話辯論","流水帳敘事"],0,"以松柏的耐寒特質象徵人的堅貞。"]]},
+{title:"過而不改",source:"《論語・衛靈公》",text:"子曰：「過而不改，是謂過矣。」",gloss:[["過","過錯、錯誤。"],["而","卻、但是。"],["改","改正。"],["是謂","這就叫作。"],["矣","語氣助詞，表示肯定或感嘆。"]],meaning:"犯了錯卻不改正，這才是真正的過錯。重點不只是避免犯錯，更要有改過的勇氣。",mood:"語句簡潔有力，提醒人勇於面對錯誤、及時改正。",points:["前一個『過』是犯錯；後一個『過』指真正的過錯。","『是謂』就是這叫作。","主旨：知錯能改。"],qs:[["『是謂過矣』的『謂』是什麼意思？",["稱作","忘記","詢問","拒絕"],0,"『是謂』意思是這就叫作。"],["孔子認為真正的過錯是？",["偶爾犯錯","犯錯後不改正","向別人請教","承認自己的錯誤"],1,"重點在於犯錯後仍不願改正。"],["本文最接近哪個成語？",["知錯能改","守株待兔","自相矛盾","畫蛇添足"],0,"文章強調發現錯誤後要改正。"],["本文語句特色為何？",["簡潔而有警醒作用","大量描寫景色","情節曲折複雜","以人物對話為主"],0,"短句直接點出道理，具有勸誡意味。"],["這句話最適合提醒我們？",["犯錯一定很丟臉","不要讓錯誤持續下去","只要掩飾就好","別人犯錯與我無關"],1,"能改正錯誤比掩飾錯誤更重要。"]]},
+{title:"詠雪",source:"《世說新語・言語》",text:"謝太傅寒雪日內集，與兒女講論文義。俄而雪驟，公欣然曰：「白雪紛紛何所似？」兄子胡兒曰：「撒鹽空中差可擬。」兄女曰：「未若柳絮因風起。」",gloss:[["內集","把家人聚集在室內。"],["兒女","子姪輩，晚輩。"],["俄而","不久、一會兒。"],["驟","急、大。"],["欣然","高興的樣子。"],["何所似","像什麼。"],["差可擬","大致可以相比。"],["未若","不如、比不上。"],["因風","乘著風、隨風。"]],meaning:"謝太傅與家人談論文章時遇到大雪，問雪花像什麼。胡兒以鹽比雪，謝道韞以柳絮隨風飛舞比雪，後者更有輕盈飄逸的美感。",mood:"透過家庭雅集和比喻對答，呈現人物的才思與雪景之美，也突顯謝道韞的文學才華。",points:["『兒女』在此指晚輩，不是專指自己的孩子。","『未若』表示不如；『因』是乘、趁著。","兩個比喻：撒鹽空中、柳絮因風起。"],qs:[["『俄而』的意思是？",["很久以前","不久、一會兒","從早到晚","突然停止"],1,"『俄而』表示時間很短，不久之後。"],["『兒女』在文中的意思是？",["自己的兒子和女兒","年輕男女","子姪等晚輩","所有百姓"],2,"古文中的『兒女』可指晚輩、子姪。"],["胡兒把雪比喻成什麼？",["柳絮","白糖","鹽","棉花"],2,"胡兒說『撒鹽空中差可擬』。"],["謝道韞認為雪像什麼？",["柳絮隨風飛起","白鹽落地","白米灑落","白花盛開"],0,"『未若柳絮因風起』是謝道韞的比喻。"],["本文主要突顯謝道韞哪方面的才華？",["武藝高強","善於經商","文思敏捷、善用比喻","精通農事"],2,"她以柳絮比雪，想像生動而優美。"]]},
+{title:"陳太丘與友期行",source:"《世說新語・方正》",text:"陳太丘與友期行，期日中。過中不至，太丘舍去，去後乃至。元方時年七歲，門外戲。客問元方：「尊君在不？」答曰：「待君久不至，已去。」",gloss:[["期行","約定一同出行。"],["日中","正午。"],["至","到達。"],["舍去","不再等候而離開。"],["乃","才。"],["戲","玩耍。"],["尊君","對別人父親的尊稱。"],["不","通『否』。"]],meaning:"陳太丘與朋友約好正午出行，朋友遲到，陳太丘先離開。朋友到達後詢問，七歲的元方如實回答，顯示守時與誠信的重要。",mood:"以簡短生活事件呈現人物言行，透過元方的回答帶出守信、尊重約定的道理。",points:["『期』是約定；『日中』是正午。","『乃』是才；『不』通『否』。","『尊君』是對別人父親的敬稱。"],qs:[["『期行』的意思是？",["期待旅行","約定一同出行","延期出發","定期拜訪"],1,"『期』是約定，『行』是出行。"],["『日中』指什麼時間？",["清晨","正午","傍晚","深夜"],1,"『日中』就是中午、正午。"],["『去後乃至』的『乃』意思是？",["於是","竟然","才","仍然"],2,"朋友在陳太丘離開之後才到。"],["『尊君』是對誰的尊稱？",["自己的父親","對方的父親","自己的老師","對方的朋友"],1,"『尊君』是稱呼對方父親的敬語。"],["故事主要提醒我們？",["約定可以隨意更改","守時與守信很重要","年紀小就不能說話","朋友越多越好"],1,"朋友遲到失約，故事凸顯守信與時間觀念。"]]},
+{title:"狐假虎威",source:"《戰國策》寓言",text:"虎求百獸而食之，得狐。狐曰：「子無敢食我也！天帝使我長百獸，今子食我，是逆天帝命也。」虎以為然，故遂與之行。獸見之皆走。虎不知獸畏己而走也，以為畏狐也。",gloss:[["求","尋找。"],["子","你。"],["長","統領、做首領。"],["逆","違背。"],["以為然","認為是這樣。"],["遂","於是、就。"],["畏","害怕。"],["走","逃跑。"]],meaning:"狐狸借老虎的威勢嚇跑百獸，老虎卻不知道百獸真正害怕的是自己。",mood:"以幽默的寓言諷刺倚仗他人權勢、欺騙別人的行為，也提醒人要看清事情真相。",points:["『假』是借用，不是假裝。","『長百獸』的『長』是統領。","成語『狐假虎威』比喻倚仗別人的權勢欺壓人。"],qs:[["『狐假虎威』的『假』是什麼意思？",["虛假","借用","放假","假裝"],1,"狐狸借用老虎的威勢，所以『假』是借用。"],["『長百獸』的『長』意思是？",["長度","生長","統領","年長"],2,"此處『長』作動詞，意思是統領、做首領。"],["百獸為什麼逃跑？",["牠們害怕狐狸","牠們害怕老虎","牠們要找食物","牠們聽到天帝命令"],1,"百獸真正害怕的是老虎，並非狐狸。"],["老虎誤以為百獸害怕誰？",["天帝","狐狸","自己","其他野獸"],1,"老虎不知道百獸畏懼自己，以為牠們怕狐狸。"],["這則寓言主要諷刺哪種行為？",["勇敢面對困難","借別人的權勢欺壓人","團結合作","謙虛請教"],1,"狐狸依靠老虎的威勢嚇唬百獸，諷刺仗勢欺人。"]]},
+{title:"刻舟求劍",source:"《呂氏春秋》寓言",text:"楚人有涉江者，其劍自舟中墜於水，遽契其舟，曰：「是吾劍之所從墜。」舟止，從其所契者入水求之。舟已行矣，而劍不行，求劍若此，不亦惑乎？",gloss:[["涉江","渡江。"],["墜","掉落。"],["遽","立刻、急忙。"],["契","刻記號。"],["是","這裡。"],["所從墜","掉下去的地方。"],["止","停止。"],["惑","糊塗。"]],meaning:"楚人把劍掉進江裡，卻在船上刻記號，等船停下才從記號處下水找劍。船已移動，劍卻留在原處，因此不可能找到。",mood:"用荒謬的行動提醒人要依照情況變化調整方法，不能拘泥於舊方法。",points:["『契』是刻記號，不是契約。","『是』是這裡；『惑』是糊塗。","成語比喻拘泥成法、不知變通。"],qs:[["『遽契其舟』的『契』是什麼意思？",["簽訂契約","刻記號","乘船","尋找"],1,"楚人在船上刻下記號，『契』就是刻。"],["楚人的劍掉在哪裡？",["岸上","船板上","江水中","山谷裡"],2,"原文說『其劍自舟中墜於水』。"],["楚人為什麼找不到劍？",["他忘記劍的顏色","船移動了，劍沒有跟著移動","江水已經乾了","有人先拿走劍"],1,"船與劍的位置已經改變，船上的記號不能代表劍的位置。"],["『惑』的意思是？",["困惑、糊塗","高興","勇敢","快速"],0,"結尾反問楚人的做法是否糊塗。"],["這則寓言告訴我們？",["做事要懂得變通","記號永遠不會改變","遇到問題要等待","古老方法一定最好"],0,"環境改變時，方法也要跟著調整。"]]},
+{title:"鄭人買履",source:"《韓非子》寓言",text:"鄭人有欲買履者，先自度其足，而置之其坐。至之市，而忘操之。已得履，乃曰：「吾忘持度。」反歸取之。及反，市罷，遂不得履。人曰：「何不試之以足？」曰：「寧信度，無自信也。」",gloss:[["履","鞋子。"],["度","量、測量；也指尺寸。"],["坐","通『座』，座位。"],["操","拿、帶。"],["市","市集。"],["反","通『返』，返回。"],["罷","散市、結束。"],["寧","寧可。"]],meaning:"鄭國人買鞋前先量好腳的尺寸，卻忘了帶尺寸，回家拿後市集已散。他寧可信尺寸，也不相信自己的腳，最後買不到鞋。",mood:"以誇張而可笑的情節，諷刺只相信死板標準、不懂依實際情況判斷的人。",points:["『坐』通『座』；『反』通『返』。","『度』前作測量，後可指尺寸。","主旨：拘泥成法、不知變通。"],qs:[["『履』的意思是？",["帽子","鞋子","衣服","腰帶"],1,"『履』就是鞋子。"],["『置之其坐』的『坐』通哪個字？",["做","座","坐","左"],1,"此處『坐』通『座』，指座位。"],["鄭人最後為什麼買不到鞋？",["沒有帶錢","鞋子太貴","回家拿尺寸時市集已散","忘記鞋子的顏色"],2,"他回家拿尺寸，回到市集時已經散市。"],["『寧信度，無自信也』表現什麼？",["過度相信尺寸而不相信自己的腳","懂得隨機應變","勇於嘗試新方法","重視別人的建議"],0,"他寧可相信量好的尺寸，也不願直接試鞋。"],["這則寓言諷刺哪種人？",["做事仔細的人","拘泥形式、不知變通的人","樂於助人的人","勇於承認錯誤的人"],1,"鄭人不依實際情況判斷，反而被死板方法限制。"]]},
+{title:"守株待兔",source:"《韓非子》寓言",text:"宋人有耕田者。田中有株，兔走觸株，折頸而死。因釋其耒而守株，冀復得兔。兔不可復得，而身為宋國笑。",gloss:[["株","樹樁。"],["走","跑。"],["觸","撞到。"],["因","於是。"],["釋","放下。"],["耒","古代耕田用的農具。"],["冀","希望。"],["復","再、又。"]],meaning:"農夫偶然得到撞死的兔子，便放下農具天天守著樹樁，希望再有兔子撞上來，最後一無所獲，成為笑柄。",mood:"諷刺把偶然的成功當成必然，卻不再努力的人。",points:["『走』是跑；『株』是樹樁。","『釋耒』是放下農具。","成語比喻不主動努力，只想靠運氣獲得成功。"],qs:[["『株』在文中指？",["樹枝","樹樁","樹葉","樹根"],1,"兔子撞到的是田中的樹樁。"],["『兔走觸株』的『走』是什麼意思？",["行走","跑","離開","逃亡"],1,"古文『走』常指跑。"],["農夫為什麼守著樹樁？",["想等兔子再次撞上來","想保護樹木","想休息乘涼","想找回農具"],0,"他希望再次得到兔子，所以放下農具守株。"],["『冀』的意思是？",["害怕","希望","拒絕","忘記"],1,"『冀復得兔』就是希望再次得到兔子。"],["本文諷刺哪種心態？",["持續努力","只靠運氣、不再耕作","分享收穫","尊重自然"],1,"偶然得到兔子後便不再努力，正是守株待兔。"]]},
+{title:"自相矛盾",source:"《韓非子》寓言",text:"楚人有鬻盾與矛者，譽之曰：「吾盾之堅，物莫能陷也。」又譽其矛曰：「吾矛之利，於物無不陷也。」或曰：「以子之矛，陷子之盾，何如？」其人弗能應也。",gloss:[["鬻","賣。"],["盾","防身的盾牌。"],["矛","古代長柄刺擊兵器。"],["譽","稱讚、誇耀。"],["堅","堅固。"],["陷","刺穿。"],["利","鋒利。"],["或","有人。"],["弗","不。"]],meaning:"賣矛和盾的人先說盾無法被刺穿，又說矛什麼都能刺穿。旁人問他用自己的矛刺自己的盾會如何，他便答不出來。",mood:"以對話揭露前後說法互相衝突，提醒說話做事要合乎邏輯。",points:["『鬻』是賣；『陷』是刺穿。","『或』是有人；『弗』是不。","成語『自相矛盾』比喻言行前後抵觸。"],qs:[["『鬻盾與矛』的『鬻』是？",["買","賣","修理","收藏"],1,"『鬻』就是賣。"],["賣盾的人如何誇耀自己的盾？",["非常輕","無物能刺穿","可以飛行","能變成矛"],1,"他說自己的盾非常堅固，沒有東西能刺穿。"],["旁人提出什麼問題？",["能否把矛賣便宜","用他的矛刺他的盾會如何","盾牌能否變大","矛能否當作農具"],1,"旁人用賣家的兩句話互相檢驗，指出矛盾。"],["『弗能應也』的意思是？",["不能回答","大聲反駁","立刻答應","轉身離開"],0,"『弗』是不，『應』是回答。"],["『自相矛盾』比喻？",["做事很勇敢","說法前後互相衝突","善於保護自己","能言善道"],1,"矛與盾的誇耀無法同時成立，形成矛盾。"]]},
+{title:"塞翁失馬",source:"《淮南子》寓言",text:"近塞上之人有善術者，馬無故亡而入胡。人皆弔之，其父曰：「此何遽不為福乎？」居數月，其馬將胡駿馬而歸。人皆賀之，其父曰：「此何遽不能為禍乎？」",gloss:[["塞","邊塞。"],["善術者","擅長術數、懂得推測吉凶的人。"],["亡","逃失。"],["胡","古代對北方民族的稱呼。"],["弔","慰問。"],["何遽","怎麼就、何必急著。"],["居","經過。"],["將","帶領、帶著。"],["賀","祝賀。"]],meaning:"老人家的馬跑到胡地，大家來安慰；後來馬帶著好馬回來，大家來祝賀。老人卻認為福禍難以立刻判定，後續發展也印證了禍福可能互相轉化。",mood:"透過故事說明事情有變化，眼前的好壞未必是最後結果，應保持平常心。",points:["『亡』是逃失；『弔』是慰問。","『何遽』是怎麼就、何必急著。","成語『塞翁失馬，焉知非福』。"],qs:[["『亡』在『馬無故亡』中的意思是？",["死亡","逃失","滅亡","忘記"],1,"馬無故逃失，『亡』是逃跑、失去。"],["『弔之』的『弔』是？",["弔掛","慰問","責備","祝賀"],1,"大家因為老人失馬而前來慰問。"],["馬後來帶回什麼？",["一群羊","胡人的駿馬","金銀財寶","一車糧食"],1,"原文說『其馬將胡駿馬而歸』。"],["老人對福禍的態度是？",["立刻判定好壞","認為禍福可能轉變","只相信眼前結果","拒絕接受變化"],1,"他不急著判定禍福，因為事情可能轉變。"],["故事帶給我們的啟示是？",["凡事都會成功","眼前的得失未必是最後結果","失去東西一定是壞事","得到好處就不必努力"],1,"塞翁失馬提醒人以較長遠、平常的心看待變化。"]]},
+{title:"夸父追日",source:"《山海經》神話",text:"夸父與日逐走，入日。渴，欲得飲，飲於河、渭；河、渭不足，北飲大澤。未至，道渴而死。棄其杖，化為鄧林。",gloss:[["逐走","追趕、賽跑。"],["入日","追到太陽落下的地方。"],["欲","想要。"],["河、渭","黃河與渭水。"],["大澤","大湖。"],["未至","還沒到達。"],["道","路上。"],["棄","丟棄。"],["化","變成。"]],meaning:"夸父追逐太陽，口渴喝乾河水仍不滿足，前往大湖途中渴死。他丟下的手杖化為桃林。",mood:"神話以誇張想像表現夸父追求光明、勇敢堅毅的精神，也帶有悲壯色彩。",points:["『逐走』是追趕；『道』是路上。","喝河水仍不足，運用誇張表現夸父身形與渴望。","神話具有想像、解釋自然或寄託精神的特色。"],qs:[["『與日逐走』的意思是？",["和太陽一起散步","追趕太陽","躲避太陽","等待日出"],1,"『逐走』是追逐、追趕。"],["夸父先喝了哪兩條河的水？",["長江、珠江","河、渭","黑龍江、松花江","湘江、漢水"],1,"原文寫『飲於河、渭』。"],["夸父最後在哪裡倒下？",["家中","大澤旁","前往大澤的路上","太陽裡面"],2,"『未至，道渴而死』，還沒到大澤就在路上渴死。"],["夸父的手杖最後變成什麼？",["高山","鄧林","大河","月亮"],1,"原文說『棄其杖，化為鄧林』。"],["這則神話主要呈現夸父什麼精神？",["追求光明、勇敢堅毅","貪圖享樂","害怕挑戰","不願幫助別人"],0,"夸父不斷追逐太陽，展現勇敢追求的精神。"]]},
+{title:"精衛填海",source:"《山海經》神話",text:"炎帝之少女，名曰女娃。女娃游於東海，溺而不返，故為精衛。常銜西山之木石，以堙於東海。",gloss:[["少女","小女兒。"],["游","遊玩、游泳。"],["溺","溺水。"],["故","因此。"],["銜","用嘴含著。"],["木石","樹枝與石頭。"],["堙","填塞。"]],meaning:"炎帝的小女兒女娃在東海溺水身亡，化為精衛鳥，經常銜著西山的樹枝和石頭，想填平東海。",mood:"以神話表現精衛不屈不撓、堅持到底的精神，也帶有悲憤與抗爭的意味。",points:["『少女』是小女兒，不是年輕女子。","『銜』是用嘴含著；『堙』是填塞。","成語『精衛填海』比喻意志堅定、不畏艱難。"],qs:[["『炎帝之少女』的『少女』指？",["年輕女子","小女兒","孫女","女學生"],1,"古文『少女』在此指小女兒。"],["『溺而不返』的『溺』是？",["沉迷","溺水","洗澡","游泳"],1,"女娃在東海溺水而沒有回來。"],["精衛用什麼填海？",["泥土與沙子","樹枝與石頭","花朵與樹葉","水草與貝殼"],1,"牠銜著西山的木頭和石頭填海。"],["『堙』的意思是？",["挖掘","填塞","沖走","搬運"],1,"『以堙於東海』就是用來填塞東海。"],["『精衛填海』常比喻？",["做事半途而廢","意志堅定、不畏艱難","只靠別人幫忙","不切實際地炫耀"],1,"精衛持續銜木石填海，象徵堅持不懈。"]]},
+{title:"愚公移山",source:"《列子・湯問》節選",text:"北山愚公者，年且九十，面山而居。懲山北之塞，出入之迂也，聚室而謀曰：「吾與汝畢力平險，指通豫南，達於漢陰，可乎？」",gloss:[["且","將近。"],["面山","面對著山。"],["懲","苦於、受到困擾。"],["塞","阻塞。"],["迂","曲折、繞遠。"],["聚室","集合全家人。"],["謀","商量。"],["畢力","盡全力。"],["平險","剷平險阻。"],["漢陰","漢水南岸。"]],meaning:"愚公年近九十，因為山阻擋出入道路，便召集家人商量，希望合力移開山石，打通通往豫南的道路。",mood:"故事讚揚不怕困難、持續努力的精神，也呈現人與自然環境之間的挑戰。",points:["『且』是將近；『懲』是苦於。","『迂』是道路曲折、繞遠。","人物名稱『愚公』帶有反差，故事重點在堅持。"],qs:[["『年且九十』的『且』是？",["而且","將近","尚且","暫時"],1,"『年且九十』指年紀將近九十歲。"],["愚公為什麼想移山？",["想蓋宮殿","山阻擋道路，出入繞遠","想尋找寶藏","不喜歡山的顏色"],1,"山北阻塞，出入道路曲折，造成生活不便。"],["『懲山北之塞』的『懲』是？",["懲罰","苦於、受困擾","獎勵","記住"],1,"此處指愚公苦於山的阻塞。"],["『迂』的意思是？",["筆直","曲折、繞遠","寬廣","平坦"],1,"『出入之迂』指出入要繞遠路。"],["這段故事主要表現？",["不怕困難、努力改變環境","只靠運氣","遇到阻礙就放棄","追求個人名聲"],0,"愚公召集家人合力移山，表現堅持精神。"]]},
+{title:"陋室銘",source:"劉禹錫《陋室銘》節選",text:"山不在高，有仙則名。水不在深，有龍則靈。斯是陋室，惟吾德馨。苔痕上階綠，草色入簾青。",gloss:[["在","在於。"],["名","有名、出名。"],["靈","靈異、有靈氣。"],["斯","這。"],["陋室","簡陋的房屋。"],["惟","只、唯有。"],["德馨","品德美好而遠播。"],["上","蔓延上。"],["入","映入。"]],meaning:"山不必高，有仙人就出名；水不必深，有龍就顯得靈異。房屋雖簡陋，只要主人品德高尚，就能使居室有價值。",mood:"作者借居室環境表達安貧樂道、不慕榮利，重視內在品德勝過外在條件的志趣。",points:["『名』是出名；『靈』是有靈氣。","『惟吾德馨』是全文主旨之一。","以山、水有仙龍起興，引出陋室與德行的關係。"],qs:[["『有仙則名』的『名』是？",["名字","出名","命令","名聲的大小"],1,"此處『名』作動詞，意思是出名。"],["『斯是陋室』的『斯』是？",["這","那裡","於是","因此"],0,"『斯』指這，代指作者的居室。"],["『德馨』指什麼？",["房間香氣","品德美好而遠播","衣服整潔","名聲很大"],1,"『馨』本指香氣，這裡比喻美好的品德。"],["作者認為居室重要的是？",["面積大小","裝潢華麗","主人品德","地點熱鬧"],2,"『惟吾德馨』指出品德比外在環境重要。"],["本文表達作者哪種生活態度？",["追求豪華享受","安貧樂道、不慕榮利","羨慕權貴","重視外表勝過內在"],1,"作者以陋室為題，強調內在德行與精神生活。"]]},
+{title:"愛蓮說",source:"周敦頤《愛蓮說》節選",text:"水陸草木之花，可愛者甚蕃。晉陶淵明獨愛菊。自李唐來，世人甚愛牡丹。予獨愛蓮之出淤泥而不染，濯清漣而不妖。",gloss:[["甚蕃","非常多。"],["獨","唯獨。"],["予","我。"],["淤泥","污泥。"],["染","沾染。"],["濯","洗滌。"],["清漣","清澈的水波。"],["妖","妖媚、艷麗而不端莊。"]],meaning:"作者先寫世人喜愛不同花卉，再說自己特別喜愛蓮花，因為蓮能從污泥中生長卻不受污染，經清水洗滌仍不顯得妖媚。",mood:"以蓮花象徵潔身自愛、品格高潔的人，表達作者不隨世俗、堅守操守的志趣。",points:["『予』是我；『濯』是洗滌。","『出淤泥而不染』是借物喻人。","本文以花喻人格，蓮象徵高潔品格。"],qs:[["『甚蕃』的意思是？",["非常少","非常多","十分美麗","十分珍貴"],1,"『蕃』有繁多之意。"],["『予』在文中指？",["陶淵明","李唐世人","作者自己","蓮花"],2,"『予』是第一人稱代詞，意思是我。"],["『濯』的意思是？",["種植","洗滌","採摘","欣賞"],1,"『濯清漣』指用清水洗滌。"],["蓮花在本文象徵什麼？",["富貴華麗","潔身自愛、品格高潔","權力地位","熱鬧繁華"],1,"蓮出淤泥而不染，象徵不受污濁影響的品格。"],["本文主要使用哪種寫作手法？",["借物喻人","倒敘","對話","列舉數字"],0,"作者藉蓮花的特質寄託人格理想。"]]},
+{title:"孫權勸學",source:"《資治通鑑》節選",text:"初，權謂呂蒙曰：「卿今當塗掌事，不可不學！」蒙辭以軍中多務。權曰：「孤豈欲卿治經為博士邪！但當涉獵，見往事耳。」",gloss:[["初","當初。"],["謂","對……說。"],["卿","古代君主對臣子的稱呼。"],["當塗","當權、掌管政事。"],["掌事","掌管事務。"],["辭","推辭。"],["務","事務。"],["豈","難道。"],["治經","研究儒家經典。"],["涉獵","粗略閱讀、廣泛閱讀。"]],meaning:"孫權勸掌管軍務的呂蒙讀書。呂蒙以軍中事務繁忙推辭，孫權說並非要求他成為研究經典的博士，只要廣泛閱讀、了解歷史即可。",mood:"透過君臣對話說明即使工作繁忙，也應利用時間學習；學習能增廣見聞。",points:["『當塗』指當權、掌事。","『豈』是難道；『但』是只、只是。","『涉獵』是粗略廣泛閱讀，不等於深入研究。"],qs:[["『卿』是誰對誰的稱呼？",["臣子稱君主","君主稱臣子","朋友互相稱呼","老師稱學生"],1,"孫權以『卿』稱呼呂蒙。"],["『當塗掌事』指？",["正在路上旅行","當權並掌管事務","擅長修路","負責看守城門"],1,"『當塗』是當權，『掌事』是掌管事務。"],["呂蒙一開始為什麼推辭？",["不喜歡孫權","軍中事務繁忙","已經讀完所有書","不想當官"],1,"原文說『蒙辭以軍中多務』。"],["孫權希望呂蒙怎麼讀書？",["一定成為博士","只背誦經典","廣泛閱讀、了解歷史","完全放下軍務"],2,"孫權說不必治經為博士，只要涉獵、見往事。"],["本文主要勸勉我們？",["工作忙就不必學習","學習能增廣見聞，應持續讀書","只有年輕人需要讀書","讀書一定要成為專家"],1,"孫權說明讀書不必一開始就鑽研到專家程度，仍有益處。"]]},
+{title:"司馬光砸缸",source:"《宋史》故事節選（白話轉述）",text:"群兒戲於庭，一兒登甕，足跌沒水中。眾皆棄去，光持石擊甕破之，水迸，兒得活。",gloss:[["群兒","一群小孩。"],["戲","玩耍。"],["庭","庭院。"],["甕","大腹、口小的陶製容器。"],["足跌","腳滑倒。"],["沒","沉入。"],["棄去","離開、丟下不管。"],["迸","向外噴出。"]],meaning:"孩子們在庭院玩耍，一名孩子跌入水甕。其他孩子離開，司馬光用石頭打破水甕，讓水流出，救了孩子。",mood:"故事突顯司馬光遇事冷靜、善於思考，能在緊急情況下想出有效方法。",points:["『甕』是盛水的大陶器。","『沒』在此指沉入水中。","敘事重點在人物臨危應變、果斷解決問題。"],qs:[["『甕』是什麼？",["陶製的大容器","一種樂器","木製桌子","農田工具"],0,"甕是古代常用來盛水或存物的大陶器。"],["『足跌沒水中』的『沒』是？",["沒有","沉入","淹沒別人","隱藏"],1,"孩子跌入甕中，『沒』指沉入水裡。"],["司馬光用什麼方法救人？",["跳進甕裡","找大人來","用石頭打破水甕","把甕搬到河邊"],2,"他持石擊甕，使水流出，孩子得救。"],["其他孩子當時怎麼做？",["一起想辦法","都離開了","立刻搬水","爬上屋頂"],1,"原文說『眾皆棄去』。"],["故事突顯司馬光什麼特質？",["膽小退縮","冷靜機智、果斷應變","只會聽從別人","喜歡破壞物品"],1,"他能迅速判斷情況並採取有效方法救人。"]]},
+{title:"楊氏之子",source:"《世說新語・言語》",text:"梁國楊氏子九歲，甚聰惠。孔君平詣其父，父不在，乃呼兒出。為設果，果有楊梅。孔指以示兒曰：「此是君家果。」兒應聲答曰：「未聞孔雀是夫子家禽。」",gloss:[["氏","姓氏。"],["甚","很、非常。"],["聰惠","聰明有智慧。『惠』通『慧』。"],["詣","拜訪。"],["乃","於是、就。"],["設果","擺出水果招待。"],["示","給……看。"],["應聲","立刻回答。"],["夫子","對人的敬稱。"],["家禽","家中的鳥；此處利用『家禽』的雙關趣味。"]],meaning:"孔君平拜訪楊家，看到楊梅便開玩笑說是楊家的水果。九歲的楊氏子立刻以孔雀回應，巧妙指出孔雀也不一定是孔家的鳥。",mood:"透過簡短對話表現孩子反應敏捷、善於運用語言，氣氛機智幽默。",points:["『詣』是拜訪；『惠』通『慧』。","『應聲』表示回答很快。","對話運用姓氏與水果、鳥名的聯想，展現機智。"],qs:[["『詣其父』的『詣』是？",["拜訪","責備","等待","尋找"],0,"『詣』是前往拜訪。"],["『聰惠』的『惠』通哪個字？",["會","慧","惠","回"],1,"『惠』通『慧』，指聰明、有智慧。"],["孔君平看到什麼水果？",["蘋果","楊梅","桃子","梨子"],1,"原文寫『果有楊梅』。"],["楊氏子如何回應孔君平？",["沉默不語","說孔雀也未必是孔家的鳥","請他吃更多水果","立刻離開"],1,"他以孔雀回應楊梅，巧妙化解對方的玩笑。"],["本文主要表現楊氏子什麼特點？",["反應敏捷、善於應答","力氣很大","熟悉農業","擅長音樂"],0,"他能立刻想到孔雀與孔姓的聯想，回答機智。"]]}
+];
+
+let current=0;
+let activeUtterance=null;
+function speechSupported(){return 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;}
+function speechStatus(message){
+ const el=document.getElementById('speechStatus');
+ if(el)el.textContent=message;
+}
+function chooseChineseVoice(){
+ if(!speechSupported())return null;
+ const voices=window.speechSynthesis.getVoices();
+ return voices.find(v=>/^zh-TW/i.test(v.lang)) ||
+        voices.find(v=>/^zh-HK/i.test(v.lang)) ||
+        voices.find(v=>/^zh/i.test(v.lang)) || null;
+}
+function readArticle(){
+ if(!speechSupported()){
+  speechStatus('目前的瀏覽器不支援語音朗讀，請改用最新版 Chrome 或 Edge。');
+  return;
+ }
+ stopReading(false);
+ const d=data[current];
+ const utterance=new SpeechSynthesisUtterance(d.text);
+ utterance.lang='zh-TW';
+ const voice=chooseChineseVoice();
+ if(voice)utterance.voice=voice;
+ const speed=document.getElementById('readSpeed');
+ utterance.rate=speed?Number(speed.value):1;
+ utterance.onstart=()=>speechStatus('正在朗讀〈'+d.title+'〉……');
+ utterance.onend=()=>{activeUtterance=null;speechStatus('朗讀完成。');};
+ utterance.onerror=()=>{activeUtterance=null;speechStatus('朗讀遇到問題，請再按一次「朗讀全文」。');};
+ activeUtterance=utterance;
+ window.speechSynthesis.speak(utterance);
+}
+function pauseReading(){
+ if(!speechSupported())return;
+ if(window.speechSynthesis.speaking && !window.speechSynthesis.paused){
+  window.speechSynthesis.pause();speechStatus('已暫停朗讀。');
+ }else if(window.speechSynthesis.paused){
+  window.speechSynthesis.resume();speechStatus('繼續朗讀中……');
+ }else{
+  speechStatus('目前沒有正在朗讀的內容，請先按「朗讀全文」。');
+ }
+}
+function stopReading(update=true){
+ if(speechSupported())window.speechSynthesis.cancel();
+ activeUtterance=null;
+ if(update)speechStatus('已停止朗讀。');
+}
+const done=new Set();
+const list=document.getElementById('list');
+const article=document.getElementById('article');
+function renderList(filter=''){
+ list.innerHTML='';
+ data.forEach((d,i)=>{
+  if(!(`${d.title} ${d.source} ${d.mood}`.includes(filter)))return;
+  const b=document.createElement('button');b.className='item'+(i===current?' active':'');
+  b.innerHTML=`<span class="num">${String(i+1).padStart(2,'0')}</span><span>${d.title}<small>${d.source}</small></span>`;
+  b.onclick=()=>show(i);list.appendChild(b);
+ });
+ if(!list.children.length)list.innerHTML='<div class="muted">找不到符合的文章</div>';
+ document.getElementById('progress').textContent=`已完成 ${done.size} / 20 篇測驗`;
+}
+function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function show(i){
+ stopReading(false);
+ current=i;const d=data[i];renderList(document.getElementById('search').value);
+ const sentences=d.text.match(/[^。？！：「」]+[。？！：「」]?/g)||[d.text];
+ let textHTML=sentences.map(s=>`<span class="word" tabindex="0" data-text="${escapeHTML(s)}" data-kind="句子">${escapeHTML(s)}</span>`).join('');
+ article.innerHTML=`
+ <div class="crumb">文章 ${String(i+1).padStart(2,'0')} / 20　・　七年級閱讀練習</div>
+ <h2 class="title">${d.title}</h2><div class="source">${d.source}</div>
+ <div class="readhint">閱讀小技巧：點選文章中的句子，或下方字詞表中的詞語，即可查看解釋。</div>
+ <div class="speechbar"><button type="button" onclick="readArticle()">🔊 朗讀全文</button><button type="button" class="secondary" onclick="pauseReading()">⏸ 暫停／繼續</button><button type="button" class="secondary" onclick="stopReading()">■ 停止</button><label for="readSpeed">語速</label><select id="readSpeed" aria-label="朗讀語速"><option value="0.8">慢速</option><option value="1" selected>正常</option><option value="1.2">稍快</option></select><div class="speech-status" id="speechStatus" aria-live="polite">使用瀏覽器內建語音朗讀；若沒有聲音，請確認裝置音量與瀏覽器語音支援。</div></div>
+ <div class="classical" id="classical">${textHTML}</div>
+ <div class="section"><h3>字詞小老師</h3><div class="glossbox" id="gloss"><span class="muted">點選文章中的句子或下方詞語，就會在這裡顯示解釋。</span></div>
+ <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px">${d.gloss.map(g=>`<button class="secondary wordbtn" data-word="${escapeHTML(g[0])}" data-meaning="${escapeHTML(g[1])}">${g[0]}</button>`).join('')}</div></div>
+ <div class="section"><h3>文章主旨與意境</h3><div class="note"><p><strong>白話大意：</strong>${d.meaning}</p><p><strong>作者想表達：</strong>${d.mood}</p></div></div>
+ <div class="section"><h3>段考常考重點</h3><div class="note"><ul>${d.points.map(p=>`<li>${p}</li>`).join('')}</ul></div></div>
+ <div class="section"><h3>閱讀測驗</h3><p class="muted">共 5 題，選出最適合的答案；作答後會立即看到解析。</p>
+ <div id="quiz">${d.qs.map((q,qi)=>`<div class="quiz-q" data-q="${qi}"><div class="qtitle">${qi+1}. ${q[0]}</div><div class="options">${q[1].map((o,oi)=>`<button class="opt" data-q="${qi}" data-o="${oi}">${'ABCD'[oi]}. ${o}</button>`).join('')}</div><div class="feedback" id="fb${qi}"></div></div>`).join('')}</div>
+ <div class="result" id="result"></div></div>
+ <div class="bottomnav"><button class="secondary" ${i===0?'disabled':''} onclick="show(${i-1})">← 上一篇</button><button onclick="show(${i===19?0:i+1})">${i===19?'回到第一篇':'下一篇 →'}</button></div>`;
+ document.querySelectorAll('.word').forEach(el=>{el.addEventListener('click',()=>explainSentence(el.dataset.text));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();explainSentence(el.dataset.text)}})});
+ document.querySelectorAll('.wordbtn').forEach(b=>b.onclick=()=>showGloss(b.dataset.word,b.dataset.meaning));
+ document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(b));
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function showGloss(w,m){document.getElementById('gloss').innerHTML=`<strong>${w}</strong><div>${m}</div>`;}
+function explainSentence(s){
+ const d=data[current];
+ let found=d.gloss.filter(g=>s.includes(g[0]));
+ let explanation=found.length?found.map(g=>`${g[0]}：${g[1]}`).join('；'):'這句可先依上下文理解。請搭配下方字詞表查看逐詞解釋。';
+ document.getElementById('gloss').innerHTML=`<strong>句子：</strong>${s}<div style="margin-top:5px"><strong>句意提示：</strong>${explanation}</div><div class="muted" style="margin-top:5px">小提醒：句子解釋是閱讀提示；可再點選下方單字詞語查看完整釋義。</div>`;
+}
+function answer(btn){
+ const qi=+btn.dataset.q,oi=+btn.dataset.o,d=data[current],q=d.qs[qi];
+ const parent=btn.closest('.quiz-q');if(parent.dataset.answered)return;
+ parent.dataset.answered='1';
+ parent.querySelectorAll('.opt').forEach(b=>{b.disabled=true;const n=+b.dataset.o;if(n===q[2])b.classList.add('correct');if(n===oi&&oi!==q[2])b.classList.add('wrong')});
+ document.getElementById('fb'+qi).textContent=(oi===q[2]?'答對了！':'再加油！正確答案是 '+ 'ABCD'[q[2]]+'。')+q[3];
+ if(oi===q[2])parent.dataset.correct='1';
+ const answered=document.querySelectorAll('.quiz-q[data-answered="1"]').length;
+ if(answered===5){
+  const score=[...document.querySelectorAll('.quiz-q')].filter(el=>el.querySelector('.opt.correct.chosen')||el.dataset.correct==='1').length;
+  // Derive score from the selected option stored on each question.
+  let total=0;document.querySelectorAll('.quiz-q').forEach(el=>{if(el.dataset.correct==='1')total++});
+  const result=document.getElementById('result');result.style.display='block';result.innerHTML=`本篇完成！你的成績：<strong>${total} / 5</strong>。${total===5?'太棒了，全部答對！':total>=3?'做得不錯，再複習錯題的字詞。':'再讀一次文章與解析，熟悉後再挑戰！'}`;
+  done.add(current);renderList(document.getElementById('search').value);
+ }
+}
+document.getElementById('search').addEventListener('input',e=>renderList(e.target.value.trim()));
+renderList();
+show(0);
+</script>
+</body>
+</html>
