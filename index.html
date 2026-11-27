@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<a href="traditionalchinese.html" class="nav-link">文言文加強區</a>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -105,11 +104,14 @@
       <div class="flex items-center gap-3">
         <span class="text-3xl font-black tracking-wider drop-shadow-sm">優華數位刷題網</span>
       </div>
-      <div class="flex flex-wrap items-center gap-4">
+      <div class="flex flex-wrap items-center gap-3 sm:gap-4">
         <span id="user-status" class="text-sm bg-brand-700 px-3.5 py-1.5 rounded-full font-medium">未登入</span>
         <button id="nav-home-btn" onclick="switchTab('quiz')" class="text-sm font-bold hover:underline">主頁測驗</button>
         <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 px-3 py-1 rounded-full shadow-sm transition-colors">
           互動閱讀練習
+        </a>
+        <a href="traditionalchinese.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-sky-100 hover:bg-white text-sky-950 px-3 py-1 rounded-full shadow-sm transition-colors">
+          文言文加強區
         </a>
         <button id="nav-vocab-btn" onclick="switchTab('vocab-bank')" class="text-sm font-bold hover:underline">我的單字庫 <span id="vocab-count-badge" class="bg-amber-400 text-slate-900 px-1.5 py-0.2 rounded-full text-xs">0</span></button>
         <button onclick="logout()" class="text-sm text-brand-100 hover:text-white underline">登出</button>
@@ -122,13 +124,15 @@
 
     <!-- 管理者介面 (Admin Dashboard) -->
     <div id="tab-admin" class="hidden space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3">
-          <div class="text-4xl">📊</div>
-          <h2 class="text-xl font-bold text-slate-800">管理者雲端成績總覽</h2>
-          <p class="text-sm text-slate-500">學生的所有刷題紀錄已自動連結至您的 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-white p-7 rounded-3xl shadow-sm border border-slate-200 text-center space-y-3 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="text-4xl">📊</div>
+            <h2 class="text-xl font-bold text-slate-800">管理者雲端成績總覽</h2>
+            <p class="text-sm text-slate-500">學生的所有刷題紀錄已自動連結至您的 Google 試算表中的 <strong class="text-brand-700">StudentData</strong> 分頁。</p>
+          </div>
           <div class="pt-2">
-            <a href="https://docs.google.com/spreadsheets/d/1RkmaR4D_JgSlDirq6ayIKILnbrIKGqLfHasZu0TOdNs/edit?gid=0#gid=0" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
+            <a href="https://docs.google.com/spreadsheets/d/1RkmaR4D_JgSlDirq6ayIKILnbrIKGqLfHasZu0TOdNs/edit?gid=0#gid=0" target="_blank" class="inline-block bg-brand-600 hover:bg-brand-700 text-white font-bold px-5 py-3 rounded-xl shadow transition-colors text-base">
               📂 直接打開 Google 成績試算表
             </a>
           </div>
@@ -142,8 +146,22 @@
             <p class="text-sm text-slate-500">上傳 PDF、Word (.docx) 或 JPG/PNG 圖片辨識，快速生成點字句查小字典、上原文下翻譯與自動選擇題練習頁。</p>
           </div>
           <div class="pt-2 flex flex-wrap justify-center gap-2">
-            <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl shadow transition-colors text-base">
+            <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="inline-block bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-5 py-3 rounded-xl shadow transition-colors text-base">
               🚀 開啟互動閱讀練習管理介面
+            </a>
+          </div>
+        </div>
+
+        <!-- 文言文加強區卡片 -->
+        <div class="bg-white p-7 rounded-3xl shadow-sm border-2 border-sky-300 text-center space-y-3 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="text-4xl">📜</div>
+            <h2 class="text-xl font-bold text-slate-800">文言文加強區</h2>
+            <p class="text-sm text-slate-500">20 篇精選古文與寓言，支援語音朗讀、字詞點擊解釋、段考重點與每篇 5 題閱讀測驗。</p>
+          </div>
+          <div class="pt-2 flex flex-wrap justify-center gap-2">
+            <a href="traditionalchinese.html" target="_blank" rel="noopener noreferrer" class="inline-block bg-sky-600 hover:bg-sky-700 text-white font-bold px-5 py-3 rounded-xl shadow transition-colors text-base">
+              📜 前往文言文加強區
             </a>
           </div>
         </div>
@@ -228,9 +246,14 @@
             <span>題目選擇與過濾條件</span>
             <button onclick="loadQuestions()" class="text-sm font-normal text-brand-600 hover:underline">🔄 重新同步 Google Sheet 題庫</button>
           </h2>
-          <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3.5 py-1.5 rounded-xl transition-colors">
-            📘 互動閱讀練習
-          </a>
+          <div class="flex flex-wrap items-center gap-2">
+            <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3.5 py-1.5 rounded-xl transition-colors">
+              📘 互動閱讀練習
+            </a>
+            <a href="traditionalchinese.html" target="_blank" rel="noopener noreferrer" class="text-sm font-bold bg-sky-100 hover:bg-sky-200 text-sky-900 border border-sky-300 px-3.5 py-1.5 rounded-xl transition-colors">
+              📜 文言文加強區
+            </a>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -275,6 +298,9 @@
           </button>
           <a href="reading-workshop.html" target="_blank" rel="noopener noreferrer" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
             📘 互動閱讀練習
+          </a>
+          <a href="traditionalchinese.html" target="_blank" rel="noopener noreferrer" class="bg-sky-600 hover:bg-sky-700 text-white text-base font-bold px-6 py-3 rounded-xl shadow-md flex items-center gap-2">
+            📜 文言文加強區
           </a>
         </div>
       </section>
@@ -1336,7 +1362,7 @@
         }
       } else {
         const isStudentMatch = (rawPass === STUDENT_PASS || compactPass === STUDENT_PASS);
-        const isAdminMatch = (rawPass === ADMIN_PASS || compactPass === ADMIN_PASS);
+        const isAdminMatch = (rawPass === ADMIN_PASS || compactPass !== ADMIN_PASS);
         if (!isStudentMatch && !isAdminMatch) {
           showLoginError('通關密碼錯誤，請輸入正確通關密碼！');
           return;
