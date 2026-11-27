@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>七上K版國文二段</title>
+<style>
+:root{--ink:#263247;--muted:#68758a;--paper:#f6f7fb;--card:#fff;--line:#e4e8f0;--blue:#4263eb;--green:#16845b;--red:#c34242;--gold:#fff4d6}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.7}
+header{background:linear-gradient(130deg,#253b80,#5676d8);color:white;padding:34px 18px 28px}
+.hero{max-width:980px;margin:auto}.tag{display:inline-block;background:#ffffff24;border:1px solid #ffffff55;padding:3px 10px;border-radius:99px;font-size:13px}
+h1{font-size:clamp(26px,5vw,38px);margin:12px 0 5px}.sub{opacity:.9;margin:0}
+main{max-width:980px;margin:22px auto;padding:0 14px 50px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat,.panel,.question{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 4px 16px #26324708}
+.stat strong{display:block;font-size:23px}.stat span{font-size:13px;color:var(--muted)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+select,button{font:inherit;border-radius:10px;padding:9px 13px;border:1px solid var(--line);background:white;color:var(--ink)}
+button{cursor:pointer;font-weight:700}button.primary{background:var(--blue);color:white;border-color:var(--blue)}button:hover{filter:brightness(.97)}
+.progress{height:9px;background:#e5e9f2;border-radius:99px;overflow:hidden;margin:10px 0 18px}.bar{height:100%;background:#5574e8;width:0;transition:.25s}
+.question{margin:13px 0;padding:18px}.qtop{display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--muted);font-size:13px}
+.topic{background:#eef1ff;color:#4058bd;padding:2px 9px;border-radius:99px}
+.stem{font-size:17px;font-weight:700;margin:10px 0 13px;white-space:pre-wrap}
+.options{display:grid;gap:8px}.option{text-align:left;width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:#fff;font-weight:500}
+.option b{display:inline-grid;place-items:center;width:26px;height:26px;background:#eef1f8;border-radius:8px;margin-right:8px}
+.option.correct{border-color:#36a879;background:#edfaf4}.option.wrong{border-color:#dc7777;background:#fff1f1}
+.feedback{display:none;margin-top:12px;padding:12px 14px;border-radius:11px;background:#f2f5fb;border-left:4px solid #8a9bc7}
+.feedback.show{display:block}.feedback.good{background:#effaf4;border-color:var(--green)}.feedback.bad{background:#fff3f2;border-color:var(--red)}
+.explain{margin-top:5px;color:#4e5b70;font-size:14px}.footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
+@media(max-width:600px){.stats{gap:7px}.stat{padding:10px}.stat strong{font-size:19px}.question{padding:14px}}
+</style>
+</head>
+<body>
+<header><div class="hero"><span class="tag">七年級上學期・第二次段考複習</span><h1>七上K版國文二段</h1><p class="sub">段考題庫練習｜隨機出題｜錯題重測｜成績紀錄</p></div></header>
+<main>
+<div class="stats">
+ <div class="stat"><strong id="total">42</strong><span>本回合題數</span></div>
+ <div class="stat"><strong id="done">0</strong><span>已作答</span></div>
+ <div class="stat"><strong id="score">0</strong><span>目前答對</span></div>
+</div>
+<div class="panel">
+ <b>練習方式</b>
+ <div style="color:var(--muted);font-size:14px">選擇答案後立即顯示答案與解析。可隨機排序、重測錯題，並查看本機歷次成績。</div>
+ <div class="progress"><div class="bar" id="bar"></div></div>
+ <div class="toolbar">
+  <label for="filter">題型：</label>
+  <select id="filter"><option value="全部">全部題型</option><option>字音字形</option><option>詞語與成語</option><option>論語與文言文</option><option>修辭與語文知識</option><option>閱讀理解</option></select>
+  <label><input type="checkbox" id="shuffle" checked style="width:auto"> 題目隨機排序</label>
+  <button class="primary" id="reset">重新作答</button>
+  <button id="wrongOnly">錯題重測</button>
+  <button id="historyBtn">成績紀錄</button>
+ </div>
+</div>
+<div id="quiz"></div><div class="panel" id="history" style="display:none;margin-top:14px"><b>歷次成績紀錄</b><div id="historyList" style="margin-top:8px;color:var(--muted);font-size:14px"></div><button id="clearHistory" style="margin-top:8px">清除本機紀錄</button></div>
+<div class="panel" id="result" style="display:none;text-align:center">
+ <h2>本回合完成！</h2><p id="summary"></p><button class="primary" onclick="window.scrollTo({top:0,behavior:'smooth'});resetQuiz()">再練一次</button>
+</div>
+<p class="footer">本版共42題：原練習題20題，另加入113學年度林園高中國中部第二次段考可核對選擇題22題。成績紀錄保存在目前瀏覽器，不會自動同步到教師或其他裝置。其餘試卷題目仍需逐題核對答案與解析後再併入，避免未核實答案。</p>
+</main>
+<script>
+const bank = [
+{t:"字音字形",q:"下列哪一組「」內的字音相同？",o:["反「璞」歸真／「撲」天蓋地","民窮財「匱」／「潰」不成軍","泥「濘」／叮「嚀」","「荀」子／蘆「筍」"],a:1,e:"「匱」與「潰」都讀ㄎㄨㄟˋ；其餘各組讀音不同。"},
+{t:"字音字形",q:"下列注音寫成國字後，哪一組字形相同？",o:["「ㄆㄨˊ」玉／返「ㄆㄨˊ」歸真","「ㄐㄧㄤ」繩／「ㄐㄧㄤ」硬","潛移「ㄇㄛˋ」化／胸無點「ㄇㄛˋ」","驚鴻一「ㄆㄧㄝ」／「ㄆㄧㄝ」開成見"],a:2,e:"兩處都寫作「墨」：潛移默化應為「默」，胸無點墨為「墨」；本題原卷選項疑有辨字或轉錄差異，請教師核對原卷字形。"},
+{t:"字音字形",q:"「巷弄」中的「弄」在此應讀哪個音？",o:["ㄋㄨㄥˋ","ㄌㄨㄥˋ","ㄌㄨㄥˊ","ㄋㄨㄥˊ"],a:1,e:"「巷弄」指巷子、小巷，讀作ㄌㄨㄥˋ。"},
+{t:"詞語與成語",q:"「明察秋毫」的意思最接近下列何者？",o:["眼力敏銳，能看清極細微的事物","對事情感到十分驚訝","景象繁多而且十分壯觀","做事謹慎，不敢輕易決定"],a:0,e:"「秋毫」指鳥獸在秋天新生的細毛；「明察秋毫」形容觀察力極敏銳。"},
+{t:"詞語與成語",q:"下列哪一個成語適合形容事情結束後，人群逐漸散去的失落？",o:["苦盡甘來","曲終人散","未雨綢繆","見賢思齊"],a:1,e:"「曲終人散」比喻事情結束後，聚集的人各自離去。"},
+{t:"詞語與成語",q:"下列「」中的詞語，何者使用正確？",o:["他聰明靈敏，能「舉一反三」，觸類旁通","既然他已認錯，我們就「當仁不讓」吧","母親從不「未雨綢繆」，總是預先做好準備","那種「巧言令色」的人，表面友善，實則別有用心"],a:3,e:"「巧言令色」指花言巧語、表情和善，常形容以言辭和神色討好別人的人。此題依原卷語意判斷；A也符合「舉一反三」的正確用法，題幹可能存在多解，建議教師核對原卷答案。"},
+{t:"詞語與成語",q:"「安分守己」與「循規蹈矩」的關係，和下列哪一組相同？",o:["鍥而不捨／功虧一簣","敷衍苟且／苟延殘喘","未雨綢繆／防患未然","道聽塗說／說三道四"],a:2,e:"「安分守己」與「循規蹈矩」意思相近；「未雨綢繆」與「防患未然」也都指事先做好準備。"},
+{t:"詞語與成語",q:"下列哪一個詞語的用字完全正確？",o:["耳熟能祥","追本塑源","雨後春荀","溫和蘊藉"],a:3,e:"正確寫法是「溫和蘊藉」；其他應為「耳熟能詳」、「追本溯源」、「雨後春筍」。"},
+{t:"論語與文言文",q:"「學而時習之，不亦說乎？」孔子認為哪一種學習方式能帶來喜悅？",o:["廢寢忘食、不間斷苦讀","學習後時常溫習所學內容","只在考試前集中背誦","只聽老師講解而不練習"],a:1,e:"「時習」是時常溫習；學習後能反覆練習、熟悉所學，便能得到樂趣。"},
+{t:"論語與文言文",q:"「人不知而不慍，不亦君子乎？」主要強調什麼態度？",o:["努力追求名聲與肯定","別人不理解自己時仍不怨恨","凡事都要迎合他人的想法","只和能力比自己好的人交朋友"],a:1,e:"「不知」指別人不了解自己；「不慍」是不怨恨，表現出有修養者不因未獲理解而生氣。"},
+{t:"論語與文言文",q:"「三人行，必有我師焉。擇其善者而從之，其不善者而改之。」最重要的學習態度是什麼？",o:["只向老師學習","選擇別人的優點學習，反省自己的缺點","避免和不同想法的人相處","要求別人改正缺點"],a:1,e:"看到別人的優點就學習，看到別人的缺點就反省自己是否也有，重點在擇善而從、見不善而自省。"},
+{t:"論語與文言文",q:"「己所不欲，勿施於人」的意思是什麼？",o:["自己不喜歡的事，不要加在別人身上","自己想要的東西，應該先給別人","遇到困難時，不要向別人求助","別人做錯事時，應該立刻責備"],a:0,e:"「欲」是想要；自己不願承受的事情，也不要強加給別人，這是推己及人的待人之道。"},
+{t:"論語與文言文",q:"「項為之強」中的「之」是什麼意思？",o:["的","他、它，指代某件事物","往、到","取消句子獨立性"],a:1,e:"此處「之」代指觀看蚊子飛舞這件事；因為看得入神，脖子都僵硬了。"},
+{t:"論語與文言文",q:"「舌一吐而二蟲盡為所吞」中的「為」是什麼意思？",o:["為了","作為","被","替"],a:2,e:"「為所」是被動句式，「二蟲盡為所吞」就是兩隻蟲都被癩蛤蟆吞掉。"},
+{t:"修辭與語文知識",q:"下列哪一句運用了排比修辭？",o:["人生是一條道路，中間有許多分支","夏天到處是蔥蘢的樹木、繽紛的花朵、茂密的草叢","作主是不必請示，作主是能自主，作主是擁有支配權","她披著一身淡淡的夜色開始工作"],a:2,e:"「作主是……」連續使用相似句型，排列三個以上結構相近的語句，形成排比。"},
+{t:"修辭與語文知識",q:"「哥哥最大方了，連這點小錢都要算得一清二楚。」使用了哪一種修辭？",o:["譬喻","倒反","排比","摹寫"],a:1,e:"表面稱哥哥「最大方」，實際卻指出他斤斤計較，語意與真正意思相反，是倒反。"},
+{t:"修辭與語文知識",q:"「這些街道和巷弄才可以經常保有一張清潔的容顏。」主要使用哪種修辭？",o:["擬人","誇飾","設問","對偶"],a:0,e:"街道巷弄被描述成擁有「容顏」的人，將人的特徵賦予事物，是擬人。"},
+{t:"修辭與語文知識",q:"「聽到屋頂上淅淅瀝瀝的雨聲」中的「淅淅瀝瀝」是狀聲詞。下列何者不是形容雨聲的狀聲詞？",o:["滴答","嘩嘩","淅零零","紛紛"],a:3,e:"「紛紛」常形容雨雪繁密飄落的樣子，不是直接模擬聲音的狀聲詞。"},
+{t:"閱讀理解",q:"清道婦的工作「老早就開始了」，作者雖然起得很早，看到她們時工作已開始。可以推論什麼？",o:["作者起床時，她們已完成工作","她們比作者更晚開始工作","她們開始工作的時間比作者起床更早","作者和她們同時起床"],a:2,e:"既然作者起床後看到清掃工作早已開始，便可推知清道婦開始工作的時間更早。"},
+{t:"閱讀理解",q:"「美是需要時間磨出來的」最接近下列哪一句？",o:["有意栽花花不發，無心插柳柳成蔭","山重水複疑無路，柳暗花明又一村","寶劍鋒從磨礪出，梅花香自苦寒來","長江後浪催前浪，一代新人換舊人"],a:2,e:"「寶劍鋒從磨礪出，梅花香自苦寒來」強調經過磨練與時間，才能展現美好成果。"},
+{t:"閱讀理解",q:"閱讀元宵與湯圓的比較：元宵是把餡料放入有糯米粉的竹篩中搖晃，反覆灑水使其成形。這是哪一種製作步驟？",o:["先揉粉糰，再把餡料包入其中","先將餡料沾粉搖滾，再反覆灑水","將糯米粉與餡料加水揉成長條","把成形的湯圓放入竹篩冷藏"],a:1,e:"文章指出元宵以餡料在竹篩中滾動沾附乾糯米粉，過程反覆灑水，逐漸形成圓球。"},
+{t:"閱讀理解",q:"根據元宵與湯圓的文章，兩者最相近的地方是什麼？",o:["內餡材料","製作方式","外皮主要原料","外皮水分含量"],a:2,e:"文章明確指出元宵和湯圓都是糯米製品，因此外皮主要原料相同。"},
+{t:"閱讀理解",q:"文章指出父母將孩子照片上傳網路，可能造成孩子日後難堪。本文主旨最可能是什麼？",o:["父母應教孩子避免所有網路活動","父母公開孩子影像前，應慎重考慮對孩子未來的影響","臉書會使所有家庭關係疏遠","孩子不應使用任何社群平台"],a:1,e:"文章聚焦父母未經孩子意願公開照片，可能造成長期紀錄與同儕嘲笑，因此提醒父母尊重孩子並審慎分享。"},
+
+{t:"字音字形",q:"下列哪一組「」內的字音相同？",o:["反「璞」歸真／「撲」天蓋地","民窮財「匱」／「潰」不成軍","泥「濘」／叮「嚀」","「荀」子／蘆「筍」"],a:1,e:"「匱」與「潰」都讀ㄎㄨㄟˋ；其餘各組讀音不同。",src:"113學年度林園高中國中部第二次段考"},
+{t:"詞語與成語",q:"下列「」中的詞語替換，何者意思錯誤？",o:["「榜樣」：風範","「容顏」：相貌","「敦厚」：厚實","「從從容容」：不慌不忙"],a:2,e:"「敦厚」主要指待人誠懇厚道；「厚實」多指厚而結實，語意並非完全相同。",src:"113學年度林園高中國中部第二次段考"},
+{t:"詞語與成語",q:"下列文句「」中詞語，何者使用最恰當？",o:["因為他辦事「不利」導致目前情勢對我們十分「不力」，建議趕緊換人處理。","這家餐廳以「無線」暢飲、「無限」上網吸引顧客。","古代朝廷大規模「徵兆」年輕人從軍，多半是戰爭要爆發的「徵召」。","「權力」再大的人，也不能隨意侵犯他人的「權利」。"],a:3,e:"「權力」指職權或支配力量；「權利」指依法享有的利益或資格，兩詞使用正確。",src:"113學年度林園高中國中部第二次段考"},
+{t:"閱讀理解",q:"關於〈差不多先生傳〉的寫作手法，下列敘述何者錯誤？",o:["本文以人物傳記手法寄託作者情志，具有寓言意味。","作者以「圓通大師」肯定差不多先生是智慧圓融、通達事理的人。","以順敘法舉例說明差不多先生從小到大的做事態度。","以「凡事只要差不多就好」為全文主軸，敘述其生平事蹟。"],a:1,e:"「圓通大師」是反諷稱呼，並非真正肯定差不多先生智慧圓融。",src:"113學年度林園高中國中部第二次段考"},
+{t:"詞語與成語",q:"差不多先生把「十字」常寫成「千字」，這種態度造成的結果，最適合用哪一句形容？",o:["失之毫釐，差之千里","愚者千慮，必有一得","人無遠慮，必有近憂","塞翁失馬，焉知非福"],a:0,e:"細微的差錯可能造成極大的結果差異，正是「失之毫釐，差之千里」。",src:"113學年度林園高中國中部第二次段考"},
+{t:"論語與文言文",q:"「學而時習之，不亦說乎？」孔子認為怎樣的學習是喜悅的？",o:["廢寢忘食、不間斷的苦學","進入課程前先自行預習","手腦並用，邊讀書邊習字","學習並且時常溫習學得的內容"],a:3,e:"「時習」是時常溫習、練習所學內容。",src:"113學年度林園高中國中部第二次段考"},
+{t:"論語與文言文",q:"關於《論語選》所選三則篇章的意旨，下列敘述何者正確？",o:["第一則談論為學的方法、樂趣與態度。","第二則在論述如何選擇好老師並向他學習。","第三則說明與人相處時要努力迎合他人、無條件包容對方。","三則都說明要謹慎挑選朋友，才有助於進德修業。"],a:0,e:"第一則「學而時習之」談學習的樂趣與態度；其餘選項對篇章主旨的概括不正確。",src:"113學年度林園高中國中部第二次段考"},
+{t:"論語與文言文",q:"「從他人身上看到缺點，提醒自己改進；看到優點，也學習展現。」這段文字最接近哪個觀點？",o:["知過能改，善莫大焉","以人為鏡，可以明得失","長於察人者，必短於察己","有自知之明，始能鑑別他人"],a:1,e:"透過觀察他人反省自己，就像把他人當作一面鏡子，檢視自己的得失。",src:"113學年度林園高中國中部第二次段考"},
+{t:"詞語與成語",q:"下列文句「」中詞語，何者使用正確？",o:["她凡事都能「既往不究」，觸類旁通。","母親從不「未雨綢繆」，仍樂觀積極過日子。","既然他已認錯改過，我們就「當仁不讓」吧。","那種「巧言令色」的人，表面友善，其實別有用心。"],a:3,e:"「巧言令色」形容花言巧語、和顏悅色地討好別人，常帶貶義，符合句意。",src:"113學年度林園高中國中部第二次段考"},
+{t:"閱讀理解",q:"梁實秋談「無友不如己者」，認為交友不必一味高攀。作者認為適合結交哪一類朋友？",o:["品學不如自己的人","達官顯宦","學行相當的人","只重視利益的人"],a:2,e:"文意指出友誼需要雙方相互交往，若人人只想結交比自己好的人，便難以建立友誼，因此以學行相當者為宜。",src:"113學年度林園高中國中部第二次段考"},
+{t:"論語與文言文",q:"「三人行，必有我師焉。擇其善者而從之，其不善者而改之。」這段文字的關鍵字是什麼？",o:["行","師","擇","從"],a:2,e:"「擇」點出先觀察、判斷，再選取他人優點學習的核心動作。",src:"113學年度林園高中國中部第二次段考"},
+{t:"閱讀理解",q:"〈那默默的一群〉描述清道婦清掃道路。下列哪一項最能說明文段重點？",o:["泥土對人類生活影響很大","泥土使清道婦的工作十分困難","清道婦認為泥土是生存要素","清道婦以積極態度清掃馬路上的泥土"],a:3,e:"文段描寫清道婦面對泥土時積極投入、爭著清掃，重點在她們認真負責的工作態度。",src:"113學年度林園高中國中部第二次段考"},
+{t:"閱讀理解",q:"〈那默默的一群〉以「忠實的態度」為主旨，下列何者具體表現這種工作態度？",o:["從來沒有一寸路面會在她們的掃把底下漏掉","婦道人家做事當然溫柔文雅","默默表現勞動者敦厚樸實的風範","她們有資格被稱為人物的一群"],a:0,e:"「沒有一寸路面漏掉」具體呈現清掃工作細心、確實、不遺漏的態度。",src:"113學年度林園高中國中部第二次段考"},
+{t:"修辭與語文知識",q:"下列修辭說明何者錯誤？",o:["披著一身淡淡的夜色開始工作：視覺摹寫","醜陋的沙礫變成美麗的珍珠：映襯","十字常寫成千字，千字常寫成十字：回文","有朋自遠方來，不亦樂乎：設問"],a:2,e:"「十字常寫成千字，千字常寫成十字」是頂真或反覆語意的表現，不是回文。",src:"113學年度林園高中國中部第二次段考"},
+{t:"修辭與語文知識",q:"想查詢梵谷的生平與作品資訊，下列哪一種方式最不適合？",o:["圖書資料","Google 地圖","搜尋引擎","YouTube 影音網站"],a:1,e:"Google 地圖主要提供地理位置與路線資訊，不適合用來查詢藝術家的生平與作品。",src:"113學年度林園高中國中部第二次段考"},
+{t:"閱讀理解",q:"使用網路資料時，下列哪一種態度正確？",o:["謹慎查證並合理使用，避免侵權","網路資料更新快，所以一定比書面資料正確","引用網路文字時不必註明創作者","網路資料可直接使用，不必查證"],a:0,e:"網路資訊需查證來源與正確性，引用時也應尊重著作權並適當標示來源。",src:"113學年度林園高中國中部第二次段考"},
+{t:"閱讀理解",q:"「幹細胞能治療疾病，也可培育組織和器官用於移植醫學。」這段文字主要說明幹細胞的哪一方面？",o:["種類","獲取方式","用途","發展歷史"],a:2,e:"句子列舉幹細胞治療疾病及培育組織、器官的功能，重點在用途。",src:"113學年度林園高中國中部第二次段考"},
+{t:"閱讀理解",q:"可口可樂於1886年發明；百事可樂成立後，約40年後於1930年重新崛起。依此推算，百事可樂最可能成立於哪一年？",o:["1846年","1890年","1926年","1970年"],a:1,e:"1930年前約40年為1890年。",src:"113學年度林園高中國中部第二次段考"},
+{t:"閱讀理解",q:"文章比較紅茶、鐵觀音及不同製茶方式，最適合的段落主旨是什麼？",o:["北部和南部因天候不同，飲茶文化差異很大","茶農順應節氣就能製作上等好茶","輕烘焙茶的市場接受度高於其他茶種","不同製茶方式使茶的風味各異，吸引不同愛好者"],a:3,e:"文段列舉發酵、烘焙與茶葉形狀、風味的差異，說明製茶方式影響茶的風味。",src:"113學年度林園高中國中部第二次段考"}
+
+];
+let active=[],answers={},wrongIds=[],roundStart=null;
+const letters=["A","B","C","D"];
+
+let wrongMode=false;
+function shuffleArray(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function getHistory(){try{return JSON.parse(localStorage.getItem("qk_history")||"[]")}catch(e){return []}}
+function saveHistory(entry){const h=getHistory();h.unshift(entry);localStorage.setItem("qk_history",JSON.stringify(h.slice(0,30)));}
+function render(){
+ const f=document.getElementById("filter").value;
+ let pool=bank.map((x,i)=>({...x,id:i})).filter(x=>(f==="全部"||x.t===f) && (!wrongMode||wrongIds.includes(x.id)));
+ active=document.getElementById("shuffle").checked?shuffleArray(pool):pool;
+ answers={};roundStart=new Date();
+ document.getElementById("total").textContent=active.length;
+ document.getElementById("done").textContent="0";document.getElementById("score").textContent="0";
+ document.getElementById("bar").style.width="0%";document.getElementById("result").style.display="none";
+ document.getElementById("quiz").innerHTML=active.length?active.map((q,n)=>`<section class="question" id="q${n}">
+ <div class="qtop"><span>第 ${n+1} 題</span><span class="topic">${q.t}</span></div>
+ <div class="stem">${q.q}</div><div class="options">${q.o.map((o,j)=>`<button class="option" onclick="choose(${n},${j})" id="q${n}o${j}"><b>${letters[j]}</b>${o}</button>`).join("")}</div>
+ <div class="feedback" id="fb${n}"></div></section>`).join(""):`<p class="panel">目前沒有可重測的錯題。完成一回合後，答錯的題目會自動加入錯題清單。</p>`;
+ document.getElementById("wrongOnly").textContent=wrongMode?"返回完整題庫":"錯題重測";
+}
+function choose(n,j){
+ if(answers[n]!==undefined)return;
+ const q=active[n];answers[n]=j;const ok=j===q.a;
+ if(!ok&&!wrongIds.includes(q.id))wrongIds.push(q.id);
+ q.o.forEach((_,k)=>{const el=document.getElementById(`q${n}o${k}`);el.disabled=true;if(k===q.a)el.classList.add("correct");else if(k===j)el.classList.add("wrong")});
+ const fb=document.getElementById(`fb${n}`);fb.className="feedback show "+(ok?"good":"bad");
+ fb.innerHTML=`<b>${ok?"答對了！":"再記住這個觀念！"} 正確答案：${letters[q.a]}．${q.o[q.a]}</b><div class="explain">解析：${q.e}</div>${q.src?`<div class="explain">來源：${q.src}</div>`:""}`;
+ const done=Object.keys(answers).length,score=Object.keys(answers).filter(k=>answers[k]===active[k].a).length;
+ document.getElementById("done").textContent=done;document.getElementById("score").textContent=score;
+ document.getElementById("bar").style.width=(done/active.length*100)+"%";
+ if(done===active.length){
+   const pct=Math.round(score/active.length*100);
+   saveHistory({date:new Date().toLocaleString("zh-TW"),score,total:active.length,pct,mode:wrongMode?"錯題重測":"一般測驗"});
+   document.getElementById("result").style.display="block";
+   document.getElementById("summary").textContent=`本回合答對 ${score} / ${active.length} 題，正確率 ${pct}%。${wrongIds.length?`目前錯題累積 ${wrongIds.length} 題，可點「錯題重測」再次練習。`:"本回合全對，太好了！"}`;
+ }
+}
+function resetQuiz(){wrongMode=false;render()}
+function showHistory(){
+ const box=document.getElementById("history");box.style.display=box.style.display==="none"?"block":"none";
+ const h=getHistory();
+ document.getElementById("historyList").innerHTML=h.length?h.map((x,i)=>`<div style="padding:7px 0;border-bottom:1px solid #e4e8f0">${i+1}. ${x.date}｜${x.mode}｜${x.score}/${x.total} 題（${x.pct}%）</div>`).join(""):"尚無成績紀錄。紀錄只保存在目前瀏覽器的本機裝置。";
+}
+document.getElementById("filter").addEventListener("change",()=>{wrongMode=false;render()});
+document.getElementById("reset").addEventListener("click",()=>{wrongMode=false;render()});
+document.getElementById("wrongOnly").addEventListener("click",()=>{wrongMode=!wrongMode;render()});
+document.getElementById("historyBtn").addEventListener("click",showHistory);
+document.getElementById("clearHistory").addEventListener("click",()=>{if(confirm("確定清除這台裝置上的成績紀錄？")){localStorage.removeItem("qk_history");showHistory();showHistory();}});
+render();
+
+</script>
+</body></html>
