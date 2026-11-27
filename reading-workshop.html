@@ -13,6 +13,8 @@
     :root {
       --bg-paper: #faf8f3;
       --ink-main: #1e293b;
+      --accent-teal: #0f766e;
+      --accent-amber: #d97706;
     }
     html {
       scroll-behavior: smooth;
@@ -93,6 +95,7 @@
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
+  <!-- 頂部導覽 -->
   <header class="bg-slate-900 text-white shadow-md no-print sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -101,7 +104,7 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-extrabold tracking-wide" data-i18n="brandTitle">優華數位版權所有｜互動閱讀練習</h1>
+            <h1 class="text-base sm:text-lg font-extrabold tracking-wide">優華數位版權所有｜互動閱讀練習</h1>
             <span id="roleModeBadge" class="text-[11px] px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-200 border border-teal-300/30 font-semibold">學生練習模式</span>
           </div>
           <p id="headerSubtitle" class="text-xs text-slate-300">點單字查詞義發音｜點整句看中文翻譯｜點文內空格直接作答</p>
@@ -109,15 +112,15 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button id="btnToggleLang" type="button" class="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs sm:text-sm font-bold transition">
-          🌐 English / 中文
-        </button>
         <a href="index.html" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-extrabold transition flex items-center gap-1 shadow-sm">
           <span>🏠</span>
-          <span data-i18n="backHome">回主頁測驗</span>
+          <span>回主頁測驗</span>
         </a>
+        <button id="btnLoadSample" type="button" class="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs sm:text-sm font-bold transition">
+          載入範例（John 找錢包）
+        </button>
         <button id="btnPrintPage" type="button" onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100 text-xs sm:text-sm font-semibold transition">
-          <span data-i18n="printBtn">列印 / 存 PDF</span>
+          列印 / 存 PDF
         </button>
         <button id="btnToggleAdmin" type="button" class="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/40 text-xs sm:text-sm font-bold transition">
           🔒 管理者模式
@@ -126,162 +129,149 @@
     </div>
   </header>
 
-  <main id="mainGrid" class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6 flex-1">
-    <section id="adminWorkspace" class="hidden no-print bg-white rounded-3xl border-2 border-teal-600/30 shadow-lg p-5 sm:p-7 space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
-        <div>
-          <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
-            <span class="w-2.5 h-6 rounded-full bg-teal-600"></span>
-            <span data-i18n="adminEditorTitle">管理者文章編輯主區</span>
+  <main id="mainGrid" class="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 gap-6 flex-1">
+    <!-- 左側：管理者上傳與設定面板 -->
+    <aside id="adminSidebar" class="hidden lg:col-span-4 space-y-5 no-print">
+      <section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
+            <span class="w-2 h-5 rounded-full bg-teal-600"></span>
+            管理者檔案上傳區
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5" data-i18n="adminEditorHint">直接在寬大編輯區撰寫或修改文章、挖空選項與中文解析，完成後可按「開新視窗預覽」或「儲存文章並發布至前台」。</p>
+          <a href="index.html" class="text-xs font-bold text-emerald-700 hover:underline">🏠 回主頁測驗</a>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btnOpenPreviewWindow" type="button" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-extrabold shadow-sm transition flex items-center gap-1.5">
-            <span>🪟</span>
-            <span data-i18n="openPreviewWin">開新視窗預覽</span>
-          </button>
-          <button id="btnSaveArticleToLibrary" type="button" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-black shadow-sm transition flex items-center gap-1.5">
-            <span>💾</span>
-            <span data-i18n="savePublish">儲存文章並發布至前台</span>
-          </button>
-        </div>
-      </div>
 
-      <label id="dropZone" for="fileInput" class="block border-2 border-dashed border-teal-300 hover:border-teal-500 bg-teal-50/40 hover:bg-teal-50/80 rounded-2xl p-4 text-center cursor-pointer transition">
-        <div class="text-xl mb-0.5">📄🖼️📝</div>
-        <div class="text-sm font-bold text-slate-700" data-i18n="uploadDropTitle">點擊選擇或拖曳 Word / PDF / 圖片學習單至此</div>
-        <div class="text-xs text-slate-500 mt-0.5" data-i18n="uploadDropSub">自動辨識「文章＋文內挖空與選項＋下方閱讀測驗＋自動生解析」</div>
-        <input id="fileInput" type="file" accept=".pdf,.docx,.odt,.jpg,.jpeg,.png,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,image/*" class="hidden" />
-      </label>
+        <label id="dropZone" for="fileInput" class="block border-2 border-dashed border-teal-300 hover:border-teal-500 bg-teal-50/40 hover:bg-teal-50/80 rounded-2xl p-5 text-center cursor-pointer transition">
+          <div class="text-2xl mb-1">📄🖼️📝</div>
+          <div class="text-sm font-bold text-slate-700">點擊選擇或拖曳學習單檔案至此</div>
+          <div class="text-xs text-slate-500 mt-1">自動辨識「文章＋文內挖空與選項＋下方閱讀測驗＋自動生解析」</div>
+          <input id="fileInput" type="file" accept=".pdf,.docx,.odt,.jpg,.jpeg,.png,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.oasis.opendocument.text,image/*" class="hidden" />
+        </label>
 
-      <div id="uploadStatus" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 leading-relaxed"></div>
+        <div id="uploadStatus" class="hidden rounded-xl px-3.5 py-2.5 text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 leading-relaxed"></div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-1">
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="categoryLabel">年級／程度分類</label>
-          <select id="metaLevel" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="國七/基礎閱讀" selected>國七/基礎閱讀</option>
-            <option value="國八/進階閱讀">國八/進階閱讀</option>
-            <option value="國九/會考閱讀">國九/會考閱讀</option>
-            <option value="高一/基礎閱讀">高一/基礎閱讀</option>
-            <option value="高二/學測閱讀">高二/學測閱讀</option>
-          </select>
+        <!-- 課程資訊設定 -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">年級／程度標籤</label>
+            <input id="metaLevel" type="text" value="國七／基礎閱讀" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">題型／主題標籤</label>
+            <input id="metaTopic" type="text" value="克漏字＋閱讀測驗" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="topicLabel">題型／主題標籤</label>
-          <input id="metaTopic" type="text" value="文內挖空＋閱讀測驗" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-600 mb-1" data-i18n="titleLabel">文章標題</label>
-          <input id="metaTitle" type="text" value="Where Is John's Wallet?" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500" />
-        </div>
-      </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="text-xs font-extrabold text-slate-700" data-i18n="enSourceLabel">英文原文編輯區（支援 [1] / ____ / (1)____ 挖空）</label>
-            <button id="btnAutoTranslate" type="button" class="text-xs font-bold text-teal-700 hover:text-teal-900 underline" data-i18n="autoTranslateBtn">
+          <label class="block text-xs font-bold text-slate-600 mb-1">文章標題</label>
+          <input id="metaTitle" type="text" value="Where Is John's Wallet?" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-slate-600">英文原文（支援 [1] / ____ / (1)____ 挖空）</label>
+            <button id="btnAutoTranslate" type="button" class="text-xs font-bold text-teal-700 hover:text-teal-900 underline">
               依原文斷句自動翻譯
             </button>
           </div>
-          <textarea id="sourceTextInput" rows="12" class="w-full px-4 py-3 rounded-2xl border border-slate-300 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="直接輸入、編輯或上傳英文文章（支援 [1] 或 ____ 空格標記）..."></textarea>
+          <textarea id="sourceTextInput" rows="7" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或上傳英文文章（支援 [1] 或 ____ 空格標記）..."></textarea>
         </div>
 
         <div>
-          <label class="block text-xs font-extrabold text-slate-700 mb-1.5" data-i18n="zhTransLabel">全文中文翻譯編輯區（依英文斷句對齊）</label>
-          <textarea id="translationTextInput" rows="12" class="w-full px-4 py-3 rounded-2xl border border-slate-300 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="直接輸入、修改或自動生成全文中文翻譯..."></textarea>
-        </div>
-      </div>
-
-      <div class="border-t border-slate-200 pt-5 space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <label class="text-sm font-black text-teal-900" data-i18n="blankMgrTitle">文內挖空與選項解析管理</label>
-          <div class="flex flex-wrap items-center gap-2">
-            <button id="btnAutoDetectBlanks" type="button" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200">
-              ⚡ 原文挖空＋選項自動生成
-            </button>
-            <button id="btnAddManualBlank" type="button" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white shadow-2xs">
-              ＋ 新增一格挖空
-            </button>
-          </div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">全文中文翻譯（依英文斷句對齊）</label>
+          <textarea id="translationTextInput" rows="5" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="貼上或自動生成全文中文翻譯..."></textarea>
         </div>
 
-        <div class="rounded-2xl p-4 bg-indigo-50/70 border border-indigo-200/80 space-y-2.5">
+        <!-- 管理者文內挖空與原檔選項解析區 -->
+        <div class="border-t border-slate-200 pt-4 space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="text-xs sm:text-sm font-extrabold text-indigo-950" data-i18n="rawOptsTitle">📄 原檔挖空選項（Word / PDF 自動帶入或貼上）</span>
-            <button id="btnParseRawBlankOptions" type="button" class="text-xs font-extrabold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
-              ✨ 自動配對選項＋出解析
+            <label class="text-xs font-extrabold text-teal-900">文內挖空與選項解析管理</label>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button id="btnAutoDetectBlanks" type="button" class="text-xs font-bold px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200">
+                ⚡ 原文挖空＋選項自動生成
+              </button>
+              <button id="btnAddManualBlank" type="button" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-teal-600 hover:bg-teal-500 text-white shadow-2xs">
+                ＋ 新增一格挖空
+              </button>
+            </div>
+          </div>
+
+          <!-- 原檔挖空選項貼上／自動解析面板 -->
+          <div class="rounded-xl p-3 bg-indigo-50/70 border border-indigo-200/80 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-extrabold text-indigo-950">📄 原檔挖空選項（Word / PDF 自動帶入或貼上）</span>
+              <button id="btnParseRawBlankOptions" type="button" class="text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition">
+                ✨ 自動配對選項＋出解析
+              </button>
+            </div>
+            <textarea id="rawClozeOptionsInput" rows="4" class="w-full px-2.5 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="上傳 Word / PDF 時會自動擷取挖空選項至此（也可直接貼上，例如：&#10;1. (A) behind (B) under (C) between (D) across&#10;2. (A) in front of (B) between (C) next (D) under&#10;Answer: 1. A 2. B）"></textarea>
+            <p class="text-[11px] text-indigo-900/80 leading-snug">
+              上傳含挖空與選項的 Word / PDF 後，系統會自動形成各格選項並產出中文解析，您可直接在下方卡片修改答案與解析。
+            </p>
+          </div>
+
+          <!-- 選取／反白詞彙提示條 -->
+          <div id="selectedWordBanner" class="rounded-xl px-3 py-2 bg-amber-50 border border-amber-200 text-xs text-amber-950 flex items-center justify-between gap-2">
+            <div>
+              <span class="font-bold">目前選取詞彙：</span>
+              <span id="selectedWordDisplay" class="font-black text-teal-800">尚未點選或反白詞彙</span>
+            </div>
+            <span class="text-[11px] text-amber-800/80">點文章單字或反白後按「＋ 新增一格挖空」</span>
+          </div>
+
+          <div id="adminBlankManagerList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 items-center pt-1">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">出題互動模式</label>
+            <select id="quizModeSelect" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="mixed" selected>文內挖空＋下方閱讀題</option>
+              <option value="cloze_only">自動生成 5 題文內挖空</option>
+              <option value="reading_only">純下方閱讀測驗題</option>
+            </select>
+          </div>
+          <div class="pt-5">
+            <button id="btnBuildInteractive" type="button" class="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold shadow transition">
+              套用預覽
             </button>
           </div>
-          <textarea id="rawClozeOptionsInput" rows="4" class="w-full px-3 py-2 rounded-xl border border-indigo-200 bg-white text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="上傳 Word / PDF 時會自動擷取挖空選項至此（也可直接貼上，例如：&#10;1. (A) behind (B) under (C) between (D) across&#10;2. (A) in front of (B) between (C) next (D) under&#10;Answer: 1. A 2. B）"></textarea>
-          <p class="text-xs text-indigo-900/80 leading-snug" data-i18n="rawOptsHint">
-            上傳含挖空與選項的 Word / PDF 後，系統會自動形成各格選項並產出中文解析，您可直接在下方卡片修改答案與解析。
-          </p>
         </div>
 
-        <div id="selectedWordBanner" class="rounded-xl px-3.5 py-2.5 bg-amber-50 border border-amber-200 text-xs text-amber-950 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <span class="font-bold">目前選取詞彙：</span>
-            <span id="selectedWordDisplay" class="font-black text-teal-800">尚未點選或反白詞彙</span>
-          </div>
-          <span class="text-[11px] text-amber-800/80">點文章單字或反白後按「＋ 新增一格挖空」</span>
-        </div>
+        <!-- 儲存文章並發布至前台 -->
+        <button id="btnSaveArticleToLibrary" type="button" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-black shadow-sm transition flex items-center justify-center gap-2">
+          <span>💾</span>
+          <span>儲存文章並發布至前台</span>
+        </button>
+      </section>
+    </aside>
 
-        <div id="adminBlankManagerList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-1"></div>
-      </div>
-
-      <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
-        <div class="flex items-center gap-3">
-          <label class="text-xs font-bold text-slate-600">出題互動模式：</label>
-          <select id="quizModeSelect" class="px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <option value="mixed" selected>文內挖空＋下方閱讀題</option>
-            <option value="cloze_only">自動生成 5 題文內挖空</option>
-            <option value="reading_only">純下方閱讀測驗題</option>
-          </select>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btnBuildInteractive" type="button" class="py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold shadow transition">
-            套用更新
-          </button>
-          <button id="btnOpenPreviewWindowBottom" type="button" class="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-extrabold shadow transition">
-            🪟 開新視窗預覽
-          </button>
-        </div>
-      </div>
-    </section>
-
+    <!-- 右側：學生互動練習主區 -->
     <section id="studentMainSection" class="space-y-6">
+      <!-- 已儲存文章庫 -->
       <section id="savedArticlesSection" class="bg-white rounded-2xl border border-emerald-200/90 shadow-sm p-4 sm:p-5 space-y-3 no-print">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 class="text-sm sm:text-base font-black text-emerald-950 flex items-center gap-2">
               <span>📖</span>
-              <span data-i18n="libraryTitle">已儲存的文章庫（依分類下拉選單選擇）</span>
+              <span>已儲存的文章庫（點選文章開始練習）</span>
             </h2>
-            <p class="text-xs text-slate-500" data-i18n="libraryHint">先從分類下拉選單選擇程度（如「國七/基礎閱讀」），再點選文章開始練習。</p>
+            <p class="text-xs text-slate-500">選擇任一篇文章即可載入內容、文內挖空與閱讀測驗立即開始作答。</p>
           </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <label for="categoryFilterSelect" class="text-xs font-extrabold text-emerald-900" data-i18n="filterCatLabel">分類篩選：</label>
-            <select id="categoryFilterSelect" class="px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50/60 text-xs sm:text-sm font-extrabold text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-              <option value="ALL">全部分類</option>
-              <option value="國七/基礎閱讀" selected>國七/基礎閱讀</option>
-            </select>
-            <span id="savedArticlesCountBadge" class="text-xs font-extrabold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-              共 0 篇
-            </span>
-          </div>
+          <span id="savedArticlesCountBadge" class="text-xs font-extrabold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+            共 1 篇
+          </span>
         </div>
         <div id="savedArticlesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"></div>
       </section>
 
+      <!-- 文章與文內挖空作答區 -->
       <article id="passageAnchor" class="scroll-mt-20 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-7 print-card space-y-6">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
           <div class="space-y-1">
             <div class="flex flex-wrap items-center gap-2">
-              <span id="badgeLevel" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">國七/基礎閱讀</span>
-              <span id="badgeTopic" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">文內挖空＋閱讀測驗</span>
+              <span id="badgeLevel" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">國七／基礎閱讀</span>
+              <span id="badgeTopic" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">克漏字＋閱讀測驗</span>
               <span id="inlineClozeScoreBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800">文內挖空：0 / 0</span>
             </div>
             <h2 id="displayTitle" class="text-xl sm:text-2xl font-black text-slate-900">Where Is John's Wallet?</h2>
@@ -300,6 +290,7 @@
           </div>
         </div>
 
+        <!-- 上：英文原文互動區 -->
         <div class="space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h3 class="text-sm font-extrabold tracking-wider text-teal-800 bg-teal-50 px-3 py-1 rounded-lg border border-teal-200/70">
@@ -312,6 +303,7 @@
           <div id="interactivePassage" class="text-base sm:text-[17px] leading-[2.15] text-slate-800 space-y-2 pt-1"></div>
         </div>
 
+        <!-- 下：全文中文翻譯區 -->
         <div class="border-t-2 border-dashed border-slate-200 pt-5 space-y-2.5">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-extrabold tracking-wider text-amber-900 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200/80">
@@ -325,6 +317,7 @@
         </div>
       </article>
 
+      <!-- 獨立課文朗誦區 -->
       <section id="reciteSectionAnchor" class="scroll-mt-20 bg-white rounded-2xl border border-indigo-200/90 shadow-sm p-5 space-y-4 no-print">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div>
@@ -360,6 +353,7 @@
         </div>
       </section>
 
+      <!-- 我的收藏單字庫 -->
       <section class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 space-y-3 no-print">
         <div class="flex items-center justify-between">
           <h3 class="text-sm font-extrabold text-slate-800">📚 我的收藏單字庫 (<span id="savedVocabCount">0</span>)</h3>
@@ -370,6 +364,7 @@
         </div>
       </section>
 
+      <!-- 單純的閱讀測驗題目區（已移除學生前台的文內挖空按鈕） -->
       <section id="quizAnchor" class="scroll-mt-20 bg-white rounded-2xl border border-slate-200/90 shadow-sm p-5 sm:p-7 print-card space-y-5">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
@@ -379,7 +374,7 @@
                 閱讀理解題組
               </span>
               <span id="quizScoreBadge" class="text-xs font-extrabold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
-                作答進度：0 / 0
+                作答進度：0 / 5
               </span>
             </div>
             <p class="text-xs text-slate-500 mt-1">針對文章主旨與細節的閱讀測驗題，作答後立即顯示對錯與中文解析。</p>
@@ -399,6 +394,7 @@
     </section>
   </main>
 
+  <!-- 右下角懸浮快速按鈕 -->
   <div class="no-print fixed bottom-5 right-5 z-40 flex items-center gap-2">
     <a href="index.html" class="px-3.5 py-2.5 rounded-full bg-emerald-700/95 hover:bg-emerald-600 text-white text-xs sm:text-sm font-extrabold shadow-lg border border-white/15 backdrop-blur transition flex items-center gap-1">
       <span>🏠</span>
@@ -410,6 +406,7 @@
     </a>
   </div>
 
+  <!-- 文內挖空題即時作答小視窗 -->
   <div id="clozeModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 backdrop-blur-[2px] p-4" role="dialog" aria-modal="true">
     <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
       <div class="bg-teal-900 text-white px-5 py-3.5 flex items-center justify-between">
@@ -442,6 +439,7 @@
     </div>
   </div>
 
+  <!-- 小字典彈出視窗 -->
   <div id="dictModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/50 backdrop-blur-[2px] p-4" role="dialog" aria-modal="true">
     <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
       <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
@@ -488,8 +486,8 @@
   </div>
 
   <script>
-    if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
     const ADMIN_EMAIL = "yhstella2@gmail.com";
@@ -497,46 +495,133 @@
     const SAVED_VOCAB_STORAGE_KEY = "yh_reading_saved_vocab_v1";
     const SAVED_ARTICLES_STORAGE_KEY = "yh_reading_saved_articles_v1";
 
-    const DEFAULT_SAMPLE_ARTICLE = {
-      id: "sample_john_wallet",
-      level: "國七/基礎閱讀",
+    const SAMPLE_DATA = {
+      level: "國七／基礎閱讀",
       topic: "文內挖空＋閱讀測驗",
       title: "Where Is John's Wallet?",
-      passage: "John can't find his wallet before school. His schoolbag is on the chair, and his notebook is on the desk. Mom says, \"Look [1] the sofa.\" John checks there, but it is not there. Dad says, \"Maybe it is [2] your schoolbag and your notebook.\" John looks between them and finds his wallet with his glasses.",
-      translation: "約翰上學前找不到他的錢包。他的書包在椅子上，筆記本在書桌上。媽媽說：「看看沙發 [1]。」約翰去那裡找，但不在那裡。爸爸說：「也許它在你的書包 [2] 筆記本之間。」約翰在它們中間找，並找到了他的錢包和眼鏡。",
+      passage: [
+        "Mom: John, where is your wallet? You need it to buy lunch.",
+        "John: I don't know, Mom. I had it in my schoolbag this morning.",
+        "Mom: Is it in your schoolbag now?",
+        "John: No, it isn't. There are some books and notebooks in my schoolbag, but my wallet isn't there.",
+        "Mom: Is it on your desk?",
+        "John: No. There is a pencil case on my desk, but no wallet.",
+        "Mom: What about under your bed?",
+        "John: Let me see. No, it isn't under your bed. There are some shoes under it.",
+        "Mom: Is it [1] the sofa in the living room?",
+        "John: Wait! I can see something black behind the sofa. But it's not my wallet. It's Dad's hat!",
+        "Mom: Did you put your wallet next to the TV last night?",
+        "John: Oh, I remember! I was watching TV with Dad. I put my wallet on the table in front of the TV.",
+        "Mom: But there is nothing on that table now.",
+        "John: Maybe it's [2] the sofa and the small table.",
+        "Mom: Look! There it is! Your wallet is between the two tables, next to Dad's glasses.",
+        "John: Great! Thank you, Mom. Now I can go to the store [3] our house.",
+        "Mom: Don't forget to put your wallet in your schoolbag next time!"
+      ].join("\n"),
+      translation: [
+        "媽媽：John，你的錢包在哪裡？你需要它來買午餐。",
+        "John：我不知道，媽媽。我今天早上有把它放在我的書包裡。",
+        "媽媽：它現在在你的書包裡嗎？",
+        "John：不，不在。我的書包裡有一些書和筆記本，但我的錢包不在那裡。",
+        "媽媽：它在你的書桌上嗎？",
+        "John：不在。我的書桌上有一個鉛筆盒，但沒有錢包。",
+        "媽媽：那你的床底下呢？",
+        "John：我看看。不，它不在你的床底下。床底下有一些鞋子。",
+        "媽媽：它在客廳沙發的後面嗎？",
+        "John：等一下！我看到沙發後面有黑黑的東西。但那不是我的錢包。那是爸爸的帽子！",
+        "媽媽：你昨晚有把錢包放在電視旁邊嗎？",
+        "John：喔，我想起來了！我當時和爸爸在看電視。我把錢包放在電視前面的桌子上。",
+        "媽媽：但是那張桌子上現在什麼都沒有。",
+        "John：也許它在沙發和小桌子之間。",
+        "媽媽：你看！在那裡！你的錢包在兩張桌子之間，爸爸的眼鏡旁邊。",
+        "John：太棒了！謝謝媽媽。現在我可以去我們家對面的商店了。",
+        "媽媽：下次別忘了把錢包放進你的書包裡！"
+      ].join("\n"),
       inlineBlanks: [
         {
           num: 1,
-          contextSentence: "Mom says, \"Look [1] the sofa.\"",
+          contextSentence: "Mom: Is it [1] the sofa in the living room?",
           options: ["behind", "under", "between", "across"],
           answer: 0,
-          explanation: "根據句意「看看沙發後面」，behind 表示「在……後面」，為正確答案。"
+          explanation: "根據下一句 John 回答 'I can see something black behind the sofa.' 可知，媽媽問的是在沙發「後面」（behind）。"
         },
         {
           num: 2,
-          contextSentence: "Dad says, \"Maybe it is [2] your schoolbag and your notebook.\"",
-          options: ["between", "under", "behind", "across"],
-          answer: 0,
-          explanation: "固定搭配 between A and B 表示「在 A 和 B 之間」，故選 (A) between。"
+          contextSentence: "John: Maybe it's [2] the sofa and the small table.",
+          options: ["in front of", "between", "next", "under"],
+          answer: 1,
+          explanation: "後面有 'the sofa and the small table'（兩者之間），固定搭配介系詞 between A and B。"
+        },
+        {
+          num: 3,
+          contextSentence: "John: Now I can go to the store [3] our house.",
+          options: ["between", "behind", "across from", "under"],
+          answer: 2,
+          explanation: "表示「在我們家對面的商店」，英文用 across from our house。"
         }
       ],
       readingQuestions: [
         {
-          id: "q1",
-          questionText: "1. What is John looking for before school?",
-          options: ["His wallet.", "His schoolbag.", "His notebook.", "His lunchbox."],
-          answer: 0,
-          explanation: "文章第一句提到 John can't find his wallet before school，因此他找的是錢包。"
+          id: "sample_q1",
+          questionText: "1. What is the dialogue mainly about?",
+          options: [
+            "John wants to buy a new schoolbag.",
+            "John is looking for his missing wallet.",
+            "Mom wants to clean John's bedroom.",
+            "John and Dad are watching TV."
+          ],
+          answer: 1,
+          explanation: "這篇對話主要是在說 John 找不到自己的錢包，最後媽媽幫他找到。"
         },
         {
-          id: "q2",
-          questionText: "2. Where does John finally find his wallet?",
-          options: ["Under the bed.", "Between his schoolbag and notebook.", "In the kitchen.", "At school."],
-          answer: 1,
-          explanation: "文章最後一句指出 John looks between them and finds his wallet with his glasses。"
+          id: "sample_q2",
+          questionText: "2. Where did John put his wallet last night?",
+          options: [
+            "On his desk.",
+            "Under his bed.",
+            "On the table in front of the TV.",
+            "Next to his schoolbag."
+          ],
+          answer: 2,
+          explanation: "John 昨晚把錢包放在電視前面的桌子上（I put my wallet on the table in front of the TV.）。"
+        },
+        {
+          id: "sample_q3",
+          questionText: "3. What is behind the sofa?",
+          options: [
+            "Dad's hat.",
+            "John's wallet.",
+            "Dad's glasses.",
+            "John's shoes."
+          ],
+          answer: 0,
+          explanation: "沙發後面的是爸爸的帽子（It's Dad's hat!），不是 John 的錢包。"
+        },
+        {
+          id: "sample_q4",
+          questionText: "4. Where does Mom find John's wallet?",
+          options: [
+            "Between the sofa and the small table.",
+            "Under the bed.",
+            "Behind the sofa.",
+            "In John's schoolbag."
+          ],
+          answer: 0,
+          explanation: "媽媽在沙發和小桌子之間（between the two tables / between the sofa and the small table）找到 John 的錢包。"
+        },
+        {
+          id: "sample_q5",
+          questionText: "5. What does Mom tell John to do next time?",
+          options: [
+            "Put his wallet on the TV.",
+            "Give his wallet to Dad.",
+            "Put his wallet in his schoolbag.",
+            "Leave his wallet on the table."
+          ],
+          answer: 2,
+          explanation: "媽媽提醒 John 下次要把錢包放進書包裡（Don't forget to put your wallet in your schoolbag next time!）。"
         }
-      ],
-      updatedAt: "內建範例"
+      ]
     };
 
     const BUILTIN_DICT = {
@@ -546,17 +631,22 @@
       "behind": { pos: "prep.", zh: "在……後面", note: "方位介系詞，behind the sofa「在沙發後面」。" },
       "between": { pos: "prep.", zh: "在……之間（兩者之間）", note: "常見句型：between A and B「在 A 和 B 之間」。" },
       "glasses": { pos: "n.", zh: "眼鏡（恆用複數）", note: "Dad's glasses「爸爸的眼鏡」；一副眼鏡為 a pair of glasses。" },
-      "across": { pos: "prep. / adv.", zh: "在……對面；橫越", note: "across from... 表示「在……的對面」。" },
-      "under": { pos: "prep.", zh: "在……下面", note: "方位介系詞，under the bed「在床底下」。" }
+      "across": { pos: "prep. / adv.", zh: "在……對面；橫越", note: "across from... 表示「在……的對面」，如 across from our house。" },
+      "across from": { pos: "prep.", zh: "在……對面", note: "固定片語介系詞，後接地點名詞。" },
+      "under": { pos: "prep.", zh: "在……下面", note: "方位介系詞，under the bed「在床底下」。" },
+      "in front of": { pos: "prep.", zh: "在……前面（外部）", note: "in front of the TV「在電視前面」。" },
+      "dialogue": { pos: "n.", zh: "對話", note: "閱讀測驗常見題幹字：What is the dialogue mainly about?（這段對話主要關於什麼？）" },
+      "mainly": { pos: "adv.", zh: "主要地；大體上", note: "由 main + -ly 構成，常用於主旨題。" },
+      "missing": { pos: "adj.", zh: "遺失的；失蹤的", note: "his missing wallet「他不見的錢包」。" }
     };
 
     const state = {
       isAdmin: false,
-      level: "國七/基礎閱讀",
-      topic: "文內挖空＋閱讀測驗",
-      title: "Where Is John's Wallet?",
-      passage: "",
-      translation: "",
+      level: SAMPLE_DATA.level,
+      topic: SAMPLE_DATA.topic,
+      title: SAMPLE_DATA.title,
+      passage: SAMPLE_DATA.passage,
+      translation: SAMPLE_DATA.translation,
       sentences: [],
       sentenceTranslations: [],
       inlineBlanks: [],
@@ -572,93 +662,12 @@
     };
 
     let savedArticles = [];
-    let currentArticleId = "";
-    let uiLang = "zh";
-
-    const I18N_DICT = {
-      zh: {
-        brandTitle: "優華數位版權所有｜互動閱讀練習",
-        backHome: "回主頁測驗",
-        printBtn: "列印 / 存 PDF",
-        adminEditorTitle: "管理者文章編輯主區",
-        adminEditorHint: "直接在寬大編輯區撰寫或修改文章、挖空選項與中文解析，完成後可按「開新視窗預覽」或「儲存文章並發布至前台」。",
-        openPreviewWin: "開新視窗預覽",
-        savePublish: "儲存文章並發布至前台",
-        uploadDropTitle: "點擊選擇或拖曳 Word / PDF / 圖片學習單至此",
-        uploadDropSub: "自動辨識「文章＋文內挖空與選項＋下方閱讀測驗＋自動生解析」",
-        categoryLabel: "年級／程度分類",
-        topicLabel: "題型／主題標籤",
-        titleLabel: "文章標題",
-        enSourceLabel: "英文原文編輯區（支援 [1] / ____ / (1)____ 挖空）",
-        zhTransLabel: "全文中文翻譯編輯區（依英文斷句對齊）",
-        autoTranslateBtn: "依原文斷句自動翻譯",
-        blankMgrTitle: "文內挖空與選項解析管理",
-        rawOptsTitle: "📄 原檔挖空選項（Word / PDF 自動帶入或貼上）",
-        rawOptsHint: "上傳含挖空與選項的 Word / PDF 後，系統會自動形成各格選項並產出中文解析，您可直接在下方卡片修改答案與解析。",
-        libraryTitle: "已儲存的文章庫（依分類下拉選單選擇）",
-        libraryHint: "先從分類下拉選單選擇程度（如「國七/基礎閱讀」），再點選文章開始練習。",
-        filterCatLabel: "分類篩選："
-      },
-      en: {
-        brandTitle: "YouHua Digital · Interactive Reading",
-        backHome: "Home Quiz",
-        printBtn: "Print / PDF",
-        adminEditorTitle: "Admin Article Editor Workspace",
-        adminEditorHint: "Edit passages, cloze options, and explanations directly in the main workspace. Preview in a new window or publish to students.",
-        openPreviewWin: "Preview in New Window",
-        savePublish: "Save & Publish Article",
-        uploadDropTitle: "Click or drag Word / PDF / Image worksheet here",
-        uploadDropSub: "Auto-detects passage, inline cloze options, reading questions, and explanations",
-        categoryLabel: "Grade / Level Category",
-        topicLabel: "Topic / Type Tag",
-        titleLabel: "Article Title",
-        enSourceLabel: "English Passage Editor (Supports [1] / ____ / (1)____)",
-        zhTransLabel: "Chinese Translation Editor (Sentence-aligned)",
-        autoTranslateBtn: "Auto-Translate Sentences",
-        blankMgrTitle: "Inline Cloze Options & Explanations",
-        rawOptsTitle: "📄 Raw Cloze Options (Auto-filled from Word / PDF or paste)",
-        rawOptsHint: "Options and Chinese explanations are generated automatically upon upload and can be edited below.",
-        libraryTitle: "Saved Article Library (Filter by Category)",
-        libraryHint: "Choose a level category (e.g., 國七/基礎閱讀) from the dropdown, then pick an article to practice.",
-        filterCatLabel: "Category:"
-      }
-    };
+    let currentArticleId = "sample_john_wallet";
 
     const $ = (id) => document.getElementById(id);
 
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
-    function applyUiLanguage(lang) {
-      uiLang = lang === "en" ? "en" : "zh";
-      const dict = I18N_DICT[uiLang];
-      document.querySelectorAll("[data-i18n]").forEach((el) => {
-        const key = el.getAttribute("data-i18n");
-        if (key && dict[key]) el.textContent = dict[key];
-      });
-      if ($("btnToggleLang")) {
-        $("btnToggleLang").textContent = uiLang === "en" ? "🌐 中文介面" : "🌐 English / 中文";
-      }
-      const badge = $("roleModeBadge");
-      const toggleBtn = $("btnToggleAdmin");
-      if (badge && toggleBtn) {
-        if (state.isAdmin) {
-          badge.textContent = uiLang === "en" ? "Admin Mode" : "管理者編輯模式";
-          toggleBtn.textContent = uiLang === "en" ? "Exit Admin" : "退出管理者模式";
-        } else {
-          badge.textContent = uiLang === "en" ? "Student Mode" : "學生練習模式";
-          toggleBtn.textContent = uiLang === "en" ? "🔒 管理者模式" : "🔒 管理者模式";
-        }
-      }
-    }
-
     function setSelectedAdminWord(word) {
-      const clean = String(word || "").replace(/^[^A-Za-z0-9'-]+|[^A-Za-z0-9'-]+$/g, "").trim();
+      const clean = (word || "").replace(/^[^A-Za-z0-9'-]+|[^A-Za-z0-9'-]+$/g, "").trim();
       state.selectedAdminWord = clean;
       const el = $("selectedWordDisplay");
       if (el) {
@@ -706,22 +715,22 @@
     function buildCurrentArticleRecord(customId = null) {
       return {
         id: customId || currentArticleId || ("art_" + Date.now()),
-        level: ($("metaLevel")?.value || state.level || "國七/基礎閱讀").trim(),
-        topic: ($("metaTopic")?.value || state.topic || "文內挖空＋閱讀測驗").trim(),
-        title: ($("metaTitle")?.value || state.title || "互動閱讀文章").trim(),
-        passage: ($("sourceTextInput")?.value || state.passage || "").trim(),
-        translation: ($("translationTextInput")?.value || state.translation || "").trim(),
+        level: ($("metaLevel").value || state.level || "一般程度").trim(),
+        topic: ($("metaTopic").value || state.topic || "閱讀測驗").trim(),
+        title: ($("metaTitle").value || state.title || "互動閱讀文章").trim(),
+        passage: ($("sourceTextInput").value || state.passage || "").trim(),
+        translation: ($("translationTextInput").value || state.translation || "").trim(),
         inlineBlanks: state.inlineBlanks.map((b) => ({
           num: b.num,
           contextSentence: b.contextSentence,
-          options: [...(b.options || [])],
+          options: [...b.options],
           answer: b.answer,
           explanation: b.explanation
         })),
         readingQuestions: state.readingQuestions.map((q) => ({
           id: q.id,
           questionText: q.questionText,
-          options: [...(q.options || [])],
+          options: [...q.options],
           answer: q.answer,
           explanation: q.explanation
         })),
@@ -730,6 +739,18 @@
     }
 
     function loadSavedArticlesFromStorage() {
+      const defaultSampleRecord = {
+        id: "sample_john_wallet",
+        level: SAMPLE_DATA.level,
+        topic: SAMPLE_DATA.topic,
+        title: SAMPLE_DATA.title,
+        passage: SAMPLE_DATA.passage,
+        translation: SAMPLE_DATA.translation,
+        inlineBlanks: SAMPLE_DATA.inlineBlanks.map((b) => ({ ...b, options: [...b.options] })),
+        readingQuestions: SAMPLE_DATA.readingQuestions.map((q) => ({ ...q, options: [...q.options] })),
+        updatedAt: "內建示範"
+      };
+
       try {
         const raw = localStorage.getItem(SAVED_ARTICLES_STORAGE_KEY);
         if (raw) {
@@ -740,7 +761,8 @@
           }
         }
       } catch (e) {}
-      savedArticles = [DEFAULT_SAMPLE_ARTICLE];
+
+      savedArticles = [defaultSampleRecord];
     }
 
     function persistSavedArticles() {
@@ -749,47 +771,13 @@
       } catch (e) {}
     }
 
-    function syncCategoryFilterOptions() {
-      const sel = $("categoryFilterSelect");
-      if (!sel) return;
-      const prevVal = sel.value || "ALL";
-      const cats = new Set(["國七/基礎閱讀"]);
-      savedArticles.forEach((a) => {
-        if (a && a.level && String(a.level).trim()) cats.add(String(a.level).trim());
-      });
-      const currentMetaCat = ($("metaLevel")?.value || "").trim();
-      if (currentMetaCat) cats.add(currentMetaCat);
-
-      sel.innerHTML = [
-        '<option value="ALL">全部分類 (All Categories)</option>',
-        ...[...cats].map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
-      ].join("");
-
-      if ([...sel.options].some((o) => o.value === prevVal)) {
-        sel.value = prevVal;
-      } else {
-        sel.value = "ALL";
-      }
-    }
-
     function renderSavedArticlesLibrary() {
-      syncCategoryFilterOptions();
       const container = $("savedArticlesList");
       const badge = $("savedArticlesCountBadge");
-      const selectedCat = $("categoryFilterSelect")?.value || "ALL";
       if (!container) return;
 
-      const filtered = selectedCat === "ALL"
-        ? savedArticles
-        : savedArticles.filter((a) => (a.level || "國七/基礎閱讀").trim() === selectedCat);
-
-      if (badge) badge.textContent = `共 ${filtered.length} 篇`;
-      if (!filtered.length) {
-        container.innerHTML = `<div class="col-span-full text-xs text-slate-500 bg-slate-50 rounded-xl p-4 border border-slate-200">「${escapeHtml(selectedCat)}」分類目前尚無已儲存文章，可切換分類下拉選單或進入管理者編輯區新增。</div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map((art) => {
+      badge.textContent = `共 ${savedArticles.length} 篇`;
+      container.innerHTML = savedArticles.map((art) => {
         const isCurrent = art.id === currentArticleId;
         const blankCount = (art.inlineBlanks || []).length;
         const qCount = (art.readingQuestions || []).length;
@@ -797,7 +785,7 @@
           <div class="rounded-xl border p-3 transition flex flex-col justify-between gap-2 ${isCurrent ? "border-emerald-500 bg-emerald-50/70 ring-1 ring-emerald-400" : "border-slate-200 bg-slate-50/50 hover:border-emerald-300 hover:bg-emerald-50/30"}">
             <div class="space-y-1">
               <div class="flex items-center justify-between gap-1">
-                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white text-teal-800 border border-teal-200">${escapeHtml(art.level || "國七/基礎閱讀")}</span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white text-teal-800 border border-teal-200">${escapeHtml(art.level || "閱讀")}</span>
                 ${isCurrent ? '<span class="text-[11px] font-extrabold text-emerald-700">● 練習中</span>' : `<span class="text-[11px] text-slate-400">${escapeHtml(art.updatedAt || "")}</span>`}
               </div>
               <div class="text-sm font-black text-slate-900 line-clamp-1">${escapeHtml(art.title || "未命名文章")}</div>
@@ -807,7 +795,7 @@
               <button type="button" onclick="startPracticingArticle('${escapeHtml(art.id)}')" class="flex-1 py-1.5 px-3 rounded-lg ${isCurrent ? "bg-emerald-700 text-white" : "bg-emerald-600 hover:bg-emerald-500 text-white"} text-xs font-extrabold transition">
                 ${isCurrent ? "重新開始練習" : "開始練習"}
               </button>
-              ${state.isAdmin ? `<button type="button" onclick="deleteSavedArticle('${escapeHtml(art.id)}')" title="刪除文章" class="py-1.5 px-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold">🗑</button>` : ""}
+              ${state.isAdmin && art.id !== "sample_john_wallet" ? `<button type="button" onclick="deleteSavedArticle('${escapeHtml(art.id)}')" title="刪除文章" class="py-1.5 px-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold">🗑</button>` : ""}
             </div>
           </div>
         `;
@@ -820,11 +808,11 @@
       stopReciting();
       setSelectedAdminWord("");
       currentArticleId = target.id;
-      if ($("metaLevel")) $("metaLevel").value = target.level || "國七/基礎閱讀";
-      if ($("metaTopic")) $("metaTopic").value = target.topic || "文內挖空＋閱讀測驗";
-      if ($("metaTitle")) $("metaTitle").value = target.title || "互動閱讀文章";
-      if ($("sourceTextInput")) $("sourceTextInput").value = target.passage || "";
-      if ($("translationTextInput")) $("translationTextInput").value = target.translation || "";
+      $("metaLevel").value = target.level || "一般程度";
+      $("metaTopic").value = target.topic || "閱讀測驗";
+      $("metaTitle").value = target.title || "互動閱讀文章";
+      $("sourceTextInput").value = target.passage || "";
+      $("translationTextInput").value = target.translation || "";
 
       state.inlineBlanks = (target.inlineBlanks || []).map((b) => ({ ...b, options: [...(b.options || [])] }));
       state.inlineAnswers = {};
@@ -833,27 +821,32 @@
 
       applyInputsAndGenerate(false, false);
       renderSavedArticlesLibrary();
+      $("passageAnchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function deleteSavedArticle(articleId) {
       if (!state.isAdmin) return;
       savedArticles = savedArticles.filter((a) => a.id !== articleId);
       persistSavedArticles();
-      if (currentArticleId === articleId) {
-        currentArticleId = savedArticles[0]?.id || "";
+      if (currentArticleId === articleId && savedArticles[0]) {
+        startPracticingArticle(savedArticles[0].id);
+      } else {
+        renderSavedArticlesLibrary();
       }
-      renderSavedArticlesLibrary();
     }
 
     function saveCurrentArticleToLibrary() {
-      const titleVal = ($("metaTitle")?.value || "").trim();
-      const passageVal = ($("sourceTextInput")?.value || "").trim();
+      const titleVal = ($("metaTitle").value || "").trim();
+      const passageVal = ($("sourceTextInput").value || "").trim();
       if (!passageVal) {
         setStatus("請先輸入或上傳英文原文再儲存文章。", "warn");
         return;
       }
 
-      const targetId = currentArticleId || ("art_" + Date.now());
+      const targetId = currentArticleId === "sample_john_wallet"
+        ? ("art_" + Date.now())
+        : (currentArticleId || ("art_" + Date.now()));
+
       const record = buildCurrentArticleRecord(targetId);
       if (!record.title) record.title = titleVal || "自訂互動閱讀文章";
 
@@ -868,75 +861,7 @@
       persistSavedArticles();
       applyInputsAndGenerate(false, false);
       renderSavedArticlesLibrary();
-      setStatus(`已儲存「${record.title}」（分類：${record.level}）並發布至前台！`, "success");
-    }
-
-    function openPreviewInNewWindow() {
-      applyInputsAndGenerate(false, false);
-      const previewWin = window.open("", "_blank");
-      if (!previewWin) {
-        setStatus("瀏覽器阻擋了新視窗，請允許彈出式視窗後再按「開新視窗預覽」。", "warn");
-        return;
-      }
-
-      const titleText = escapeHtml($("metaTitle")?.value || state.title || "文章預覽");
-      const levelText = escapeHtml($("metaLevel")?.value || state.level || "國七/基礎閱讀");
-      const topicText = escapeHtml($("metaTopic")?.value || state.topic || "閱讀測驗");
-      const passageHtml = $("interactivePassage")?.innerHTML || "";
-      const transHtml = $("displayTranslation")?.innerHTML || "";
-      const quizHtml = $("quizList")?.innerHTML || "";
-
-      previewWin.document.open();
-      previewWin.document.write(`<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>預覽｜${titleText}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-[#faf8f3] text-slate-800 p-6 sm:p-10">
-  <div class="max-w-4xl mx-auto space-y-6">
-    <div class="bg-slate-900 text-white rounded-2xl px-5 py-4 flex items-center justify-between">
-      <div>
-        <div class="text-xs text-teal-300 font-bold">新視窗即時預覽</div>
-        <h1 class="text-xl font-black">${titleText}</h1>
-      </div>
-      <span class="px-3 py-1 rounded-full text-xs font-bold bg-teal-500/20 text-teal-200 border border-teal-400/30">${levelText} · ${topicText}</span>
-    </div>
-    <article class="bg-white rounded-2xl border border-slate-200 p-6 space-y-5 shadow-sm">
-      <div class="text-base sm:text-[17px] leading-[2.1]">${passageHtml}</div>
-      <div class="border-t-2 border-dashed border-slate-200 pt-4 text-sm sm:text-base leading-[1.9] text-slate-700 bg-amber-50/40 rounded-xl p-4">${transHtml}</div>
-    </article>
-    <section class="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-sm">
-      <h2 class="text-lg font-black text-slate-900">閱讀理解測驗預覽</h2>
-      <div>${quizHtml}</div>
-    </section>
-  </div>
-</body>
-</html>`);
-      previewWin.document.close();
-    }
-
-    function generateAutoClozeExplanation(num, contextSentence, options, answerIdx) {
-      const labels = ["A", "B", "C", "D"];
-      const correctOpt = (options[answerIdx] || "").trim();
-      const correctLetter = labels[answerIdx] || "A";
-      const dictInfo = BUILTIN_DICT[correctOpt.toLowerCase()];
-      const optSummaries = options
-        .map((opt, idx) => {
-          const cleanOpt = (opt || "").trim();
-          if (!cleanOpt) return "";
-          const info = BUILTIN_DICT[cleanOpt.toLowerCase()];
-          return `(${labels[idx]}) ${cleanOpt}${info ? `（${info.zh}）` : ""}`;
-        })
-        .filter(Boolean)
-        .join("、");
-      const cleanSentence = (contextSentence || "").replace(`[${num}]`, `___(${correctOpt})___`);
-      if (dictInfo) {
-        return `本題測驗文意與詞彙搭配。各選項意義：${optSummaries}。根據原句「${cleanSentence}」的上下文語意，應選 (${correctLetter}) ${correctOpt}（${dictInfo.zh}）。補充提示：${dictInfo.note}`;
-      }
-      return `本題為第 [${num}] 格文內挖空題。選項包含：${optSummaries}。對照原句「${cleanSentence}」的前後文語意與文法結構，最適合填入 (${correctLetter}) ${correctOpt}。`;
+      setStatus(`已儲存「${record.title}」並同步至前台文章庫，學生可直接點選開始練習！`, "success");
     }
 
     function renderAdminBlankManager() {
@@ -944,7 +869,7 @@
       if (!box) return;
 
       if (!state.inlineBlanks.length) {
-        box.innerHTML = '<div class="col-span-full text-xs text-slate-400 bg-slate-50 rounded-xl p-3 border border-slate-200">目前沒有文內挖空題；上傳含挖空與選項的 Word / PDF，或在文章中點字／反白後按「＋ 新增一格挖空」。</div>';
+        box.innerHTML = '<div class="text-xs text-slate-400 bg-slate-50 rounded-xl p-3 border border-slate-200">目前沒有文內挖空題；上傳含挖空與選項的 Word / PDF，或在文章中點字／反白後按「＋ 新增一格挖空」。</div>';
         return;
       }
 
@@ -959,17 +884,17 @@
           </div>
           <div class="grid grid-cols-2 gap-1.5">
             ${[0, 1, 2, 3].map((oIdx) => `
-              <input type="text" value="${escapeHtml(b.options?.[oIdx] || "")}" onchange="updateBlankOption(${idx}, ${oIdx}, this.value)" placeholder="選項 (${labels[oIdx]})" class="px-2 py-1 rounded-lg border border-slate-300 bg-white text-xs" />
+              <input type="text" value="${escapeHtml(b.options[oIdx] || "")}" onchange="updateBlankOption(${idx}, ${oIdx}, this.value)" placeholder="選項 (${labels[oIdx]})" class="px-2 py-1 rounded-lg border border-slate-300 bg-white text-xs" />
             `).join("")}
           </div>
           <div class="flex items-center gap-2">
             <label class="font-bold text-slate-600 shrink-0">正確答案：</label>
             <select onchange="updateBlankAnswer(${idx}, Number(this.value))" class="px-2 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold">
-              ${[0, 1, 2, 3].map((oIdx) => `<option value="${oIdx}" ${b.answer === oIdx ? "selected" : ""}>(${labels[oIdx]}) ${escapeHtml(b.options?.[oIdx] || "")}</option>`).join("")}
+              ${[0, 1, 2, 3].map((oIdx) => `<option value="${oIdx}" ${b.answer === oIdx ? "selected" : ""}>(${labels[oIdx]}) ${escapeHtml(b.options[oIdx] || "")}</option>`).join("")}
             </select>
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-0.5">中文解析：</label>
+            <label class="block text-[11px] font-bold text-slate-500 mb-0.5">中文解析（系統自動生成，可直接修改）：</label>
             <textarea rows="2" onchange="updateBlankExplanation(${idx}, this.value)" placeholder="中文解析說明..." class="w-full px-2 py-1 rounded-lg border border-slate-300 bg-white text-xs leading-relaxed">${escapeHtml(b.explanation || "")}</textarea>
           </div>
         </div>
@@ -986,7 +911,9 @@
       if (!state.inlineBlanks[blankIdx]) return;
       const b = state.inlineBlanks[blankIdx];
       b.answer = ansIdx;
-      b.explanation = generateAutoClozeExplanation(b.num, b.contextSentence, b.options, ansIdx);
+      if (!b.explanation || b.explanation.includes("（管理者可直接修改此解析）") || b.explanation.includes("本題測驗文意與詞彙搭配")) {
+        b.explanation = generateAutoClozeExplanation(b.num, b.contextSentence, b.options, ansIdx);
+      }
       state.inlineAnswers = {};
       renderPassageInteractive();
       renderAdminBlankManager();
@@ -1001,7 +928,7 @@
       const target = state.inlineBlanks[blankIdx];
       if (!target) return;
 
-      let text = ($("sourceTextInput")?.value || state.passage || "");
+      let text = ($("sourceTextInput").value || state.passage || "");
       const ansWord = target.options?.[target.answer] || "";
       text = text.replace(new RegExp(`\\[${target.num}\\]`, "g"), ansWord);
 
@@ -1020,14 +947,14 @@
       });
 
       state.passage = text;
-      if ($("sourceTextInput")) $("sourceTextInput").value = text;
+      $("sourceTextInput").value = text;
       renderPassageInteractive();
       renderAdminBlankManager();
       setStatus(`已移除第 ${blankIdx + 1} 格挖空並還原文內詞彙。`, "success");
     }
 
     function addManualInlineBlank() {
-      let text = ($("sourceTextInput")?.value || state.passage || "");
+      let text = ($("sourceTextInput").value || state.passage || "");
       let pickedWord = (state.selectedAdminWord || "").trim();
 
       const ta = $("sourceTextInput");
@@ -1072,74 +999,15 @@
 
       state.passage = updatedText;
       state.inlineAnswers = {};
-      if ($("sourceTextInput")) $("sourceTextInput").value = updatedText;
+      $("sourceTextInput").value = updatedText;
       setSelectedAdminWord("");
       renderPassageInteractive();
       renderAdminBlankManager();
       setStatus(`已將「${pickedWord}」設為第 ${newNum} 格文內挖空並自動生成解析！`, "success");
     }
 
-    function parseRawClozeOptionsBlock(rawBlockText, articleText = "") {
-      const normalized = (rawBlockText || "")
-        .replace(/\r\n/g, "\n")
-        .replace(/\s+(?=\([A-D]\)\s*)/g, "\n")
-        .replace(/(Answer\s*Key[^\n]*|Answers?\s*[:：][^\n]*|解答\s*[:：][^\n]*|答案\s*[:：][^\n]*)/gi, "\n$1\n")
-        .trim();
-      if (!normalized) return [];
-
-      const lines = normalized.split("\n").map((l) => l.trim()).filter(Boolean);
-      const ansIdxLine = lines.findIndex((l) => /^(Answer\s*Key|Answers?|解答|答案|中文解析)/i.test(l));
-      const qLines = ansIdxLine === -1 ? lines : lines.slice(0, ansIdxLine);
-      const aLines = ansIdxLine === -1 ? [] : lines.slice(ansIdxLine);
-
-      const items = [];
-      let cur = null;
-      for (const line of qLines) {
-        const qHead = line.match(/^(?:\((\d{1,2})\)|(\d{1,2})[\.\)、])\s*(.*)$/);
-        if (qHead) {
-          if (cur) items.push(cur);
-          const qNum = parseInt(qHead[1] || qHead[2], 10);
-          const rest = (qHead[3] || "").trim();
-          cur = { num: qNum, options: [], answer: 0, explanation: "" };
-          if (rest && /\([A-D]\)/i.test(rest)) {
-            [...rest.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)].forEach((m) => cur.options.push(m[2].trim()));
-          }
-          continue;
-        }
-        if (cur && /\([A-D]\)/i.test(line)) {
-          [...line.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)].forEach((m) => cur.options.push(m[2].trim()));
-        }
-      }
-      if (cur) items.push(cur);
-
-      const ansMap = {};
-      for (const line of aLines) {
-        const cleanedLine = line.replace(/^(Answer\s*Key|Answers?|解答|答案|中文解析)\s*[:：]?\s*/i, "").trim();
-        [...cleanedLine.matchAll(/(\d{1,2})\s*[\.\)、:：]?\s*\(?([A-D])\)?/gi)].forEach((m) => {
-          ansMap[parseInt(m[1], 10)] = ["A", "B", "C", "D"].indexOf(m[2].toUpperCase());
-        });
-      }
-
-      return items
-        .filter((it) => it.options.length >= 2)
-        .map((it) => {
-          while (it.options.length < 4) it.options.push("");
-          const ans = ansMap[it.num] !== undefined && ansMap[it.num] !== -1 ? ansMap[it.num] : 0;
-          const sent = articleText
-            ? (splitSentences(articleText).find((s) => s.includes(`[${it.num}]`)) || articleText)
-            : "";
-          return {
-            num: it.num,
-            contextSentence: sent,
-            options: it.options.slice(0, 4),
-            answer: ans,
-            explanation: generateAutoClozeExplanation(it.num, sent, it.options, ans)
-          };
-        });
-    }
-
     function autoDetectAndBuildBlanksFromPassage(showFeedback = true) {
-      let text = ($("sourceTextInput")?.value || state.passage || "");
+      let text = ($("sourceTextInput").value || state.passage || "");
       if (!text.trim()) return 0;
 
       let seq = 0;
@@ -1168,57 +1036,83 @@
       const wordPool = [...new Set((text.match(/\b[A-Za-z]{3,}\b/g) || []).map((w) => w.toLowerCase()))];
       const rawParsedBlanks = parseRawClozeOptionsBlock($("rawClozeOptionsInput")?.value || "", text);
 
-      state.passage = text;
-      state.inlineBlanks = allMarkers.map((num, idx) => {
+      const newBlanks = allMarkers.map((num, idx) => {
         const fromRaw = rawParsedBlanks.find((b) => b.num === num);
         const prev = state.inlineBlanks.find((b) => b.num === num);
         const sent = splitSentences(text).find((s) => s.includes(`[${num}]`)) || text;
-        if (fromRaw) return { ...fromRaw, num, contextSentence: sent };
-        if (prev) return { ...prev, num, contextSentence: sent, options: [...prev.options] };
+        if (fromRaw) {
+          return {
+            ...fromRaw,
+            num,
+            contextSentence: sent
+          };
+        }
+        if (prev) {
+          return {
+            ...prev,
+            num,
+            contextSentence: sent,
+            options: [...prev.options]
+          };
+        }
         const cand = wordPool[idx % Math.max(wordPool.length, 1)] || "word";
         const distractors = wordPool.filter((w) => w !== cand).slice(0, 3);
-        while (distractors.length < 3) distractors.push(["on", "in", "at", "to"][distractors.length] || "for");
+        while (distractors.length < 3) {
+          distractors.push(["on", "in", "at", "to"][distractors.length] || "for");
+        }
         const opts = [cand, ...distractors];
-        return { num, contextSentence: sent, options: opts, answer: 0, explanation: generateAutoClozeExplanation(num, sent, opts, 0) };
+        return {
+          num,
+          contextSentence: sent,
+          options: opts,
+          answer: 0,
+          explanation: generateAutoClozeExplanation(num, sent, opts, 0)
+        };
       });
+
+      state.passage = text;
+      state.inlineBlanks = newBlanks;
       state.inlineAnswers = {};
-      if ($("sourceTextInput")) $("sourceTextInput").value = text;
+      $("sourceTextInput").value = text;
       renderPassageInteractive();
       renderAdminBlankManager();
-      if (showFeedback) setStatus(`已自動辨識並建立 ${state.inlineBlanks.length} 格文內挖空與解析！`, "success");
-      return state.inlineBlanks.length;
+      if (showFeedback) {
+        setStatus(`已自動辨識並建立 ${newBlanks.length} 格文內挖空與解析！`, "success");
+      }
+      return newBlanks.length;
     }
 
     function applyRoleLayout(isAdmin) {
       state.isAdmin = Boolean(isAdmin);
-      const workspace = $("adminWorkspace");
+      const mainGrid = $("mainGrid");
+      const sidebar = $("adminSidebar");
       const studentMain = $("studentMainSection");
+      const badge = $("roleModeBadge");
       const subtitle = $("headerSubtitle");
+      const toggleBtn = $("btnToggleAdmin");
 
-      if (workspace && studentMain) {
-        if (state.isAdmin) {
-          workspace.classList.remove("hidden");
-          studentMain.classList.add("hidden");
-          if (subtitle) {
-            subtitle.textContent = uiLang === "en"
-              ? "Main Article Editor: Edit passage, options & explanations, then preview in a new window"
-              : "管理者主編輯區：直接放大編輯文章、選項與中文解析，可隨時「開新視窗預覽」";
-          }
-          renderAdminBlankManager();
-          syncCategoryFilterOptions();
-        } else {
-          setSelectedAdminWord("");
-          workspace.classList.add("hidden");
-          studentMain.classList.remove("hidden");
-          if (subtitle) {
-            subtitle.textContent = uiLang === "en"
-              ? "Click words for meaning & audio · Click sentences for translation · Click blanks to answer"
-              : "點單字查詞義發音｜點整句看中文翻譯｜點文內空格直接作答";
-          }
-          renderSavedArticlesLibrary();
-        }
+      if (state.isAdmin) {
+        mainGrid.classList.remove("max-w-5xl");
+        mainGrid.classList.add("max-w-7xl", "lg:grid-cols-12");
+        sidebar.classList.remove("hidden");
+        studentMain.classList.add("lg:col-span-8");
+        badge.textContent = "管理者上傳模式";
+        badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/30 font-semibold";
+        subtitle.textContent = "上傳 Word / PDF 自動擷取挖空與選項並出解析，亦可點字反白新增挖空";
+        toggleBtn.textContent = "退出管理者模式";
+      } else {
+        setSelectedAdminWord("");
+        mainGrid.classList.remove("max-w-7xl", "lg:grid-cols-12");
+        mainGrid.classList.add("max-w-5xl");
+        sidebar.classList.add("hidden");
+        studentMain.classList.remove("lg:col-span-8");
+        badge.textContent = "學生練習模式";
+        badge.className = "text-[11px] px-2 py-0.5 rounded-full bg-teal-400/20 text-teal-200 border border-teal-300/30 font-semibold";
+        subtitle.textContent = "點單字查詞義發音｜點整句看中文翻譯｜點文內空格直接作答";
+        toggleBtn.textContent = "🔒 管理者模式";
       }
-      applyUiLanguage(uiLang);
+      renderSavedArticlesLibrary();
+      renderAdminBlankManager();
     }
 
     function initRoleMode() {
@@ -1235,12 +1129,12 @@
       applyRoleLayout(roleParam === "admin" || isStoredAdmin);
     }
 
-    $("btnToggleAdmin")?.addEventListener("click", () => {
+    $("btnToggleAdmin").addEventListener("click", () => {
       if (state.isAdmin) {
         applyRoleLayout(false);
         return;
       }
-      const pwd = window.prompt("請輸入管理者通關密碼以開啟管理者編輯主區：");
+      const pwd = window.prompt("請輸入管理者通關密碼以開啟檔案上傳區：");
       if (pwd === null) return;
       if (pwd.trim() === ADMIN_PASS) {
         applyRoleLayout(true);
@@ -1251,12 +1145,16 @@
 
     function setStatus(msg, tone = "info") {
       const el = $("uploadStatus");
-      if (!el) return;
       el.classList.remove("hidden", "bg-slate-100", "text-slate-700", "border-slate-200", "bg-teal-50", "text-teal-800", "border-teal-200", "bg-amber-50", "text-amber-900", "border-amber-200", "bg-rose-50", "text-rose-800", "border-rose-200");
-      if (tone === "success") el.classList.add("bg-teal-50", "text-teal-800", "border-teal-200");
-      else if (tone === "warn") el.classList.add("bg-amber-50", "text-amber-900", "border-amber-200");
-      else if (tone === "error") el.classList.add("bg-rose-50", "text-rose-800", "border-rose-200");
-      else el.classList.add("bg-slate-100", "text-slate-700", "border-slate-200");
+      if (tone === "success") {
+        el.classList.add("bg-teal-50", "text-teal-800", "border-teal-200");
+      } else if (tone === "warn") {
+        el.classList.add("bg-amber-50", "text-amber-900", "border-amber-200");
+      } else if (tone === "error") {
+        el.classList.add("bg-rose-50", "text-rose-800", "border-rose-200");
+      } else {
+        el.classList.add("bg-slate-100", "text-slate-700", "border-slate-200");
+      }
       el.textContent = msg;
     }
 
@@ -1277,14 +1175,316 @@
       return result;
     }
 
+    function generateAutoClozeExplanation(num, contextSentence, options, answerIdx) {
+      const labels = ["A", "B", "C", "D"];
+      const correctOpt = (options[answerIdx] || "").trim();
+      const correctLetter = labels[answerIdx] || "A";
+      const lowerOpt = correctOpt.toLowerCase();
+      const dictInfo = BUILTIN_DICT[lowerOpt];
+
+      const optSummaries = options
+        .map((opt, idx) => {
+          const cleanOpt = (opt || "").trim();
+          if (!cleanOpt) return "";
+          const info = BUILTIN_DICT[cleanOpt.toLowerCase()];
+          return `(${labels[idx]}) ${cleanOpt}${info ? `（${info.zh}）` : ""}`;
+        })
+        .filter(Boolean)
+        .join("、");
+
+      const cleanSentence = (contextSentence || "").replace(`[${num}]`, `___(${correctOpt})___`);
+
+      if (dictInfo) {
+        return `本題測驗文意與詞彙搭配。各選項意義：${optSummaries}。根據原句「${cleanSentence}」的上下文語意，應選 (${correctLetter}) ${correctOpt}（${dictInfo.zh}）。補充提示：${dictInfo.note}`;
+      }
+      return `本題為第 [${num}] 格文內挖空題。選項包含：${optSummaries}。對照原句「${cleanSentence}」的前後文語意與文法結構，最適合填入 (${correctLetter}) ${correctOpt}。（管理者可直接修改此解析）`;
+    }
+
+    function parseRawClozeOptionsBlock(rawBlockText, articleText = "") {
+      const normalized = (rawBlockText || "")
+        .replace(/\r\n/g, "\n")
+        .replace(/\s+(?=\([A-D]\)\s*)/g, "\n")
+        .replace(/(Answer\s*Key[^\n]*|Answers?\s*[:：][^\n]*|解答\s*[:：][^\n]*|答案\s*[:：][^\n]*)/gi, "\n$1\n")
+        .trim();
+
+      if (!normalized) return [];
+
+      const lines = normalized.split("\n").map((l) => l.trim()).filter(Boolean);
+      const ansIdxLine = lines.findIndex((l) => /^(Answer\s*Key|Answers?|解答|答案|中文解析)/i.test(l));
+      const qLines = ansIdxLine === -1 ? lines : lines.slice(0, ansIdxLine);
+      const aLines = ansIdxLine === -1 ? [] : lines.slice(ansIdxLine);
+
+      const items = [];
+      let cur = null;
+
+      for (const line of qLines) {
+        const qHead = line.match(/^(?:\((\d{1,2})\)|(\d{1,2})[\.\)、])\s*(.*)$/);
+        if (qHead) {
+          if (cur) items.push(cur);
+          const qNum = parseInt(qHead[1] || qHead[2], 10);
+          const rest = (qHead[3] || "").trim();
+          cur = {
+            num: qNum,
+            options: [],
+            answer: 0,
+            explanation: ""
+          };
+          if (rest && /\([A-D]\)/i.test(rest)) {
+            const inlineOpts = [...rest.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)];
+            inlineOpts.forEach((m) => cur.options.push(m[2].trim()));
+          }
+          continue;
+        }
+
+        if (cur && /\([A-D]\)/i.test(line)) {
+          const inlineOpts = [...line.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)];
+          if (inlineOpts.length > 0) {
+            inlineOpts.forEach((m) => cur.options.push(m[2].trim()));
+            continue;
+          }
+        }
+      }
+      if (cur) items.push(cur);
+
+      const ansMap = {};
+      const expMap = {};
+      for (const line of aLines) {
+        const cleanedLine = line.replace(/^(Answer\s*Key|Answers?|解答|答案|中文解析)\s*[:：]?\s*/i, "").trim();
+        if (!cleanedLine) continue;
+
+        const multiPairs = [...cleanedLine.matchAll(/(\d{1,2})\s*[\.\)、:：]?\s*\(?([A-D])\)?/gi)];
+        if (multiPairs.length >= 2) {
+          multiPairs.forEach((m) => {
+            ansMap[parseInt(m[1], 10)] = ["A", "B", "C", "D"].indexOf(m[2].toUpperCase());
+          });
+          continue;
+        }
+
+        const singleMatch = cleanedLine.match(/^(\d{1,2})\s*[\.\)、:：\s]+\(?([A-D])\)?\s*(?:[—\-–:：]\s*(.*))?$/i);
+        if (singleMatch) {
+          const qNum = parseInt(singleMatch[1], 10);
+          ansMap[qNum] = ["A", "B", "C", "D"].indexOf(singleMatch[2].toUpperCase());
+          if (singleMatch[3] && singleMatch[3].trim()) {
+            expMap[qNum] = singleMatch[3].trim();
+          }
+        }
+      }
+
+      return items
+        .filter((it) => it.options.length >= 2)
+        .map((it) => {
+          while (it.options.length < 4) it.options.push("");
+          const ans = ansMap[it.num] !== undefined && ansMap[it.num] !== -1 ? ansMap[it.num] : 0;
+          const sent = articleText
+            ? (splitSentences(articleText).find((s) => s.includes(`[${it.num}]`)) || articleText)
+            : "";
+          const explanation = expMap[it.num]
+            ? expMap[it.num]
+            : generateAutoClozeExplanation(it.num, sent, it.options, ans);
+          return {
+            num: it.num,
+            contextSentence: sent,
+            options: it.options.slice(0, 4),
+            answer: ans,
+            explanation
+          };
+        });
+    }
+
+    function parseWorksheetContent(rawText) {
+      let normalized = (rawText || "").replace(/\r\n/g, "\n").trim();
+
+      normalized = normalized
+        .replace(/([.!?？”"'])\s*(?=\d{1,2}\.\s+[A-Za-z"'(_])/g, "$1\n")
+        .replace(/\s+(?=\([A-D]\)\s*)/g, "\n")
+        .replace(/(Answer\s*Key[^\n]*)/gi, "\n$1\n");
+
+      const lines = normalized.split("\n").map((l) => l.trim());
+
+      let firstQuestionIdx = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (/^(?:1\.|\(1\))\s*/.test(lines[i])) {
+          const lookahead = lines.slice(i, i + 8).join(" ");
+          if (/\(A\)/i.test(lookahead)) {
+            firstQuestionIdx = i;
+            break;
+          }
+        }
+      }
+
+      const normalizeBlankMarkers = (txt) => {
+        let autoSeq = 0;
+        const usedNums = new Set([...txt.matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1])));
+        return txt.replace(/(?:\(\s*(\d{1,2})\s*\)\s*_{2,}|\[\s*(\d{1,2})\s*\]|_{2,}\s*(\d{1,2})\s*_{2,}|\(\s*(\d{1,2})\s*\)(?=\s+[A-Za-z])|_{3,})/g, (match, g1, g2, g3, g4) => {
+          let num = parseInt(g1 || g2 || g3 || g4, 10);
+          if (!num) {
+            autoSeq += 1;
+            while (usedNums.has(autoSeq)) autoSeq += 1;
+            num = autoSeq;
+          }
+          usedNums.add(num);
+          return `[${num}]`;
+        });
+      };
+
+      if (firstQuestionIdx === -1) {
+        return {
+          articleText: normalizeBlankMarkers(rawText.trim()),
+          inlineBlanks: [],
+          readingQuestions: [],
+          rawClozeOptionsText: ""
+        };
+      }
+
+      let articleText = normalizeBlankMarkers(lines.slice(0, firstQuestionIdx).join("\n").trim());
+      const restLines = lines.slice(firstQuestionIdx);
+
+      let answerSectionIdx = restLines.findIndex((l) =>
+        /^(Answer\s*Key|Answers?|解答|答案|中文解析)/i.test(l)
+      );
+
+      const questionLines = answerSectionIdx === -1 ? restLines : restLines.slice(0, answerSectionIdx);
+      const answerLines = answerSectionIdx === -1 ? [] : restLines.slice(answerSectionIdx + 1);
+
+      const parsedQuestions = [];
+      let currentQ = null;
+
+      for (const line of questionLines) {
+        if (!line) continue;
+        const qMatch = line.match(/^(?:\((\d{1,2})\)|(\d{1,2})\.)\s*(.*)$/);
+        if (qMatch) {
+          if (currentQ) parsedQuestions.push(currentQ);
+          const qNum = parseInt(qMatch[1] || qMatch[2], 10);
+          const qBody = (qMatch[3] || "").trim();
+          currentQ = {
+            num: qNum,
+            questionText: `${qNum}. ${qBody}`,
+            options: [],
+            answer: 0,
+            explanation: "",
+            hasExplicitExplanation: false
+          };
+          if (qBody && /\([A-D]\)/i.test(qBody)) {
+            const inlineOpts = [...qBody.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)];
+            inlineOpts.forEach((m) => currentQ.options.push(m[2].trim()));
+          }
+          continue;
+        }
+
+        const optMatch = line.match(/^\(([A-D])\)\s*(.+)$/i);
+        if (optMatch && currentQ) {
+          currentQ.options.push(optMatch[2].trim());
+          continue;
+        }
+
+        if (currentQ && /\([A-D]\)/i.test(line)) {
+          const inlineOpts = [...line.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)];
+          if (inlineOpts.length > 0) {
+            inlineOpts.forEach((m) => currentQ.options.push(m[2].trim()));
+            continue;
+          }
+        }
+
+        if (currentQ && currentQ.options.length === 0) {
+          currentQ.questionText += " " + line;
+        }
+      }
+      if (currentQ) parsedQuestions.push(currentQ);
+
+      const answerEntries = [];
+      for (const line of answerLines) {
+        if (!line) continue;
+        const multiPairs = [...line.matchAll(/(\d{1,2})\s*[\.\)、:：]?\s*\(?([A-D])\)?/gi)];
+        if (multiPairs.length >= 2) {
+          multiPairs.forEach((m) => {
+            answerEntries.push({
+              num: parseInt(m[1], 10),
+              letter: m[2].toUpperCase(),
+              explanation: ""
+            });
+          });
+          continue;
+        }
+        const m = line.match(/^(?:(\d{1,2})[\.\)、\s]+)?\(?([A-D])\)?\s*(?:[—\-–:：]\s*(.*))?$/i);
+        if (m) {
+          answerEntries.push({
+            num: m[1] ? parseInt(m[1], 10) : null,
+            letter: m[2].toUpperCase(),
+            explanation: (m[3] || "").trim()
+          });
+        } else if (answerEntries.length > 0) {
+          answerEntries[answerEntries.length - 1].explanation += " " + line;
+        }
+      }
+
+      parsedQuestions.forEach((q, idx) => {
+        const matchedAns =
+          answerEntries.find((a) => a.num === q.num) || answerEntries[idx];
+        if (matchedAns) {
+          const ansIdx = ["A", "B", "C", "D"].indexOf(matchedAns.letter);
+          if (ansIdx !== -1) q.answer = ansIdx;
+          if (matchedAns.explanation) {
+            q.explanation = matchedAns.explanation;
+            q.hasExplicitExplanation = true;
+          }
+        }
+      });
+
+      const validQuestions = parsedQuestions.filter((q) => q.options.length >= 2);
+
+      const inlineBlanks = [];
+      const readingQuestions = [];
+      const rawClozeLines = [];
+      const labels = ["A", "B", "C", "D"];
+
+      validQuestions.forEach((q) => {
+        const marker = `[${q.num}]`;
+        if (articleText.includes(marker)) {
+          const foundSent = splitSentences(articleText).find((s) => s.includes(marker)) || articleText;
+          while (q.options.length < 4) q.options.push("");
+          const autoExp = q.hasExplicitExplanation
+            ? q.explanation
+            : generateAutoClozeExplanation(q.num, foundSent, q.options, q.answer);
+
+          inlineBlanks.push({
+            num: q.num,
+            contextSentence: foundSent,
+            options: q.options.slice(0, 4),
+            answer: q.answer,
+            explanation: autoExp
+          });
+
+          const optStr = q.options.slice(0, 4).map((o, i) => `(${labels[i]}) ${o}`).join(" ");
+          rawClozeLines.push(`${q.num}. ${optStr}`);
+        } else {
+          if (!q.explanation) {
+            const correctLetter = labels[q.answer] || "A";
+            q.explanation = `正確答案為 (${correctLetter}) ${q.options[q.answer] || ""}，可對照文章前後文線索。`;
+          }
+          readingQuestions.push(q);
+        }
+      });
+
+      if (inlineBlanks.length > 0) {
+        const ansSummary = inlineBlanks.map((b) => `${b.num}. ${labels[b.answer] || "A"}`).join("  ");
+        rawClozeLines.push(`Answer: ${ansSummary}`);
+      }
+
+      return {
+        articleText,
+        inlineBlanks,
+        readingQuestions,
+        rawClozeOptionsText: rawClozeLines.join("\n")
+      };
+    }
+
     function renderPassageInteractive() {
       const container = $("interactivePassage");
-      if (!container) return;
       container.innerHTML = "";
       const rawText = (state.passage || "").replace(/\r\n/g, "\n").trim();
 
       if (!rawText) {
-        container.innerHTML = '<p class="text-slate-400">尚未載入英文原文，請由上方「已儲存的文章庫」選擇文章，或進入管理者編輯區新增文章。</p>';
+        container.innerHTML = '<p class="text-slate-400">尚未載入英文原文。</p>';
         renderAdminBlankManager();
         return;
       }
@@ -1295,6 +1495,7 @@
 
       lines.forEach((line) => {
         const trimmedLine = line.trim();
+
         if (!trimmedLine) {
           const spacer = document.createElement("div");
           spacer.className = "h-3";
@@ -1304,6 +1505,7 @@
 
         const p = document.createElement("p");
         p.className = "leading-[2.15] text-slate-800";
+
         const lineSentences = splitSentencesInLine(trimmedLine);
 
         lineSentences.forEach((sentence, idxInLine) => {
@@ -1315,7 +1517,8 @@
           sentSpan.dataset.sIdx = String(currentIdx);
           sentSpan.title = "點擊此句可查看整句翻譯與發音";
 
-          sentence.split(/(\[\d+\])/g).forEach((part) => {
+          const parts = sentence.split(/(\[\d+\])/g);
+          parts.forEach((part) => {
             if (!part) return;
             const blankMatch = part.match(/^\[(\d+)\]$/);
             if (blankMatch) {
@@ -1326,23 +1529,28 @@
 
               const btn = document.createElement("button");
               btn.type = "button";
-              btn.className = "inline-blank-btn";
+              btn.className = "inline-blank-btn no-print-border";
               if (blankObj && pickedOptIdx !== undefined) {
                 const isCorrect = pickedOptIdx === blankObj.answer;
                 btn.classList.add(isCorrect ? "correct" : "wrong");
-                btn.innerHTML = `<span>(${bNum}) ${escapeHtml(blankObj.options[pickedOptIdx] || "")}</span><span>${isCorrect ? "✓" : "✗"}</span>`;
+                const optText = blankObj.options[pickedOptIdx] || "";
+                btn.innerHTML = `<span>(${bNum}) ${escapeHtml(optText)}</span><span>${isCorrect ? "✓" : "✗"}</span>`;
               } else {
                 btn.innerHTML = `<span>(${bNum}) 點此作答</span>`;
               }
+              btn.title = `點擊開啟第 ${bNum} 格選項小視窗`;
               btn.addEventListener("click", (ev) => {
                 ev.stopPropagation();
-                if (blankIdx !== -1) openClozeModal(blankIdx);
+                if (blankIdx !== -1) {
+                  openClozeModal(blankIdx);
+                }
               });
               sentSpan.appendChild(btn);
               return;
             }
 
-            part.split(/(\s+)/).forEach((tok) => {
+            const tokens = part.split(/(\s+)/);
+            tokens.forEach((tok) => {
               if (!tok) return;
               if (/^\s+$/.test(tok)) {
                 sentSpan.appendChild(document.createTextNode(tok));
@@ -1358,6 +1566,9 @@
                   wordSpan.classList.add("admin-picked-word");
                 }
                 wordSpan.textContent = coreWord;
+                wordSpan.title = state.isAdmin
+                  ? `點擊選取「${coreWord}」準備新增挖空（或按住拖曳反白）`
+                  : `點擊查詢「${coreWord}」中文翻譯與發音`;
                 wordSpan.addEventListener("click", (ev) => {
                   ev.stopPropagation();
                   if (state.isAdmin) {
@@ -1382,7 +1593,9 @@
           });
 
           p.appendChild(sentSpan);
-          if (idxInLine < lineSentences.length - 1) p.appendChild(document.createTextNode(" "));
+          if (idxInLine < lineSentences.length - 1) {
+            p.appendChild(document.createTextNode(" "));
+          }
         });
 
         container.appendChild(p);
@@ -1390,13 +1603,14 @@
 
       updateInlineClozeScoreBadge();
       renderAdminBlankManager();
-      if (state.reciteZoneOpen) renderReciteZoneSentences();
+      if (state.reciteZoneOpen) {
+        renderReciteZoneSentences();
+      }
     }
 
     function updateInlineClozeScoreBadge() {
       const badge = $("inlineClozeScoreBadge");
       const resetBtn = $("btnResetInlineCloze");
-      if (!badge || !resetBtn) return;
       const total = state.inlineBlanks.length;
       if (total === 0) {
         badge.classList.add("hidden");
@@ -1419,17 +1633,23 @@
       const labels = ["A", "B", "C", "D"];
 
       $("clozeModalBadge").textContent = `文內挖空第 ${item.num} 題（共 ${state.inlineBlanks.length} 格）`;
-      $("clozeContextSentence").innerHTML = escapeHtml(item.contextSentence).replace(
+
+      const formattedContext = escapeHtml(item.contextSentence).replace(
         `[${item.num}]`,
         `<span class="px-2 py-0.5 mx-1 rounded bg-teal-100 text-teal-900 border border-teal-400 font-black">[ ${hasPicked ? escapeHtml(item.options[picked]) : item.num} ]</span>`
       );
+      $("clozeContextSentence").innerHTML = formattedContext;
 
       $("clozeModalOptions").innerHTML = item.options.map((opt, oIdx) => {
         let cls = "border-slate-200 bg-white hover:bg-teal-50/60 text-slate-800";
         if (hasPicked) {
-          if (oIdx === item.answer) cls = "border-emerald-500 bg-emerald-50 text-emerald-950 font-extrabold";
-          else if (oIdx === picked) cls = "border-rose-400 bg-rose-50 text-rose-900 font-bold";
-          else cls = "border-slate-200 bg-slate-50 text-slate-400";
+          if (oIdx === item.answer) {
+            cls = "border-emerald-500 bg-emerald-50 text-emerald-950 font-extrabold";
+          } else if (oIdx === picked && oIdx !== item.answer) {
+            cls = "border-rose-400 bg-rose-50 text-rose-900 font-bold";
+          } else {
+            cls = "border-slate-200 bg-slate-50 text-slate-400";
+          }
         }
         return `
           <button type="button" onclick="pickInlineClozeAnswer(${blankIdx}, ${oIdx})" class="w-full text-left px-4 py-2.5 rounded-xl border text-sm transition flex items-center justify-between gap-2 ${cls}">
@@ -1456,7 +1676,10 @@
       }
 
       $("btnPrevCloze").disabled = blankIdx === 0;
+      $("btnPrevCloze").classList.toggle("opacity-40", blankIdx === 0);
       $("btnNextCloze").disabled = blankIdx >= state.inlineBlanks.length - 1;
+      $("btnNextCloze").classList.toggle("opacity-40", blankIdx >= state.inlineBlanks.length - 1);
+
       $("clozeModal").classList.remove("hidden");
       $("clozeModal").classList.add("flex");
     }
@@ -1472,64 +1695,100 @@
       $("clozeModal").classList.remove("flex");
     }
 
-    function generateInlineClozeFromPassage(count = 5) {
+    function generateInlineClozeFromPassage(count = 4) {
       let cleanPassage = state.passage;
       state.inlineBlanks.forEach((b) => {
-        cleanPassage = cleanPassage.replace(`[${b.num}]`, b.options[b.answer] || "");
+        const ansWord = b.options[b.answer] || "";
+        cleanPassage = cleanPassage.replace(`[${b.num}]`, ansWord);
       });
+
       const lines = cleanPassage.split("\n");
       const candidates = [];
       lines.forEach((line, lineIdx) => {
-        const words = (line.match(/\b[A-Za-z]{4,}\b/g) || []).filter((w) => !["john", "there", "these", "those", "where", "what", "when", "with", "from", "have", "some", "your", "this", "that"].includes(w.toLowerCase()));
-        if (words.length > 0) candidates.push({ lineIdx, word: words[0] });
+        const words = line.match(/\b[A-Za-z]{4,}\b/g) || [];
+        const validWords = words.filter((w) => !["john", "there", "these", "those", "where", "what", "when", "with", "from", "have", "some", "your", "this", "that"].includes(w.toLowerCase()));
+        if (validWords.length > 0 && !line.trim().startsWith("[")) {
+          const chosen = validWords[Math.floor(Math.random() * validWords.length)];
+          candidates.push({ lineIdx, word: chosen });
+        }
       });
-      const picked = candidates.slice(0, count);
+
+      const picked = candidates.sort(() => Math.random() - 0.5).slice(0, count).sort((a, b) => a.lineIdx - b.lineIdx);
       const allPool = [...new Set((cleanPassage.match(/\b[A-Za-z]{4,}\b/g) || []).map((w) => w.toLowerCase()))];
+
       const newBlanks = [];
       picked.forEach((item, idx) => {
         const num = idx + 1;
+        const targetLower = item.word.toLowerCase();
         lines[item.lineIdx] = lines[item.lineIdx].replace(new RegExp(`\\b${item.word}\\b`), `[${num}]`);
-        const distractors = allPool.filter((w) => w !== item.word.toLowerCase()).slice(0, 3);
-        while (distractors.length < 3) distractors.push(["wallet", "schoolbag", "behind", "between"][distractors.length] || "desk");
-        const options = [item.word, ...distractors];
+
+        const distractors = allPool
+          .filter((w) => w !== targetLower && Math.abs(w.length - targetLower.length) <= 4)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+        while (distractors.length < 3) {
+          const fb = ["wallet", "schoolbag", "behind", "between", "glasses", "across", "table", "bedroom"].find((f) => f !== targetLower && !distractors.includes(f)) || "store";
+          distractors.push(fb);
+        }
+
+        const options = [item.word, ...distractors].sort(() => Math.random() - 0.5);
+        const answer = options.indexOf(item.word);
         const sent = lines[item.lineIdx].trim();
-        newBlanks.push({ num, contextSentence: sent, options, answer: 0, explanation: generateAutoClozeExplanation(num, sent, options, 0) });
+
+        newBlanks.push({
+          num,
+          contextSentence: sent,
+          options,
+          answer,
+          explanation: generateAutoClozeExplanation(num, sent, options, answer)
+        });
       });
+
       state.passage = lines.join("\n");
       state.inlineBlanks = newBlanks;
       state.inlineAnswers = {};
-      if ($("sourceTextInput")) $("sourceTextInput").value = state.passage;
+      $("sourceTextInput").value = state.passage;
       renderPassageInteractive();
     }
 
     function renderTranslation() {
       const box = $("displayTranslation");
-      if (!box) return;
       const rawTrans = (state.translation || "").replace(/\r\n/g, "\n").trim();
+
       if (!rawTrans) {
         box.innerHTML = '<p class="text-slate-400">尚未填入全文中文翻譯。</p>';
         return;
       }
-      box.innerHTML = rawTrans.split("\n").map((line) => {
+
+      const lines = rawTrans.split("\n");
+      box.innerHTML = lines.map((line) => {
         const trimmed = line.trim();
         if (!trimmed) return '<div class="h-2.5"></div>';
         return `<p>${escapeHtml(trimmed)}</p>`;
       }).join("");
     }
 
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
     function speakText(text, forceLang = null, rate = 0.95) {
       if (!("speechSynthesis" in window) || !text) return;
       window.speechSynthesis.cancel();
       const cleaned = text.replace(/\[\d+\]/g, "blank");
+      const hasEnglish = /[A-Za-z]/.test(cleaned);
       const utter = new SpeechSynthesisUtterance(cleaned);
-      utter.lang = forceLang || (/[A-Za-z]/.test(cleaned) ? "en-US" : "zh-TW");
+      utter.lang = forceLang || (hasEnglish ? "en-US" : "zh-TW");
       utter.rate = rate;
       window.speechSynthesis.speak(utter);
     }
 
     function renderReciteZoneSentences() {
       const list = $("reciteSentenceList");
-      if (!list) return;
       if (!state.sentences.length) {
         list.innerHTML = '<p class="text-xs text-slate-400">目前尚無可朗誦的課文句子。</p>';
         return;
@@ -1540,7 +1799,7 @@
           return b ? b.options[b.answer] : "___";
         });
         return `
-          <div id="recite_row_${idx}" class="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70">
+          <div id="recite_row_${idx}" class="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-indigo-50/60 transition">
             <div class="text-xs sm:text-sm text-slate-800 leading-relaxed">
               <span class="font-extrabold text-indigo-700 mr-1.5">${idx + 1}.</span>
               <span>${escapeHtml(cleanSent)}</span>
@@ -1561,7 +1820,11 @@
         const b = state.inlineBlanks.find((item) => item.num === Number(n));
         return b ? b.options[b.answer] : "blank";
       });
-      speakText(cleanSent, "en-US", parseFloat($("reciteRateSelect")?.value || "0.95"));
+      document.querySelectorAll("[id^='recite_row_']").forEach((el) => el.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50"));
+      const row = $(`recite_row_${idx}`);
+      if (row) row.classList.add("ring-2", "ring-indigo-500", "bg-indigo-50");
+      const rate = parseFloat($("reciteRateSelect")?.value || "0.95");
+      speakText(cleanSent, "en-US", rate);
     }
 
     function reciteAllFromStart(idx = 0) {
@@ -1571,22 +1834,36 @@
       }
       state.isRecitingAll = true;
       window.speechSynthesis.cancel();
+
+      document.querySelectorAll("[id^='recite_row_']").forEach((el) => el.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50"));
+      const row = $(`recite_row_${idx}`);
+      if (row) {
+        row.classList.add("ring-2", "ring-indigo-500", "bg-indigo-50");
+        row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
       const cleanSent = state.sentences[idx].replace(/\[(\d+)\]/g, (_, n) => {
         const b = state.inlineBlanks.find((item) => item.num === Number(n));
         return b ? b.options[b.answer] : "blank";
       });
+
       const utter = new SpeechSynthesisUtterance(cleanSent);
       utter.lang = "en-US";
       utter.rate = parseFloat($("reciteRateSelect")?.value || "0.95");
       utter.onend = () => {
-        if (state.isRecitingAll) reciteAllFromStart(idx + 1);
+        if (state.isRecitingAll) {
+          reciteAllFromStart(idx + 1);
+        }
       };
       window.speechSynthesis.speak(utter);
     }
 
     function stopReciting() {
       state.isRecitingAll = false;
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.querySelectorAll("[id^='recite_row_']").forEach((el) => el.classList.remove("ring-2", "ring-indigo-500", "bg-indigo-50"));
     }
 
     async function translateSingleChunk(chunk, sl = "en", tl = "zh-TW") {
@@ -1600,16 +1877,25 @@
     async function translateAlignedByEnglish(text, sl = "en", tl = "zh-TW") {
       const clean = (text || "").replace(/\r\n/g, "\n").trim();
       if (!clean) return { fullText: "", sentencesZh: [] };
+
+      const lines = clean.split("\n");
       const outputLines = [];
       const sentencesZh = [];
-      for (const line of clean.split("\n")) {
+
+      for (const line of lines) {
         const trimmedLine = line.trim();
         if (!trimmedLine) {
           outputLines.push("");
           continue;
         }
-        const lineSents = splitSentencesInLine(trimmedLine);
+
+        const speakerMatch = trimmedLine.match(/^([A-Za-z]+:\s*)(.+)$/);
+        const prefix = speakerMatch ? speakerMatch[1] : "";
+        const bodyText = speakerMatch ? speakerMatch[2] : trimmedLine;
+
+        const lineSents = splitSentencesInLine(bodyText);
         const translatedLineSents = [];
+
         for (const sent of lineSents) {
           const resolvedSent = sent.replace(/\[(\d+)\]/g, (_, n) => {
             const b = state.inlineBlanks.find((item) => item.num === Number(n));
@@ -1620,21 +1906,29 @@
           translatedLineSents.push(finalSent);
           sentencesZh.push(finalSent);
         }
-        outputLines.push(translatedLineSents.join(" "));
+
+        outputLines.push(prefix + translatedLineSents.join(" "));
       }
-      return { fullText: outputLines.join("\n"), sentencesZh };
+
+      return {
+        fullText: outputLines.join("\n"),
+        sentencesZh
+      };
     }
 
     async function openWordDictionary(word, contextSentence = "") {
       const lower = word.toLowerCase();
       state.activeDict = { mode: "word", query: word, meaning: "查詢中...", note: "" };
+
       $("dictModeBadge").textContent = "單字小字典";
       $("dictQueryText").textContent = word;
       $("dictPhonetic").textContent = contextSentence ? `例句：${contextSentence}` : "";
       $("dictMeaning").textContent = "查詢中文釋義中...";
       $("dictNoteBox").textContent = "正在載入詞性與學習提示...";
+      $("btnSaveWord").textContent = "★ 存入單字庫";
       $("dictModal").classList.remove("hidden");
       $("dictModal").classList.add("flex");
+
       speakText(word, "en-US");
 
       if (BUILTIN_DICT[lower]) {
@@ -1650,12 +1944,14 @@
         const zh = await translateSingleChunk(word, "en", "zh-TW");
         state.activeDict.meaning = zh || "查無中文釋義";
         state.activeDict.note = `已為您查詢「${word}」的中文意思，可按「存入單字庫」收藏複習。`;
+        $("dictMeaning").textContent = state.activeDict.meaning;
+        $("dictNoteBox").textContent = state.activeDict.note;
       } catch {
         state.activeDict.meaning = "目前離線或無法連線線上詞典，可按上方「英文發音」聆聽讀音。";
         state.activeDict.note = "建議連接網路以使用即時中英翻譯。";
+        $("dictMeaning").textContent = state.activeDict.meaning;
+        $("dictNoteBox").textContent = state.activeDict.note;
       }
-      $("dictMeaning").textContent = state.activeDict.meaning;
-      $("dictNoteBox").textContent = state.activeDict.note;
     }
 
     async function openSentenceDictionary(sentence, sIdx) {
@@ -1663,14 +1959,18 @@
         const b = state.inlineBlanks.find((item) => item.num === Number(n));
         return b ? b.options[b.answer] : "___";
       });
+
       state.activeDict = { mode: "sentence", query: cleanSentence, meaning: "翻譯整句中...", note: "" };
+
       $("dictModeBadge").textContent = "句子中文翻譯與發音";
       $("dictQueryText").textContent = cleanSentence;
       $("dictPhonetic").textContent = `第 ${sIdx + 1} 句`;
       $("dictMeaning").textContent = "正在翻譯此句...";
       $("dictNoteBox").textContent = "可點擊上方「英文發音」或「中文朗讀」，也可將此句存入單字庫。";
+      $("btnSaveWord").textContent = "★ 句型存入單字庫";
       $("dictModal").classList.remove("hidden");
       $("dictModal").classList.add("flex");
+
       speakText(cleanSentence, "en-US");
 
       if (state.sentenceTranslations[sIdx]) {
@@ -1683,10 +1983,11 @@
         const zhSentence = await translateSingleChunk(cleanSentence, "en", "zh-TW");
         state.activeDict.meaning = zhSentence || "無法取得句意翻譯";
         state.sentenceTranslations[sIdx] = state.activeDict.meaning;
+        $("dictMeaning").textContent = state.activeDict.meaning;
       } catch {
         state.activeDict.meaning = "目前無法連線翻譯服務，請稍後再試。";
+        $("dictMeaning").textContent = state.activeDict.meaning;
       }
-      $("dictMeaning").textContent = state.activeDict.meaning;
     }
 
     function closeDictionary() {
@@ -1697,15 +1998,14 @@
 
     function renderSavedVocab() {
       const wrap = $("savedVocabList");
-      if ($("savedVocabCount")) $("savedVocabCount").textContent = String(state.savedVocab.length);
-      if (!wrap) return;
+      $("savedVocabCount").textContent = String(state.savedVocab.length);
       if (state.savedVocab.length === 0) {
         wrap.innerHTML = '<span class="text-slate-400">點選文章中的單字或句子查看中文翻譯與發音後，可加入此單字庫複習</span>';
         return;
       }
       wrap.innerHTML = state.savedVocab.map((item, idx) => `
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 text-teal-950 border border-teal-200 font-semibold">
-          <button type="button" onclick="speakText('${escapeHtml(item.word).replace(/'/g, "\\'")}')" class="text-teal-700">🔊</button>
+        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 text-teal-950 border border-teal-200 font-semibold shadow-2xs">
+          <button type="button" onclick="speakText('${escapeHtml(item.word).replace(/'/g, "\\'")}')" title="點擊發音" class="text-teal-700 hover:scale-110 transition">🔊</button>
           <button type="button" onclick="openWordDictionary('${escapeHtml(item.word).replace(/'/g, "\\'")}')" class="hover:underline font-extrabold">${escapeHtml(item.word)}</button>
           <span class="text-slate-600 font-normal">· ${escapeHtml(item.meaning)}</span>
           <button type="button" onclick="removeSavedVocab(${idx})" class="text-rose-500 hover:text-rose-700 font-bold ml-1">×</button>
@@ -1721,17 +2021,14 @@
 
     function renderQuizList() {
       const listEl = $("quizList");
-      if (!listEl) return;
       const total = state.readingQuestions.length;
       const answeredCount = Object.keys(state.readingAnswers).length;
       const correctCount = Object.entries(state.readingAnswers).filter(([qIdx, optIdx]) => state.readingQuestions[Number(qIdx)]?.answer === optIdx).length;
 
-      if ($("quizScoreBadge")) {
-        $("quizScoreBadge").textContent = `作答進度：${answeredCount} / ${total}（答對 ${correctCount} 題）`;
-      }
+      $("quizScoreBadge").textContent = `作答進度：${answeredCount} / ${total}（答對 ${correctCount} 題）`;
 
       if (total === 0) {
-        listEl.innerHTML = '<p class="text-slate-400 text-sm">目前此篇無額外閱讀測驗題。</p>';
+        listEl.innerHTML = '<p class="text-slate-400 text-sm">目前此篇為純文內挖空練習，下方無額外閱讀測驗題。</p>';
         return;
       }
 
@@ -1744,9 +2041,13 @@
         const optionsHtml = q.options.map((opt, oIdx) => {
           let styleClass = "border-slate-200 bg-white hover:bg-slate-50 text-slate-800";
           if (hasPicked) {
-            if (oIdx === q.answer) styleClass = "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold";
-            else if (oIdx === picked) styleClass = "border-rose-400 bg-rose-50 text-rose-900";
-            else styleClass = "border-slate-200 bg-slate-50/60 text-slate-500";
+            if (oIdx === q.answer) {
+              styleClass = "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold";
+            } else if (oIdx === picked && oIdx !== q.answer) {
+              styleClass = "border-rose-400 bg-rose-50 text-rose-900";
+            } else {
+              styleClass = "border-slate-200 bg-slate-50/60 text-slate-500";
+            }
           }
           return `
             <button type="button" onclick="selectAnswer(${qIdx}, ${oIdx})" class="w-full text-left px-4 py-2.5 rounded-xl border text-sm transition flex items-center gap-2.5 ${styleClass}">
@@ -1758,7 +2059,10 @@
 
         const feedbackHtml = hasPicked ? `
           <div class="mt-3 p-3.5 rounded-xl text-xs sm:text-sm leading-relaxed ${isCorrect ? "bg-emerald-50 text-emerald-900 border border-emerald-200" : "bg-amber-50 text-amber-950 border border-amber-200"}">
-            <div class="font-extrabold mb-1">${isCorrect ? "✓ 答對了！" : `✗ 答錯囉，正確答案是 (${labels[q.answer]}) ${escapeHtml(q.options[q.answer])}`}</div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+              <span class="font-extrabold">${isCorrect ? "✓ 答對了！" : `✗ 答錯囉，正確答案是 (${labels[q.answer]}) ${escapeHtml(q.options[q.answer])}`}</span>
+              <a href="#passageAnchor" class="text-xs font-bold underline text-teal-800 hover:text-teal-950">↑ 回文章看原文</a>
+            </div>
             <div><strong>中文解析：</strong>${escapeHtml(q.explanation)}</div>
           </div>
         ` : "";
@@ -1767,10 +2071,15 @@
           <div class="rounded-2xl border border-slate-200/90 bg-slate-50/40 p-4 sm:p-5">
             <div class="flex items-center justify-between gap-2 mb-2">
               <span class="text-xs font-bold text-teal-700">閱讀測驗第 ${qIdx + 1} 題</span>
-              <button type="button" onclick="speakText('${escapeHtml(q.questionText).replace(/'/g, "\\'")}')" class="text-xs font-semibold text-slate-500 hover:text-teal-700">🔊 唸題目</button>
+              <div class="flex items-center gap-3 no-print">
+                <button type="button" onclick="speakText('${escapeHtml(q.questionText).replace(/'/g, "\\'")}')" class="text-xs font-semibold text-slate-500 hover:text-teal-700">🔊 唸題目</button>
+                <a href="#passageAnchor" class="text-xs font-semibold text-slate-500 hover:text-teal-700 transition">↑ 回文章對照</a>
+              </div>
             </div>
             <div class="text-sm sm:text-base font-bold text-slate-900 mb-3 leading-relaxed">${escapeHtml(q.questionText)}</div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${optionsHtml}</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${optionsHtml}
+            </div>
             ${feedbackHtml}
           </div>
         `;
@@ -1782,106 +2091,6 @@
       renderQuizList();
     }
 
-    function parseWorksheetContent(rawText) {
-      let normalized = (rawText || "").replace(/\r\n/g, "\n").trim();
-      normalized = normalized
-        .replace(/([.!?？”"'])\s*(?=\d{1,2}\.\s+[A-Za-z"'(_])/g, "$1\n")
-        .replace(/\s+(?=\([A-D]\)\s*)/g, "\n")
-        .replace(/(Answer\s*Key[^\n]*)/gi, "\n$1\n");
-
-      const lines = normalized.split("\n").map((l) => l.trim());
-      let firstQuestionIdx = -1;
-      for (let i = 0; i < lines.length; i++) {
-        if (/^(?:1\.|\(1\))\s*/.test(lines[i]) && /\(A\)/i.test(lines.slice(i, i + 8).join(" "))) {
-          firstQuestionIdx = i;
-          break;
-        }
-      }
-
-      const normalizeBlankMarkers = (txt) => {
-        let autoSeq = 0;
-        const usedNums = new Set([...txt.matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1])));
-        return txt.replace(/(?:\(\s*(\d{1,2})\s*\)\s*_{2,}|\[\s*(\d{1,2})\s*\]|_{2,}\s*(\d{1,2})\s*_{2,}|_{3,})/g, (_, g1, g2, g3) => {
-          let num = parseInt(g1 || g2 || g3, 10);
-          if (!num) {
-            autoSeq += 1;
-            while (usedNums.has(autoSeq)) autoSeq += 1;
-            num = autoSeq;
-          }
-          usedNums.add(num);
-          return `[${num}]`;
-        });
-      };
-
-      if (firstQuestionIdx === -1) {
-        return { articleText: normalizeBlankMarkers(rawText.trim()), inlineBlanks: [], readingQuestions: [], rawClozeOptionsText: "" };
-      }
-
-      const articleText = normalizeBlankMarkers(lines.slice(0, firstQuestionIdx).join("\n").trim());
-      const restLines = lines.slice(firstQuestionIdx);
-      const answerSectionIdx = restLines.findIndex((l) => /^(Answer\s*Key|Answers?|解答|答案|中文解析)/i.test(l));
-      const questionLines = answerSectionIdx === -1 ? restLines : restLines.slice(0, answerSectionIdx);
-      const answerLines = answerSectionIdx === -1 ? [] : restLines.slice(answerSectionIdx + 1);
-
-      const parsedQuestions = [];
-      let currentQ = null;
-      for (const line of questionLines) {
-        if (!line) continue;
-        const qMatch = line.match(/^(?:\((\d{1,2})\)|(\d{1,2})\.)\s*(.*)$/);
-        if (qMatch) {
-          if (currentQ) parsedQuestions.push(currentQ);
-          const qNum = parseInt(qMatch[1] || qMatch[2], 10);
-          currentQ = { num: qNum, questionText: `${qNum}. ${(qMatch[3] || "").trim()}`, options: [], answer: 0, explanation: "" };
-          continue;
-        }
-        const optMatch = line.match(/^\(([A-D])\)\s*(.+)$/i);
-        if (optMatch && currentQ) {
-          currentQ.options.push(optMatch[2].trim());
-          continue;
-        }
-        if (currentQ && /\([A-D]\)/i.test(line)) {
-          [...line.matchAll(/\(([A-D])\)\s*([^(]+?)(?=\s*\([A-D]\)|$)/gi)].forEach((m) => currentQ.options.push(m[2].trim()));
-        } else if (currentQ && currentQ.options.length === 0) {
-          currentQ.questionText += " " + line;
-        }
-      }
-      if (currentQ) parsedQuestions.push(currentQ);
-
-      const ansMap = {};
-      for (const line of answerLines) {
-        [...line.matchAll(/(\d{1,2})\s*[\.\)、:：]?\s*\(?([A-D])\)?/gi)].forEach((m) => {
-          ansMap[parseInt(m[1], 10)] = ["A", "B", "C", "D"].indexOf(m[2].toUpperCase());
-        });
-      }
-
-      const inlineBlanks = [];
-      const readingQuestions = [];
-      const rawClozeLines = [];
-      const labels = ["A", "B", "C", "D"];
-
-      parsedQuestions.filter((q) => q.options.length >= 2).forEach((q) => {
-        if (ansMap[q.num] !== undefined && ansMap[q.num] !== -1) q.answer = ansMap[q.num];
-        while (q.options.length < 4) q.options.push("");
-        const marker = `[${q.num}]`;
-        if (articleText.includes(marker)) {
-          const sent = splitSentences(articleText).find((s) => s.includes(marker)) || articleText;
-          inlineBlanks.push({
-            num: q.num,
-            contextSentence: sent,
-            options: q.options.slice(0, 4),
-            answer: q.answer,
-            explanation: generateAutoClozeExplanation(q.num, sent, q.options, q.answer)
-          });
-          rawClozeLines.push(`${q.num}. ${q.options.slice(0, 4).map((o, i) => `(${labels[i]}) ${o}`).join(" ")}`);
-        } else {
-          q.explanation = `正確答案為 (${labels[q.answer]}) ${q.options[q.answer] || ""}，請對照文章前後文語意。`;
-          readingQuestions.push(q);
-        }
-      });
-
-      return { articleText, inlineBlanks, readingQuestions, rawClozeOptionsText: rawClozeLines.join("\n") };
-    }
-
     async function extractTextFromPdf(file) {
       const buf = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -1889,7 +2098,22 @@
       for (let p = 1; p <= pdf.numPages; p++) {
         const page = await pdf.getPage(p);
         const content = await page.getTextContent();
-        fullText += content.items.map((it) => it.str).join(" ") + "\n";
+        let lastY = null;
+        let pageLines = [];
+        let currentLine = "";
+
+        content.items.forEach((it) => {
+          const y = it.transform ? Math.round(it.transform[5]) : null;
+          if (lastY !== null && y !== null && Math.abs(y - lastY) > 6) {
+            pageLines.push(currentLine.trim());
+            currentLine = it.str;
+          } else {
+            currentLine += (currentLine && !currentLine.endsWith(" ") && !it.str.startsWith(" ") ? " " : "") + it.str;
+          }
+          lastY = y;
+        });
+        if (currentLine.trim()) pageLines.push(currentLine.trim());
+        fullText += pageLines.join("\n") + "\n";
       }
       return fullText.trim();
     }
@@ -1905,8 +2129,11 @@
       const zip = await JSZip.loadAsync(buf);
       const xmlFile = zip.file("content.xml");
       if (!xmlFile) throw new Error("無法讀取 ODT 內容");
-      const doc = new DOMParser().parseFromString(await xmlFile.async("string"), "application/xml");
-      return Array.from(doc.getElementsByTagNameNS("*", "p")).map((p) => p.textContent.trim()).filter(Boolean).join("\n");
+      const xmlStr = await xmlFile.async("string");
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(xmlStr, "application/xml");
+      const paragraphs = Array.from(doc.getElementsByTagNameNS("*", "p"));
+      return paragraphs.map((p) => p.textContent.trim()).filter(Boolean).join("\n");
     }
 
     async function extractTextFromImage(file) {
@@ -1920,52 +2147,84 @@
     async function handleFileUpload(file) {
       if (!file) return;
       const name = file.name.toLowerCase();
-      setStatus(`正在讀取檔案「${file.name}」...`, "info");
+      setStatus(`正在讀取檔案「${file.name}」並解析文內挖空、選項與自動生成解析...`, "info");
+
       try {
         let extracted = "";
-        if (name.endsWith(".pdf") || file.type === "application/pdf") extracted = await extractTextFromPdf(file);
-        else if (name.endsWith(".docx") || file.type.includes("wordprocessingml")) extracted = await extractTextFromDocx(file);
-        else if (name.endsWith(".odt") || file.type.includes("opendocument.text")) extracted = await extractTextFromOdt(file);
-        else if (/\.(jpg|jpeg|png|webp)$/.test(name) || file.type.startsWith("image/")) extracted = await extractTextFromImage(file);
-        else {
+        if (name.endsWith(".pdf") || file.type === "application/pdf") {
+          extracted = await extractTextFromPdf(file);
+        } else if (name.endsWith(".docx") || file.type.includes("wordprocessingml")) {
+          extracted = await extractTextFromDocx(file);
+        } else if (name.endsWith(".odt") || file.type.includes("opendocument.text")) {
+          extracted = await extractTextFromOdt(file);
+        } else if (/\.(jpg|jpeg|png|webp)$/.test(name) || file.type.startsWith("image/")) {
+          extracted = await extractTextFromImage(file);
+        } else {
           setStatus("不支援的檔案格式，請上傳 PDF、Word (.docx / .odt) 或 JPG/PNG 圖片。", "error");
           return;
         }
+
         if (!extracted) {
-          setStatus("檔案中未擷取到文字。", "warn");
+          setStatus("檔案中未擷取到文字，若是掃描版 PDF 建議轉為 JPG 後重新上傳。", "warn");
           return;
         }
-        const parsed = parseWorksheetContent(extracted);
+
+        const cleaned = extracted
+          .replace(/\r\n/g, "\n")
+          .replace(/[ \t]+/g, " ")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+
+        const parsed = parseWorksheetContent(cleaned);
         state.inlineBlanks = parsed.inlineBlanks;
         state.inlineAnswers = {};
         state.readingQuestions = parsed.readingQuestions;
         state.readingAnswers = {};
-        if ($("sourceTextInput")) $("sourceTextInput").value = parsed.articleText;
-        if ($("rawClozeOptionsInput")) $("rawClozeOptionsInput").value = parsed.rawClozeOptionsText || "";
-        if ($("translationTextInput")) $("translationTextInput").value = "";
-        if ($("metaTitle")) $("metaTitle").value = file.name.replace(/\.[^.]+$/, "");
+
+        $("sourceTextInput").value = parsed.articleText;
+        if ($("rawClozeOptionsInput")) {
+          $("rawClozeOptionsInput").value = parsed.rawClozeOptionsText || "";
+        }
+        $("translationTextInput").value = "";
+        $("metaTitle").value = file.name.replace(/\.[^.]+$/, "");
+
+        setStatus(`已成功讀取「${file.name}」（自動形成文內挖空 ${parsed.inlineBlanks.length} 格並生成中文解析、下方閱讀題 ${parsed.readingQuestions.length} 題），正在自動翻譯...`, "success");
         await applyInputsAndGenerate(true, true);
-        setStatus(`完成！「${file.name}」已載入並自動建立互動題組。`, "success");
+        setStatus(`完成！「${file.name}」已自動建立文內選項與中文解析，您可於左側面板修改。`, "success");
       } catch (err) {
         setStatus(`檔案處理失敗：${err.message || err}`, "error");
       }
     }
 
     async function applyInputsAndGenerate(autoTranslateMissing = false, autoDetectRawBlanks = true) {
-      state.level = ($("metaLevel")?.value || state.level || "國七/基礎閱讀").trim();
-      state.topic = ($("metaTopic")?.value || state.topic || "文內挖空＋閱讀測驗").trim();
-      state.title = ($("metaTitle")?.value || state.title || "互動閱讀文章").trim();
-      state.passage = ($("sourceTextInput")?.value ?? state.passage ?? "").trim();
-      state.translation = ($("translationTextInput")?.value ?? state.translation ?? "").trim();
+      state.level = ($("metaLevel").value || "一般程度").trim();
+      state.topic = ($("metaTopic").value || "閱讀測驗").trim();
+      state.title = ($("metaTitle").value || "互動閱讀文章").trim();
+      state.passage = ($("sourceTextInput").value || "").trim();
+      state.translation = ($("translationTextInput").value || "").trim();
       state.sentenceTranslations = [];
 
       if (autoDetectRawBlanks && /(?:_{3,}|\(\s*\d{1,2}\s*\)\s*_{2,})/.test(state.passage)) {
         autoDetectAndBuildBlanksFromPassage(false);
       }
 
-      if ($("badgeLevel")) $("badgeLevel").textContent = state.level;
-      if ($("badgeTopic")) $("badgeTopic").textContent = state.topic;
-      if ($("displayTitle")) $("displayTitle").textContent = state.title;
+      const existingMarkers = new Set([...state.passage.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])));
+      if (state.inlineBlanks.length > 0 && existingMarkers.size < state.inlineBlanks.length) {
+        state.inlineBlanks = state.inlineBlanks.filter((b) => existingMarkers.has(b.num));
+        state.inlineBlanks.forEach((b, idx) => {
+          const oldNum = b.num;
+          const newNum = idx + 1;
+          if (oldNum !== newNum) {
+            state.passage = state.passage.replace(new RegExp(`\\[${oldNum}\\]`, "g"), `[${newNum}]`);
+            b.num = newNum;
+          }
+        });
+        $("sourceTextInput").value = state.passage;
+      }
+
+      $("badgeLevel").textContent = state.level;
+      $("badgeTopic").textContent = state.topic;
+      $("displayTitle").textContent = state.title;
 
       const mode = $("quizModeSelect")?.value || "mixed";
       if (mode === "cloze_only" && state.inlineBlanks.length === 0) {
@@ -1979,89 +2238,113 @@
           const aligned = await translateAlignedByEnglish(state.passage, "en", "zh-TW");
           state.translation = aligned.fullText;
           state.sentenceTranslations = aligned.sentencesZh;
-          if ($("translationTextInput")) $("translationTextInput").value = aligned.fullText;
+          $("translationTextInput").value = aligned.fullText;
         } catch {}
       }
 
       renderTranslation();
-      if ($("quizSourceBadge")) {
-        $("quizSourceBadge").textContent = `下方閱讀理解測驗（共 ${state.readingQuestions.length} 題）`;
-      }
+
+      $("quizSourceBadge").textContent = `下方閱讀理解測驗（共 ${state.readingQuestions.length} 題）`;
       renderQuizList();
     }
 
-    $("btnBuildInteractive")?.addEventListener("click", () => applyInputsAndGenerate(false, true));
-    $("btnOpenPreviewWindow")?.addEventListener("click", openPreviewInNewWindow);
-    $("btnOpenPreviewWindowBottom")?.addEventListener("click", openPreviewInNewWindow);
-    $("btnAddManualBlank")?.addEventListener("click", addManualInlineBlank);
-    $("btnAutoDetectBlanks")?.addEventListener("click", () => autoDetectAndBuildBlanksFromPassage(true));
+    function loadSample() {
+      currentArticleId = "sample_john_wallet";
+      setSelectedAdminWord("");
+      $("metaLevel").value = SAMPLE_DATA.level;
+      $("metaTopic").value = SAMPLE_DATA.topic;
+      $("metaTitle").value = SAMPLE_DATA.title;
+      $("sourceTextInput").value = SAMPLE_DATA.passage;
+      $("translationTextInput").value = SAMPLE_DATA.translation;
+      if ($("rawClozeOptionsInput")) {
+        const lbls = ["A", "B", "C", "D"];
+        const lines = SAMPLE_DATA.inlineBlanks.map((b) => `${b.num}. ` + b.options.map((o, i) => `(${lbls[i]}) ${o}`).join(" "));
+        lines.push("Answer: " + SAMPLE_DATA.inlineBlanks.map((b) => `${b.num}. ${lbls[b.answer]}`).join("  "));
+        $("rawClozeOptionsInput").value = lines.join("\n");
+      }
+      state.inlineBlanks = SAMPLE_DATA.inlineBlanks.map((b) => ({ ...b, options: [...b.options] }));
+      state.inlineAnswers = {};
+      state.readingQuestions = SAMPLE_DATA.readingQuestions.map((q) => ({ ...q, options: [...q.options] }));
+      state.readingAnswers = {};
+      setStatus("已載入「Where Is John's Wallet?」（文內 3 格點擊作答＋下方 5 題閱讀測驗）。", "success");
+      applyInputsAndGenerate(false, false);
+      renderSavedArticlesLibrary();
+    }
+
+    $("btnLoadSample").addEventListener("click", loadSample);
+    $("btnBuildInteractive").addEventListener("click", () => applyInputsAndGenerate(false, true));
+    $("btnAddManualBlank").addEventListener("click", addManualInlineBlank);
+    $("btnAutoDetectBlanks").addEventListener("click", () => autoDetectAndBuildBlanksFromPassage(true));
     $("btnParseRawBlankOptions")?.addEventListener("click", () => {
       autoDetectAndBuildBlanksFromPassage(false);
-      const parsedFromBox = parseRawClozeOptionsBlock($("rawClozeOptionsInput")?.value || "", $("sourceTextInput")?.value || state.passage || "");
+      const text = ($("sourceTextInput").value || state.passage || "");
+      const parsedFromBox = parseRawClozeOptionsBlock($("rawClozeOptionsInput")?.value || "", text);
       if (!parsedFromBox.length) {
         setStatus("未偵測到有效的選項格式，請確認包含題號與 (A) (B) (C) (D) 選項。", "warn");
         return;
       }
       parsedFromBox.forEach((item) => {
-        const idx = state.inlineBlanks.findIndex((b) => b.num === item.num);
-        if (idx !== -1) state.inlineBlanks[idx] = item;
-        else state.inlineBlanks.push(item);
+        const existingIdx = state.inlineBlanks.findIndex((b) => b.num === item.num);
+        if (existingIdx !== -1) {
+          state.inlineBlanks[existingIdx] = item;
+        } else {
+          state.inlineBlanks.push(item);
+        }
       });
       state.inlineBlanks.sort((a, b) => a.num - b.num);
       state.inlineAnswers = {};
       renderPassageInteractive();
       renderAdminBlankManager();
-      setStatus(`已自動配對 ${parsedFromBox.length} 格選項並生成中文解析！`, "success");
+      setStatus(`已自動配對 ${parsedFromBox.length} 格選項並生成中文解析，您可直接於下方修改！`, "success");
     });
-    $("btnSaveArticleToLibrary")?.addEventListener("click", saveCurrentArticleToLibrary);
-    $("categoryFilterSelect")?.addEventListener("change", renderSavedArticlesLibrary);
-    $("metaLevel")?.addEventListener("change", syncCategoryFilterOptions);
-    $("btnToggleLang")?.addEventListener("click", () => applyUiLanguage(uiLang === "zh" ? "en" : "zh"));
+    $("btnSaveArticleToLibrary").addEventListener("click", saveCurrentArticleToLibrary);
 
-    $("btnResetInlineCloze")?.addEventListener("click", () => {
+    $("btnResetInlineCloze").addEventListener("click", () => {
       state.inlineAnswers = {};
       renderPassageInteractive();
     });
-    $("btnResetQuiz")?.addEventListener("click", () => {
+    $("btnResetQuiz").addEventListener("click", () => {
       state.readingAnswers = {};
       renderQuizList();
     });
 
-    $("btnCloseClozeModal")?.addEventListener("click", closeClozeModal);
-    $("clozeModal")?.addEventListener("click", (e) => {
+    $("btnCloseClozeModal").addEventListener("click", closeClozeModal);
+    $("clozeModal").addEventListener("click", (e) => {
       if (e.target === $("clozeModal")) closeClozeModal();
     });
-    $("btnPrevCloze")?.addEventListener("click", () => {
+    $("btnPrevCloze").addEventListener("click", () => {
       if (state.activeBlankIdx > 0) openClozeModal(state.activeBlankIdx - 1);
     });
-    $("btnNextCloze")?.addEventListener("click", () => {
+    $("btnNextCloze").addEventListener("click", () => {
       if (state.activeBlankIdx < state.inlineBlanks.length - 1) openClozeModal(state.activeBlankIdx + 1);
     });
 
-    $("btnToggleFullTrans")?.addEventListener("click", () => {
-      $("displayTranslation")?.classList.toggle("hidden");
+    $("btnToggleFullTrans").addEventListener("click", () => {
+      $("displayTranslation").classList.toggle("hidden");
     });
 
-    $("btnEnterReciteZone")?.addEventListener("click", () => {
+    $("btnEnterReciteZone").addEventListener("click", () => {
       state.reciteZoneOpen = !state.reciteZoneOpen;
       const body = $("reciteZoneBody");
       const btn = $("btnEnterReciteZone");
       if (state.reciteZoneOpen) {
-        body?.classList.remove("hidden");
-        if (btn) btn.textContent = "離開並收合朗誦區";
+        body.classList.remove("hidden");
+        btn.textContent = "離開並收合朗誦區";
+        btn.className = "px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-xs sm:text-sm font-bold transition";
         renderReciteZoneSentences();
       } else {
         stopReciting();
-        body?.classList.add("hidden");
-        if (btn) btn.textContent = "進入課文朗誦區";
+        body.classList.add("hidden");
+        btn.textContent = "進入課文朗誦區";
+        btn.className = "px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-extrabold shadow-sm transition";
       }
     });
 
-    $("btnReciteStartAll")?.addEventListener("click", () => reciteAllFromStart(0));
-    $("btnReciteStop")?.addEventListener("click", stopReciting);
+    $("btnReciteStartAll").addEventListener("click", () => reciteAllFromStart(0));
+    $("btnReciteStop").addEventListener("click", stopReciting);
 
-    $("btnAutoTranslate")?.addEventListener("click", async () => {
-      const src = ($("sourceTextInput")?.value || "").trim();
+    $("btnAutoTranslate").addEventListener("click", async () => {
+      const src = ($("sourceTextInput").value || "").trim();
       if (!src) {
         setStatus("請先輸入或上傳英文原文再產生翻譯。", "warn");
         return;
@@ -2071,7 +2354,7 @@
         state.passage = src;
         renderPassageInteractive();
         const aligned = await translateAlignedByEnglish(src, "en", "zh-TW");
-        if ($("translationTextInput")) $("translationTextInput").value = aligned.fullText;
+        $("translationTextInput").value = aligned.fullText;
         state.translation = aligned.fullText;
         state.sentenceTranslations = aligned.sentencesZh;
         renderTranslation();
@@ -2081,70 +2364,68 @@
       }
     });
 
-    $("btnCloseDict")?.addEventListener("click", closeDictionary);
-    $("btnOkDict")?.addEventListener("click", closeDictionary);
-    $("dictModal")?.addEventListener("click", (e) => {
+    $("btnCloseDict").addEventListener("click", closeDictionary);
+    $("btnOkDict").addEventListener("click", closeDictionary);
+    $("dictModal").addEventListener("click", (e) => {
       if (e.target === $("dictModal")) closeDictionary();
     });
 
-    $("btnSpeakDict")?.addEventListener("click", () => {
+    $("btnSpeakDict").addEventListener("click", () => {
       if (state.activeDict?.query) speakText(state.activeDict.query, "en-US");
     });
-    $("btnSpeakDictZh")?.addEventListener("click", () => {
+    $("btnSpeakDictZh").addEventListener("click", () => {
       if (state.activeDict?.meaning) speakText(state.activeDict.meaning, "zh-TW");
     });
 
-    $("btnSaveWord")?.addEventListener("click", () => {
+    $("btnSaveWord").addEventListener("click", () => {
       if (!state.activeDict) return;
       const w = state.activeDict.query.trim();
-      if (!state.savedVocab.some((item) => item.word.toLowerCase() === w.toLowerCase())) {
-        state.savedVocab.unshift({ word: w, meaning: state.activeDict.meaning });
+      const exists = state.savedVocab.some((item) => item.word.toLowerCase() === w.toLowerCase());
+      if (!exists) {
+        state.savedVocab.unshift({
+          word: w,
+          meaning: state.activeDict.meaning
+        });
         persistSavedVocab();
         renderSavedVocab();
       }
       closeDictionary();
     });
 
-    $("btnClearVocab")?.addEventListener("click", () => {
+    $("btnClearVocab").addEventListener("click", () => {
       state.savedVocab = [];
       persistSavedVocab();
       renderSavedVocab();
     });
 
-    $("fileInput")?.addEventListener("change", (e) => {
+    $("fileInput").addEventListener("change", (e) => {
       const f = e.target.files?.[0];
       if (f) handleFileUpload(f);
       e.target.value = "";
     });
 
     const dropZone = $("dropZone");
-    if (dropZone) {
-      ["dragenter", "dragover"].forEach((evt) => {
-        dropZone.addEventListener(evt, (e) => {
-          e.preventDefault();
-          dropZone.classList.add("border-teal-600", "bg-teal-100/60");
-        });
+    ["dragenter", "dragover"].forEach((evt) => {
+      dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropZone.classList.add("border-teal-600", "bg-teal-100/60");
       });
-      ["dragleave", "drop"].forEach((evt) => {
-        dropZone.addEventListener(evt, (e) => {
-          e.preventDefault();
-          dropZone.classList.remove("border-teal-600", "bg-teal-100/60");
-        });
+    });
+    ["dragleave", "drop"].forEach((evt) => {
+      dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("border-teal-600", "bg-teal-100/60");
       });
-      dropZone.addEventListener("drop", (e) => {
-        const f = e.dataTransfer?.files?.[0];
-        if (f) handleFileUpload(f);
-      });
-    }
+    });
+    dropZone.addEventListener("drop", (e) => {
+      const f = e.dataTransfer?.files?.[0];
+      if (f) handleFileUpload(f);
+    });
 
     loadSavedVocabFromStorage();
     loadSavedArticlesFromStorage();
     initRoleMode();
-    if (savedArticles[0]) {
-      startPracticingArticle(savedArticles[0].id);
-    } else {
-      applyInputsAndGenerate(false, false);
-    }
+    loadSample();
     renderSavedVocab();
     renderSavedArticlesLibrary();
     renderAdminBlankManager();
